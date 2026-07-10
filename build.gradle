@@ -1,0 +1,75 @@
+plugins {
+    id 'fabric-loom' version '1.5-SNAPSHOT'
+    id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url "https://maven.terraformersmc.com/releases/" }
+    mavenCentral()
+}
+
+dependencies {
+    // Minecraft and Fabric
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // Fabric API
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    // ModMenu
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    it.options.release = Integer.parseInt(project.java_version)
+}
+
+java {
+    withSourcesJar()
+
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = Integer.parseInt(project.java_version)
+    options.compilerArgs += ["-Xlint:deprecation"]
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+    }
+}
+kotlin {
+    jvmToolchain(17)
+}

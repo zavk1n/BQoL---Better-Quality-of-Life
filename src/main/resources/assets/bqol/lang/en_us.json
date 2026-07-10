@@ -1,0 +1,16 @@
+{
+  "modmenu.descriptionTranslation.bqol": "Better Quality of Life - Minecraft enhancements",
+  "key.bqol.menu": "Open BQoL Menu",
+  "category.bqol.main": "BQoL",
+
+  "bqol.config.title": "BQoL Configuration",
+  "bqol.config.save": "Save",
+  "bqol.config.back": "Back",
+
+  "bqol.button.enabled": "Enabled",
+  "bqol.button.disabled": "Disabled",
+  "bqol.button.config": "Config",
+
+  "bqol.ct.timer": "CT: %ds",
+  "bqol.ct.wait": "Wait %ds"
+}

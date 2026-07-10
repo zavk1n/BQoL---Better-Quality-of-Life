@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.zavk1n.bqol.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "HEALTHRenderIndicator",
+    "GLOBALDeathResetMixin",
+    "FOGRenderFog",
+    "FOGRenderNightVision",
+    "GLOBALAttackEntityMixin",
+    "GLOBALDamageEntityMixin",
+    "SHULKERBlockVanillaParticles",
+    "SHULKERSpawnBreakingParticles",
+    "SOUNDSPlaySound",
+    "SPRINTStairUpAllowFastMoving",
+    "SPRINTStairUpJumpBlock",
+    "SPRINTStairUpHideVanillaButton"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
