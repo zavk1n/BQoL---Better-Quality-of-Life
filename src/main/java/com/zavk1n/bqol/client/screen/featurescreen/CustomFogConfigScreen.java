@@ -309,7 +309,7 @@ public class CustomFogConfigScreen extends MainConfigScreen {
         super.render(context, mouseX, mouseY, delta);
 
         int leftX = width / 4;
-        int startY = 50;
+        int startY = 60;
 
         renderLabel(context, leftX, startY, mouseX, mouseY,
                 "Range",
@@ -348,7 +348,10 @@ public class CustomFogConfigScreen extends MainConfigScreen {
     private void renderLabel(DrawContext context, int x, int y, int mouseX, int mouseY, String title, String desc) {
         int titleWidth = textRenderer.getWidth(title);
 
-        boolean hovered = mouseX >= x && mouseX <= x + titleWidth && mouseY >= y && mouseY <= y + textRenderer.fontHeight;
+        boolean hovered = mouseX >= x &&
+                mouseX <= x + titleWidth &&
+                mouseY >= y &&
+                mouseY <= y + textRenderer.fontHeight;
 
         int color = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
 

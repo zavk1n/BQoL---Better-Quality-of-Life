@@ -43,8 +43,8 @@ public class SpheresConfigScreen extends MainConfigScreen {
         holyWorldSpheresBtn = null;
         holyWorldSpheresSettingsBtn = null;
 
-        int rightX = width / 2 + 100;
-        int y = 80;
+        int rightX = width / 2 + 50;
+        int y = 60;
 
         if (!LiteApiManager.isFeatureBlocked("better_spheres_holyworld")) {
             holyWorldSpheresBtn = createButton(
@@ -64,7 +64,7 @@ public class SpheresConfigScreen extends MainConfigScreen {
                     })
                 .dimensions(
                     rightX + BUTTON_WIDTH + 10,
-                    y,
+                    y - 3,
                     BUTTON_WIDTH,
                     BUTTON_HEIGHT
                 )
@@ -99,7 +99,7 @@ public class SpheresConfigScreen extends MainConfigScreen {
 
                     updateButton(btn, enabled);
                 })
-            .dimensions(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
             .build();
 
         updateButton(button, getter.getAsBoolean());
@@ -128,7 +128,7 @@ public class SpheresConfigScreen extends MainConfigScreen {
         super.render(context, mouseX, mouseY, delta);
 
         int leftX = width / 4;
-        int y = 80;
+        int y = 60;
 
         if (!LiteApiManager.isFeatureBlocked("better_spheres_holyworld")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
@@ -141,11 +141,12 @@ public class SpheresConfigScreen extends MainConfigScreen {
     private void renderLabel(DrawContext context, int x, int y, int mouseX, int mouseY, String title, String description) {
         int titleWidth = textRenderer.getWidth(title);
 
-        boolean hovered = mouseX >= x && mouseX <= x + titleWidth && mouseY >= y && mouseY <= y + textRenderer.fontHeight;
+        boolean hovered = mouseX >= x &&
+                mouseX <= x + titleWidth &&
+                mouseY >= y &&
+                mouseY <= y + textRenderer.fontHeight;
 
-        int color = hovered
-            ? ACCENT_COLOR
-            : 0xFFFFFFFF;
+        int color = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
 
         context.drawTextWithShadow(textRenderer, Text.literal(title), x, y, color);
         context.drawTextWithShadow(textRenderer, Text.literal(description), x, y + 12, 0xFF888888);

@@ -69,7 +69,7 @@ public class BQoLConfig {
     public boolean holyWorldSpheresEnabled = false;
 
     public boolean sphereCerberusEnabled = false;
-    public boolean sphereFleshEnabled = false;
+    public boolean sphereFlashEnabled = false;
     public boolean sphereImmortalityEnabled = false;
     public boolean sphereArmortalityEnabled = false;
     public boolean sphereEternityEnabled = false;
@@ -80,7 +80,7 @@ public class BQoLConfig {
     public boolean sphereLegendaryEnabled = false;
     public boolean sphereMythicEnabled = false;
 
-    public boolean sphereLeaveEnabled = false;
+    public boolean sphereSpeedEnabled = false;
     public boolean sphereMinerEnabled = false;
     public boolean spherePvPEnabled = false;
 
@@ -275,8 +275,8 @@ public class BQoLConfig {
 
     public boolean isSphereCerberusEnabled() { return sphereCerberusEnabled; }
     public void setSphereCerberusEnabled(boolean enabled) { this.sphereCerberusEnabled = enabled; save(); }
-    public boolean isSphereFleshEnabled() { return sphereFleshEnabled; }
-    public void setSphereFleshEnabled(boolean enabled) { this.sphereFleshEnabled = enabled; save(); }
+    public boolean isSphereFlashEnabled() { return sphereFlashEnabled; }
+    public void setSphereFlashEnabled(boolean enabled) { this.sphereFlashEnabled = enabled; save(); }
     public boolean isSphereImmortalityEnabled() { return sphereImmortalityEnabled; }
     public void setSphereImmortalityEnabled(boolean enabled) { this.sphereImmortalityEnabled = enabled; save(); }
     public boolean isSphereArmortalityEnabled() { return sphereArmortalityEnabled; }
@@ -295,8 +295,8 @@ public class BQoLConfig {
     public boolean isSphereDefaultEnabled() { return sphereDefaultEnabled; }
     public void setSphereDefaultEnabled(boolean enabled) { this.sphereDefaultEnabled = enabled; save(); }
 
-    public boolean isSphereLeaveEnabled() { return sphereLeaveEnabled; }
-    public void setSphereLeaveEnabled(boolean enabled) { this.sphereLeaveEnabled = enabled; save(); }
+    public boolean isSphereSpeedEnabled() { return sphereSpeedEnabled; }
+    public void setSphereSpeedEnabled(boolean enabled) { this.sphereSpeedEnabled = enabled; save(); }
     public boolean isSphereMinerEnabled() { return sphereMinerEnabled; }
     public void setSphereMinerEnabled(boolean enabled) { this.sphereMinerEnabled = enabled; save(); }
     public boolean isSpherePvPEnabled() { return spherePvPEnabled; }
@@ -435,7 +435,7 @@ public class BQoLConfig {
         this.betterSpheresEnabled = defaults.betterSpheresEnabled;
 
         this.sphereCerberusEnabled = defaults.sphereCerberusEnabled;
-        this.sphereFleshEnabled = defaults.sphereFleshEnabled;
+        this.sphereFlashEnabled = defaults.sphereFlashEnabled;
         this.sphereImmortalityEnabled = defaults.sphereImmortalityEnabled;
         this.sphereArmortalityEnabled = defaults.sphereArmortalityEnabled;
         this.sphereEternityEnabled = defaults.sphereEternityEnabled;
@@ -447,7 +447,7 @@ public class BQoLConfig {
         this.sphereDefaultEnabled = defaults.sphereDefaultEnabled;
         this.holyWorldSpheresEnabled = defaults.holyWorldSpheresEnabled;
 
-        this.sphereLeaveEnabled = defaults.sphereLeaveEnabled;
+        this.sphereSpeedEnabled = defaults.sphereSpeedEnabled;
         this.sphereMinerEnabled = defaults.sphereMinerEnabled;
         this.spherePvPEnabled = defaults.spherePvPEnabled;
 

@@ -4,49 +4,63 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.Queue;
+
 
 public final class NotificationManager {
 
-    private static final Map<String, Notification> notifications = new LinkedHashMap<>();
+    private static final LinkedList<Notification> activeNotifications = new LinkedList<>();
+    private static final Queue<Notification> notificationQueue = new LinkedList<>();
+
+    private static final java.util.Map<String, Long> lastNotificationTimes = new java.util.HashMap<>();
+
+    private static final long SPAM_DELAY = 300L;
+    private static final int MAX_ACTIVE = 4;
 
     private static final class Notification {
-        private final Text message;
-        private final long createdTime;
+        private final String id;
+        private Text message;
+        private long createdTime;
+        private int y;
 
-        private Notification(Text message, long createdTime) {
+        private Notification(
+            String id,
+            Text message,
+            long createdTime,
+            int y
+        ) {
+            this.id = id;
             this.message = message;
             this.createdTime = createdTime;
+            this.y = y;
         }
     }
 
     /// Константы
-    private static final int NOTIFICATION_DURATION_MS = 1500;
-    private static final int FADE_DURATION_MS = 300;
-    private static final int SLIDE_DURATION_MS = 200;
+    private static final int NOTIFICATION_DURATION_MS = 1800;
+    private static final int FADE_DURATION_MS = 400;
+    private static final int SLIDE_DURATION_MS = 400;
 
-    private static final int NOTIFICATION_WIDTH = 160;
-    private static final int NOTIFICATION_HEIGHT = 20;
-    private static final int PADDING = 8;
-    private static final int SPACING = 4;
+    private static final int NOTIFICATION_WIDTH = 180;
+    private static final int NOTIFICATION_HEIGHT = 30;
 
-    private static final int BACKGROUND_COLOR = 0xFF1E1F29;
-    private static final int BACKGROUND_HIGHLIGHT = 0xFF2B2D3A;
-    private static final int ACCENT_COLOR = 0xFF7C5CFF;
-    private static final int TEXT_COLOR = 0xFFF5F5F5;
-    private static final int FEATURE_COLOR = 0xFF8B5CF6;
+    private static final int PADDING = 10;
+    private static final int SPACING = 8;
+
+    private static final int TEXT_COLOR = 0xFFFFFFFF;
+    private static final int ENABLED_COLOR = 0xFFBEB5FF;
+    private static final int DISABLED_COLOR = 0xFF9E5EFF;
 
     private static boolean initialized;
 
     private NotificationManager() { }
 
-    /// Публичные статические методы
     public static void initialize() {
         if (initialized) {
             return;
@@ -59,42 +73,149 @@ public final class NotificationManager {
         );
     }
 
-    /// Показ уведомления
+    /// Отображение
     public static void showNotification(String id, Text message) {
-        Notification existing = notifications.get(id);
+        long now = System.currentTimeMillis();
 
-        if (existing == null) {
-            notifications.put(id, new Notification(message, System.currentTimeMillis()));
+        Long last = lastNotificationTimes.get(id);
+
+        if (last != null && now - last < SPAM_DELAY) {
             return;
         }
 
-        notifications.put(id, new Notification(message, System.currentTimeMillis()));
+        lastNotificationTimes.put(id, now);
+
+        for (Notification notification : activeNotifications) {
+            if (notification.id.equals(id)) {
+                notification.message = message;
+                notification.createdTime = now;
+
+                return;
+            }
+        }
+
+        for (Notification notification : notificationQueue) {
+            if (notification.id.equals(id)) {
+                notification.message = message;
+                notification.createdTime = now;
+
+                return;
+            }
+        }
+
+        Notification notification = new Notification(
+            id,
+            message,
+            now,
+            0
+        );
+
+        if (activeNotifications.size() < MAX_ACTIVE) {
+            addActive(notification);
+        } else {
+            notificationQueue.offer(notification);
+        }
+    }
+
+    private static void addActive(Notification notification) {
+        notification.y = PADDING + activeNotifications.size() * (NOTIFICATION_HEIGHT + SPACING);
+
+        activeNotifications.add(notification);
+    }
+
+    private static void showFeatureNotification(String featureName, boolean enabled) {
+        MutableText message = Text.empty();
+
+        message.append(
+            Text.literal(featureName)
+                .styled(style ->
+                    style.withColor(0xFFFFFFFF)
+                )
+        );
+
+        message.append(
+            Text.literal(" • ")
+                .styled(style ->
+                    style.withColor(0xFFFFFFFF)
+                )
+        );
+
+        message.append(
+            Text.literal(enabled ? "Enabled" : "Disabled")
+                .styled(style ->
+                    style.withColor(
+                        enabled
+                            ? ENABLED_COLOR
+                            : DISABLED_COLOR
+                    )
+                )
+        );
+
+        showNotification(featureName, message);
+    }
+
+    /// Функции
+    public static void showBetterSprintNotification(boolean enabled) {
+        showFeatureNotification("Better Sprint", enabled);
+    }
+
+
+    public static void showBetterSoundsNotification(boolean enabled) {
+        showFeatureNotification("Better Sounds", enabled);
+    }
+
+
+    public static void showBetterSpheresNotification(boolean enabled) {
+        showFeatureNotification("Better Spheres", enabled);
+    }
+
+
+    public static void showShulkerParticlesNotification(boolean enabled) {
+        showFeatureNotification("Shulker Particles", enabled);
+    }
+
+
+    public static void showCustomFogNotification(boolean enabled) {
+        showFeatureNotification("Custom Fog", enabled);
+    }
+
+
+    public static void showCustomHealthNotification(boolean enabled) {
+        showFeatureNotification("Custom Health", enabled);
     }
 
     /// Рендер
     private static void renderNotifications(DrawContext context) {
-        if (notifications.isEmpty()) {
+        if (activeNotifications.isEmpty()) {
             return;
         }
 
         MinecraftClient client = MinecraftClient.getInstance();
+
         TextRenderer textRenderer = client.textRenderer;
 
         int screenWidth = client.getWindow().getScaledWidth();
         long currentTime = System.currentTimeMillis();
 
-        Iterator<Map.Entry<String, Notification>> iterator = notifications.entrySet().iterator();
+        Iterator<Notification> iterator = activeNotifications.iterator();
 
-        int index = 0;
+        boolean changed = false;
 
         while (iterator.hasNext()) {
-            Map.Entry<String, Notification> entry = iterator.next();
-            Notification notification = entry.getValue();
+
+            Notification notification = iterator.next();
 
             long age = currentTime - notification.createdTime;
 
             if (age >= NOTIFICATION_DURATION_MS) {
                 iterator.remove();
+
+                changed = true;
+
+                if (!notificationQueue.isEmpty()) {
+                    addActive(notificationQueue.poll());
+                }
+
                 continue;
             }
 
@@ -102,17 +223,16 @@ public final class NotificationManager {
 
             if (age < FADE_DURATION_MS) {
                 alpha = MathHelper.clamp(
-                    (int) (255F * age / FADE_DURATION_MS),
+                    (int)(255F * age / FADE_DURATION_MS),
                     0,
                     255
                 );
+
             } else if (age > NOTIFICATION_DURATION_MS - FADE_DURATION_MS) {
-                float t = (float) (
-                    age - (NOTIFICATION_DURATION_MS - FADE_DURATION_MS)
-                ) / FADE_DURATION_MS;
+                float t = (float)(age - (NOTIFICATION_DURATION_MS - FADE_DURATION_MS)) / FADE_DURATION_MS;
 
                 alpha = MathHelper.clamp(
-                    (int) (255F * (1F - t)),
+                    (int)(255F * (1F - t)),
                     0,
                     255
                 );
@@ -120,66 +240,52 @@ public final class NotificationManager {
                 alpha = 255;
             }
 
-            float slideProgress;
+            float slide;
 
             if (age < SLIDE_DURATION_MS) {
-                slideProgress = (float) age / SLIDE_DURATION_MS;
+                slide = age / (float)SLIDE_DURATION_MS;
             } else if (age > NOTIFICATION_DURATION_MS - SLIDE_DURATION_MS) {
-                float t = (float) (
-                    age - (NOTIFICATION_DURATION_MS - SLIDE_DURATION_MS)
-                ) / SLIDE_DURATION_MS;
+                float t = (float)(age - (NOTIFICATION_DURATION_MS - SLIDE_DURATION_MS)) / SLIDE_DURATION_MS;
 
-                slideProgress = 1F - t;
+                slide = 1F - t;
             } else {
-                slideProgress = 1F;
+                slide = 1F;
             }
 
-            int slideOffset = (int) (
-                NOTIFICATION_WIDTH * (1F - slideProgress)
-            );
+            int x = screenWidth - NOTIFICATION_WIDTH - PADDING + (int)(NOTIFICATION_WIDTH * (1F - slide));
 
-            int x = screenWidth - NOTIFICATION_WIDTH - PADDING + slideOffset;
-            int y = PADDING + index * (NOTIFICATION_HEIGHT + SPACING);
+            drawNotification(context, textRenderer, notification, x, notification.y, alpha);
+        }
 
-            drawNotification(context, textRenderer, notification, x, y, alpha);
+        if (changed) {
+            int y = PADDING;
 
-            index++;
+            for (Notification notification : activeNotifications) {
+                notification.y = y;
+
+                y += NOTIFICATION_HEIGHT + SPACING;
+            }
         }
     }
 
     private static void drawNotification(DrawContext context, TextRenderer textRenderer, Notification notification, int x, int y, int alpha) {
-        context.fill(x, y, x + NOTIFICATION_WIDTH, y + NOTIFICATION_HEIGHT, withAlpha(BACKGROUND_COLOR, alpha));
-        context.fill(x, y, x + 3, y + NOTIFICATION_HEIGHT, withAlpha(ACCENT_COLOR, alpha));
+        int background = withAlpha(0xFF000000, (alpha * 166) / 255);
+        int border = withAlpha(0xFFC7C0FA, alpha);
 
-        context.fillGradient(x, y, x + NOTIFICATION_WIDTH, y + 2, withAlpha(ACCENT_COLOR, alpha), withAlpha(BACKGROUND_HIGHLIGHT, alpha));
-        context.fillGradient(x, y + NOTIFICATION_HEIGHT - 2, x + NOTIFICATION_WIDTH, y + NOTIFICATION_HEIGHT, 0x00000000, withAlpha(0xFF000000, alpha / 2));
+        context.fill(x, y, x + NOTIFICATION_WIDTH, y + NOTIFICATION_HEIGHT, background);
 
-        int textX = x + (NOTIFICATION_WIDTH - textRenderer.getWidth(notification.message)) / 2;
-        int textY = y + (NOTIFICATION_HEIGHT - textRenderer.fontHeight) / 2;
+        context.drawBorder(x, y, NOTIFICATION_WIDTH, NOTIFICATION_HEIGHT, border);
+
+        int textWidth = textRenderer.getWidth(notification.message);
+
+        int textX = x + (NOTIFICATION_WIDTH - textWidth) / 2;
+        int textY = Math.round(y + (NOTIFICATION_HEIGHT - textRenderer.fontHeight) / 2f);
+
 
         context.drawText(textRenderer, notification.message, textX, textY, withAlpha(TEXT_COLOR, alpha), true);
     }
 
     private static int withAlpha(int color, int alpha) {
         return ((alpha & 0xFF) << 24) | (color & 0x00FFFFFF);
-    }
-
-    /// BetterSprint
-    public static void showBetterSprintNotification(boolean enabled) {
-        String statusText = enabled ? "Enabled" : "Disabled";
-        Formatting statusColor = enabled
-            ? Formatting.GREEN
-            : Formatting.RED;
-
-        Text feature = Text.literal("BetterSprint")
-            .styled(style -> style.withColor(FEATURE_COLOR));
-
-        Text status = Text.literal(statusText)
-            .styled(style -> style.withColor(statusColor));
-
-        showNotification(
-            "bettersprint",
-            feature.copy().append(" ").append(status)
-        );
     }
 }

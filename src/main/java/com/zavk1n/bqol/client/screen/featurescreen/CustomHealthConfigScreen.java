@@ -21,7 +21,7 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
     private ButtonWidget locationButton, hoveringBtn, scalingBtn, pvpModeBtn, decimalBtn, goldenHeartsBtn;
     private ColorCheckbox goldenHeartsPlusCheck;
 
-    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 40, LABEL_WIDTH = 220;
+    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45, LABEL_WIDTH = 220;
     private boolean changed = false;
 
     private static final String[] LOCATION_NAMES = {"Over", "Left", "Right", "Under"};
@@ -56,12 +56,12 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
         goldenHeartsPlusCheck = null;
 
         int centerX = width / 2;
-        int startY = Math.max(50, (height - 500) / 2);
-        int controlX = centerX + 60;
+        int startY = 60;
+        int controlX = centerX + 50;
 
         int durationSec = config.customHealthDuration / 1000;
 
-        durationSlider = new SliderWidget(controlX, startY + 1, 180, 20, Text.literal(durationSec + " s"), (durationSec - 3) / 27.0) {
+        durationSlider = new SliderWidget(controlX, startY, 180, 20, Text.literal(durationSec + " s"), (durationSec - 3) / 27.0) {
             @Override
             protected void updateMessage() {
                 int value = (int) Math.round(3 + this.value * 27);
@@ -170,7 +170,7 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
 
         addDrawableChild(
             ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
-                .dimensions(centerX - 50, height - 35, 100, BUTTON_HEIGHT)
+                .dimensions(width / 2 - 50, height - 40, 100, BUTTON_HEIGHT)
                 .build()
         );
 
@@ -198,7 +198,7 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
     /// Обновление состояния кнопок
     private void updateButton(ButtonWidget button, boolean enabled) {
         button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
-                .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
+            .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
     }
 
     private void updateAllButtons() {
@@ -220,9 +220,8 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
-        int centerX = width / 2;
-        int startY = Math.max(50, (height - 500) / 2);
-        int labelX = centerX - LABEL_WIDTH;
+        int labelX = width / 4;
+        int startY = 60;
 
         renderLabel(context, labelX, startY, mouseX, mouseY,
             "Duration", "Indicator display duration."
@@ -263,8 +262,16 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
             );
     }
 
-    private void renderLabel(DrawContext ctx, int x, int y, int mx, int my, String title, String desc) {
-        int color = (mx >= x && mx <= x + textRenderer.getWidth(title) && my >= y - 2 && my <= y + 10) ? ACCENT_COLOR : 0xFFFFFFFF;
+    private void renderLabel(DrawContext ctx, int x, int y, int mousex, int mousey, String title, String desc) {
+        int titleWidth = textRenderer.getWidth(title);
+
+        boolean hovered =
+            mousex >= x &&
+                mousex <= x + titleWidth &&
+                mousey >= y &&
+                mousey <= y + textRenderer.fontHeight;
+
+        int color = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
 
         ctx.drawTextWithShadow(textRenderer, Text.literal(title), x, y, color);
         ctx.drawTextWithShadow(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888);

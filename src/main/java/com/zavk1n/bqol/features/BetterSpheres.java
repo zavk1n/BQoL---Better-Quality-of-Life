@@ -214,7 +214,7 @@ public class BetterSpheres {
                 List.of(0xCF0000, 0xF70000, 0xFF3333)
             ),
             new DefaultSphereMatch(
-                config::isSphereFleshEnabled,
+                config::isSphereFlashEnabled,
                 Map.of("Проклятие утраты", 0, "Скорость", 3, "Броня", 1),
                 List.of("Скорость 3", "Броня 1", "Проклятие утраты"),
                 List.of(0xCCF8FF, 0xB0F3FF, 0x8FEEFF)
@@ -225,7 +225,7 @@ public class BetterSpheres {
     private List<GoldenSphereMatch> createGoldenSphereMatches() {
         return List.of(
             new GoldenSphereMatch(
-                config::isSphereLeaveEnabled,
+                config::isSphereSpeedEnabled,
                 Map.of("Скорость", 3),
                 "Сфера Лива",
                 List.of("Скорость 3"),

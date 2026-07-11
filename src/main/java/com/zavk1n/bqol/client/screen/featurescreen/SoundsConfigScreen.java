@@ -165,7 +165,7 @@ public class SoundsConfigScreen extends MainConfigScreen {
                 continue;
             }
 
-            int y = 70 + row * SPACING;
+            int y = 60 + row * SPACING;
 
             entry.button = createButton(
                 columnX + columnWidth - BUTTON_WIDTH,
@@ -181,14 +181,16 @@ public class SoundsConfigScreen extends MainConfigScreen {
     }
 
     private ButtonWidget createButton(int x, int y, BooleanSupplier getter, Consumer<Boolean> setter) {
-        ButtonWidget btn = ButtonWidget.builder(Text.literal(""), button -> {
+        ButtonWidget btn = ButtonWidget.builder(
+                Text.literal(""),
+                button -> {
                     boolean newState = !getter.getAsBoolean();
                     setter.accept(newState);
                     changed = true;
                     updateButton(button, newState);
                 })
-                .dimensions(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
-                .build();
+            .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .build();
 
         updateButton(btn, getter.getAsBoolean());
 
@@ -257,25 +259,24 @@ public class SoundsConfigScreen extends MainConfigScreen {
                 continue;
             }
 
-            int y = 70 + row * SPACING;
+            int y = 60 + row * SPACING;
 
-            renderLabel(
-                context,
-                columnX,
-                y,
-                mouseX,
-                mouseY,
-                entry.title,
-                entry.description
-            );
+            renderLabel(context, columnX, y, mouseX, mouseY, entry.title, entry.description);
 
             row++;
         }
     }
 
     private void renderLabel(DrawContext context, int x, int y, int mouseX, int mouseY, String title, String desc) {
-        int color = (mouseX >= x && mouseX <= x + textRenderer.getWidth(title) && mouseY >= y - 5 && mouseY <= y + 20)
-                ? ACCENT_COLOR : 0xFFFFFFFF;
+        int titleWidth = textRenderer.getWidth(title);
+
+        boolean hovered = mouseX >= x &&
+                mouseX <= x + titleWidth &&
+                mouseY >= y &&
+                mouseY <= y + textRenderer.fontHeight;
+
+        int color = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
+
         context.drawText(textRenderer, Text.literal(title), x, y, color, false);
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }

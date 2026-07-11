@@ -51,8 +51,8 @@ public class SprintConfigScreen extends MainConfigScreen {
         stairupBtn = null;
         watersprintBtn = null;
 
-        int rightX = width / 2 + 100;
-        int y = 80;
+        int rightX = width / 2 + 50;
+        int y = 60;
 
         if (!LiteApiManager.isFeatureBlocked("better_sprint_default")) {
             defaultModeBtn = createExclusiveButton(
@@ -100,7 +100,7 @@ public class SprintConfigScreen extends MainConfigScreen {
                         updateButton(stairupBtn, state);
                         save();
                     })
-                .dimensions(rightX, y, BUTTON_WIDTH, BUTTON_HEIGHT)
+                .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build();
 
             addDrawableChild(stairupBtn);
@@ -117,7 +117,7 @@ public class SprintConfigScreen extends MainConfigScreen {
                         updateButton(watersprintBtn, state);
                         save();
                     })
-                .dimensions(rightX, y, BUTTON_WIDTH, BUTTON_HEIGHT)
+                .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build();
 
             addDrawableChild(watersprintBtn);
@@ -149,10 +149,11 @@ public class SprintConfigScreen extends MainConfigScreen {
                     updateAllButtons();
                     save();
                 })
-            .dimensions(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
             .build();
 
         addDrawableChild(btn);
+
         return btn;
     }
 
@@ -207,7 +208,7 @@ public class SprintConfigScreen extends MainConfigScreen {
         super.render(context, mouseX, mouseY, delta);
 
         int leftX = width / 4;
-        int y = 80;
+        int y = 60;
 
         if (!LiteApiManager.isFeatureBlocked("better_sprint_default")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
@@ -220,7 +221,7 @@ public class SprintConfigScreen extends MainConfigScreen {
         if (!LiteApiManager.isFeatureBlocked("better_sprint_pvp")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "PvP Mode",
-                "Auto-sprint in PvP conditions. (TImer 30s)."
+                "Auto-sprint in PvP conditions. (Timer 30s)."
             );
             y += SPACING;
         }
@@ -252,7 +253,10 @@ public class SprintConfigScreen extends MainConfigScreen {
     private void renderLabel(DrawContext context, int x, int y, int mouseX, int mouseY, String title, String desc) {
         int titleWidth = textRenderer.getWidth(title);
 
-        boolean hovered = mouseX >= x && mouseX <= x + titleWidth && mouseY >= y && mouseY <= y + textRenderer.fontHeight;
+        boolean hovered = mouseX >= x &&
+                mouseX <= x + titleWidth &&
+                mouseY >= y &&
+                mouseY <= y + textRenderer.fontHeight;
 
         int color = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
 

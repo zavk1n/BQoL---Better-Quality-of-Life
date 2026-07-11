@@ -40,9 +40,9 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
     }
 
     private static final String[] FOOTNOTE_LINES = {
-        "*Сфера PvP — Броня III + Урон II",
-        "*Сфера Шахтера — Спешка III",
-        "*Сфера Лива — Скорость III"
+        "*PvP sphere — Armor III + Damage II",
+        "*Miner's sphere — Haste III",
+        "*Sphere of Speed — Speed III"
     };
 
     /// Виджеты
@@ -89,22 +89,22 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
     private void createSphereGrid() {
         int gridWidth = COLUMNS * COL_SPACING;
         int startX = (width - gridWidth) / 2;
-        int gridStartY = 50;
+        int gridStartY = 60;
 
         List<SphereEntry> spheres = List.of(
-            new SphereEntry("Сфера Цербера", config::isSphereCerberusEnabled, config::setSphereCerberusEnabled),
-            new SphereEntry("Сфера Eternity", config::isSphereEternityEnabled, config::setSphereEternityEnabled),
-            new SphereEntry("Сфера Флеша", config::isSphereFleshEnabled, config::setSphereFleshEnabled),
-            new SphereEntry("Сфера Armortality", config::isSphereArmortalityEnabled, config::setSphereArmortalityEnabled),
-            new SphereEntry("Сфера Stinger", config::isSphereStingerEnabled, config::setSphereStingerEnabled),
-            new SphereEntry("Сфера Immortality", config::isSphereImmortalityEnabled, config::setSphereImmortalityEnabled),
-            new SphereEntry("Обычная сфера", config::isSphereDefaultEnabled, config::setSphereDefaultEnabled),
-            new SphereEntry("Эпическая сфера", config::isSphereEpicEnabled, config::setSphereEpicEnabled),
-            new SphereEntry("Легендарная сфера", config::isSphereLegendaryEnabled, config::setSphereLegendaryEnabled),
-            new SphereEntry("Сфера Шахтера", config::isSphereMinerEnabled, config::setSphereMinerEnabled),
-            new SphereEntry("Сфера PvP", config::isSpherePvPEnabled, config::setSpherePvPEnabled),
-            new SphereEntry("Сфера Лива", config::isSphereLeaveEnabled, config::setSphereLeaveEnabled),
-            new SphereEntry("Мифическая сфера", config::isSphereMythicEnabled, config::setSphereMythicEnabled)
+            new SphereEntry("Cerberus Sphere", config::isSphereCerberusEnabled, config::setSphereCerberusEnabled),
+            new SphereEntry("Sphere Eternity", config::isSphereEternityEnabled, config::setSphereEternityEnabled),
+            new SphereEntry("Flash Sphere", config::isSphereFlashEnabled, config::setSphereFlashEnabled),
+            new SphereEntry("Sphere Armortality", config::isSphereArmortalityEnabled, config::setSphereArmortalityEnabled),
+            new SphereEntry("Sphere Stinger", config::isSphereStingerEnabled, config::setSphereStingerEnabled),
+            new SphereEntry("Sphere Immortality", config::isSphereImmortalityEnabled, config::setSphereImmortalityEnabled),
+            new SphereEntry("Default Sphere", config::isSphereDefaultEnabled, config::setSphereDefaultEnabled),
+            new SphereEntry("Epic Sphere", config::isSphereEpicEnabled, config::setSphereEpicEnabled),
+            new SphereEntry("Legendary Sphere", config::isSphereLegendaryEnabled, config::setSphereLegendaryEnabled),
+            new SphereEntry("Miner's Sphere", config::isSphereMinerEnabled, config::setSphereMinerEnabled),
+            new SphereEntry("PvP Sphere", config::isSpherePvPEnabled, config::setSpherePvPEnabled),
+            new SphereEntry("Sphere of Speed", config::isSphereSpeedEnabled, config::setSphereSpeedEnabled),
+            new SphereEntry("Mythic Sphere", config::isSphereMythicEnabled, config::setSphereMythicEnabled)
         );
 
         int col = 0;
@@ -160,7 +160,7 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
     }
 
     private void createControlButtons() {
-        int gridStartY = 50;
+        int gridStartY = 60;
         int maxRow = (sphereEntries.size() + COLUMNS - 1) / COLUMNS;
         int afterGridY = gridStartY + maxRow * ROW_SPACING + 20;
 
@@ -222,7 +222,7 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
 
                     save();
                 })
-            .dimensions(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
             .build();
 
         updateButton(button, getter.getAsBoolean());
@@ -306,7 +306,6 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
 
     private void renderSphereLabels(DrawContext context, int mouseX, int mouseY) {
         for (SphereToggleEntry entry : sphereEntries) {
-
             int titleWidth = textRenderer.getWidth(entry.label);
 
             boolean hovered = mouseX >= entry.labelX &&
@@ -314,23 +313,14 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
                     mouseY >= entry.labelY &&
                     mouseY <= entry.labelY + textRenderer.fontHeight;
 
-            int color = hovered
-                ? ACCENT_COLOR
-                : 0xFFFFFFFF;
+            int color = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
 
-            context.drawText(
-                textRenderer,
-                Text.literal(entry.label),
-                entry.labelX,
-                entry.labelY,
-                color,
-                false
-            );
+            context.drawText(textRenderer, Text.literal(entry.label), entry.labelX, entry.labelY, color, false);
         }
     }
 
     private void renderFooter(DrawContext context, int mouseX, int mouseY) {
-        int gridStartY = 50;
+        int gridStartY = 60;
         int maxRow = (sphereEntries.size() + COLUMNS - 1) / COLUMNS;
         int afterGridY = gridStartY + maxRow * ROW_SPACING + 20;
 

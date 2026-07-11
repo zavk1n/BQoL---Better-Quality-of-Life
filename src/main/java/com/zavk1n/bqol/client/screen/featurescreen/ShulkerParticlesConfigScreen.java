@@ -80,7 +80,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         boolean constantDependenceBlocked = LiteApiManager.isFeatureBlocked("shulker_particles_constant_dependence");
 
         if (!constantBlocked) {
-            int y = 50 + row * SPACING;
+            int y = 60 + row * SPACING;
 
             constantBtn = createButton(
                 controlX,
@@ -120,7 +120,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         boolean breakingDependenceBlocked = LiteApiManager.isFeatureBlocked("shulker_particles_breaking_dependence");
 
         if (!breakingBlocked) {
-            int y = 50 + row * SPACING;
+            int y = 60 + row * SPACING;
 
             breakingBtn = createButton(
                 controlX,
@@ -157,7 +157,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         }
 
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_vanilla_breaking")) {
-            int y = 50 + row * SPACING;
+            int y = 60 + row * SPACING;
 
             vanillaBreakingBtn = createButton(
                 controlX,
@@ -175,7 +175,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         }
 
         if (!constantBlocked) {
-            int y = 50 + row * SPACING;
+            int y = 60 + row * SPACING;
 
             constantColorSlider = createColorSlider(
                 sliderX,
@@ -218,7 +218,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         }
 
         if (!breakingBlocked) {
-            int y = 50 + row * SPACING;
+            int y = 60 + row * SPACING;
 
             breakingColorSlider = createColorSlider(
                 sliderX,
@@ -273,13 +273,13 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
     /// Работа с кнопками
     private ButtonWidget createButton(int x, int y, BooleanSupplier getter, Consumer<Boolean> setter) {
         ButtonWidget btn = ButtonWidget.builder(
-                        Text.literal(getter.getAsBoolean() ? "Enabled" : "Disabled"),
-                        button -> {
-                            setter.accept(!getter.getAsBoolean());
-                            updateButton(button, getter.getAsBoolean());
-                        })
-                .dimensions(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
-                .build();
+                Text.literal(getter.getAsBoolean() ? "Enabled" : "Disabled"),
+                button -> {
+                    setter.accept(!getter.getAsBoolean());
+                    updateButton(button, getter.getAsBoolean());
+                })
+            .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .build();
 
         updateButton(btn, getter.getAsBoolean());
         return btn;
@@ -287,19 +287,19 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
 
     private void updateButton(ButtonWidget button, boolean enabled) {
         button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
-                .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
+            .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
     }
 
     /// Работа со слайдерами
     private ColorSlider createColorSlider(int x, int y, int rgb, Consumer<Integer> onColorChange) {
         int hue = rgbToHue(rgb);
         ColorSlider slider = new ColorSlider(x, y, SLIDER_WIDTH, 20,
-                Text.literal(""), hue / 360.0,
-                value -> {
-                    int newHue = (int) Math.round(value * 360);
-                    int newRgb = hslToRgb(newHue, 100, 50);
-                    onColorChange.accept(newRgb);
-                });
+            Text.literal(""), hue / 360.0,
+            value -> {
+                int newHue = (int) Math.round(value * 360);
+                int newRgb = hslToRgb(newHue, 100, 50);
+                onColorChange.accept(newRgb);
+            });
 
         slider.setY(y);
         return slider;
@@ -420,7 +420,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         int row = 0;
 
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_constant")) {
-            int y = startY + row * SPACING;
+            int y = 60 + row * SPACING;
 
             renderLabel(context, leftX, y,
                 "Constant",
@@ -455,7 +455,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         }
 
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_breaking")) {
-            int y = startY + row * SPACING;
+            int y = 60 + row * SPACING;
 
             renderLabel(context, leftX, y,
                 "Breaking",
@@ -490,7 +490,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         }
 
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_vanilla_breaking")) {
-            renderLabel(context, leftX, startY + row * SPACING,
+            renderLabel(context, leftX, 60 + row * SPACING,
                 "Vanilla Breaking",
                 "Remove vanilla break particles.",
                 mouseX,
@@ -499,8 +499,9 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
             row++;
         }
 
+
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_constant")) {
-            renderLabel(context, leftX, startY + row * SPACING,
+            renderLabel(context, leftX, 60 + row * SPACING,
                 "Constant Color",
                 "Custom color when Dependence is Off.",
                 mouseX,
@@ -510,7 +511,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         }
 
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_breaking")) {
-            renderLabel(context, leftX, startY + row * SPACING,
+            renderLabel(context, leftX, 60 + row * SPACING,
                 "Breaking Color",
                 "Custom color when Dependence is Off.",
                 mouseX,
@@ -552,11 +553,16 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
     }
 
     private void renderLabel(DrawContext context, int x, int y, String title, String desc, int mouseX, int mouseY) {
-        int titleColor = (mouseX >= x && mouseX <= x + textRenderer.getWidth(title) && mouseY >= y - 5 && mouseY <= y + 10)
-                ? ACCENT_COLOR
-                : 0xFFFFFFFF;
+        int titleWidth = textRenderer.getWidth(title);
 
-        context.drawText(textRenderer, Text.literal(title), x, y, titleColor, false);
+        boolean hovered = mouseX >= x &&
+            mouseX <= x + titleWidth &&
+            mouseY >= y &&
+            mouseY <= y + textRenderer.fontHeight;
+
+        int color = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
+
+        context.drawText(textRenderer, Text.literal(title), x, y, color, false);
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }
 
