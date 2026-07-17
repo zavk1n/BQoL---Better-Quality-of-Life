@@ -4,6 +4,7 @@ import com.zavk1n.bqol.config.BQoLConfig;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
+import net.minecraft.util.Util;
 
 import java.util.Random;
 
@@ -89,7 +90,6 @@ public abstract class MainConfigScreen extends Screen {
 
     private Fragment createFragment(boolean randomY) {
         return new Fragment(
-
             random.nextFloat() * width,
 
             randomY
@@ -112,12 +112,21 @@ public abstract class MainConfigScreen extends Screen {
 
         super.render(context, mouseX, mouseY, delta);
 
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 30, 0xFFFFFFFF);
+
+        int titleColor = mouseX >= width / 2 - 100 &&
+                mouseX <= width / 2 + 100 &&
+                mouseY >= 25 &&
+                mouseY <= 45
+                ? ACCENT_COLOR
+                : 0xFFFFFFFF;
+
         context.drawCenteredTextWithShadow(
             textRenderer,
             title,
             width / 2,
             30,
-            0xFFFFFFFF
+            titleColor
         );
     }
 
@@ -126,14 +135,14 @@ public abstract class MainConfigScreen extends Screen {
             return;
         }
 
-        float time = System.nanoTime() / 1_000_000_000.0F;
+        float time = Util.getMeasuringTimeMs() * 0.001F;
 
         for (int i = 0; i < fragments.length; i++) {
             Fragment fragment = fragments[i];
 
             fragment.y += fragment.speed;
 
-            float drawX = fragment.x + (float) Math.sin(time * (fragment.waveSpeed * 10F) + fragment.waveOffset) * 2.0F;
+            float drawX = fragment.x + (float) Math.sin(time * (fragment.waveSpeed * 10F) + fragment.waveOffset) * 2F;
 
             if (fragment.y >= height + 10) {
                 fragments[i] = createFragment(false);

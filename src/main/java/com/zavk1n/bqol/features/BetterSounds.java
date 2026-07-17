@@ -21,29 +21,29 @@ public class BetterSounds {
     private final EnumSet<SoundCategory> enabledModes = EnumSet.noneOf(SoundCategory.class);
 
     private enum SoundCategory {
-        EXPLOSION(config -> config.isExplosionMode()),
-        ENDER_DRAGON(config -> config.isEnderDragonMode()),
-        VILLAGER(config -> config.isVillagerMode()),
-        THUNDER(config -> config.isThunderMode()),
-        MOOD(config -> config.isMoodMode()),
-        ICE(config -> config.isIceMode()),
-        PISTON(config -> config.isPistonMode()),
-        FIRE(config -> config.isFireMode()),
-        EAT(config -> config.isEatMode()),
-        DRINK(config -> config.isDrinkMode()),
-        HITS(config -> config.isHitsMode()),
-        STORAGE(config -> config.isStorageMode()),
-        GRASS(config -> config.isGrassMode()),
-        TOTEM(config -> config.isTotemMode()),
-        ANVIL(config -> config.isAnvilMode()),
-        XP(config -> config.isXpMode()),
-        MINING(config -> config.isMiningMode()),
-        WOOD(config -> config.isWoodMode()),
-        LAVA_WATER(config -> config.isLavaWaterMode()),
-        FARM(config -> config.isFarmMode()),
-        MOB(config -> config.isMobMode()),
-        ENDER_PORTAL(config -> config.isEnderPortalMode()),
-        ACHIEVEMENTS(config -> config.isAchievementsMode());
+        EXPLOSION(config -> config.isBetterSoundsExplosion()),
+        ENDER_DRAGON(config -> config.isBetterSoundsEnderDragon()),
+        VILLAGER(config -> config.isBetterSoundsVillager()),
+        THUNDER(config -> config.isBetterSoundsThunder()),
+        MOOD(config -> config.isBetterSoundsMood()),
+        ICE(config -> config.isBetterSoundsIce()),
+        PISTON(config -> config.isBetterSoundsPiston()),
+        FIRE(config -> config.isBetterSoundsFire()),
+        EAT(config -> config.isBetterSoundsEat()),
+        DRINK(config -> config.isBetterSoundsDrink()),
+        HIT(config -> config.isBetterSoundsHit()),
+        STORAGE(config -> config.isBetterSoundsStorage()),
+        GRASS(config -> config.isBetterSoundsGrass()),
+        TOTEM(config -> config.isBetterSoundsTotem()),
+        ANVIL(config -> config.isBetterSoundsAnvil()),
+        XP(config -> config.isBetterSoundsXp()),
+        MINING(config -> config.isBetterSoundsMining()),
+        WOOD(config -> config.isBetterSoundsWood()),
+        LAVA_WATER(config -> config.isBetterSoundsLavaWater()),
+        ENDER_PORTAL(config -> config.isBetterSoundsEnderPortal()),
+        ACHIEVEMENTS(config -> config.isBetterSoundsAchievements()),
+        FARM(config -> config.isBetterSoundsFarm()),
+        MOB(config -> config.isBetterSoundsMob());
 
         private final Predicate<BQoLConfig> enabledGetter;
         private Predicate<String> predicate;
@@ -147,7 +147,7 @@ public class BetterSounds {
         SoundCategory.FIRE.setPredicate(this::isFireSound);
         SoundCategory.EAT.setPredicate(this::isEatSound);
         SoundCategory.DRINK.setPredicate(this::isDrinkSound);
-        SoundCategory.HITS.setPredicate(this::isHitSound);
+        SoundCategory.HIT.setPredicate(this::isHitSound);
         SoundCategory.STORAGE.setPredicate(this::isStorageSound);
         SoundCategory.GRASS.setPredicate(this::isGrassSound);
         SoundCategory.TOTEM.setPredicate(this::isTotemSound);
@@ -383,6 +383,22 @@ public class BetterSounds {
                 (path.contains("block.fire") && path.contains("extinguish"));
     }
 
+    private boolean isEnderPortalSound(String path) {
+        return path.contains("block.end_portal.spawn") ||
+            path.contains("block.end_portal_frame.fill") ||
+            path.contains("entity.enderman.portal") ||
+            path.contains("block.portal.trigger") ||
+            path.contains("item.ender_eye") ||
+            (path.contains("portal") && (path.contains("travel") || path.contains("trigger")));
+    }
+
+    private boolean isAchievementSound(String path) {
+        return path.contains("ui.toast.challenge_complete") ||
+            path.contains("ui.toast.achievement") ||
+            path.contains("event.achievement") ||
+            path.contains("entity.player.levelup");
+    }
+
     private boolean isFarmSound(String path) {
         return isPistonSound(path) ||
                 path.contains("block.observer") ||
@@ -440,22 +456,6 @@ public class BetterSounds {
                 path.contains("entity.wither") ||
                 path.contains("entity.guardian") ||
                 path.contains("entity.elder_guardian");
-    }
-
-    private boolean isEnderPortalSound(String path) {
-        return path.contains("block.end_portal.spawn") ||
-                path.contains("block.end_portal_frame.fill") ||
-                path.contains("entity.enderman.portal") ||
-                path.contains("block.portal.trigger") ||
-                path.contains("item.ender_eye") ||
-                (path.contains("portal") && (path.contains("travel") || path.contains("trigger")));
-    }
-
-    private boolean isAchievementSound(String path) {
-        return path.contains("ui.toast.challenge_complete") ||
-                path.contains("ui.toast.achievement") ||
-                path.contains("event.achievement") ||
-                path.contains("entity.player.levelup");
     }
 }
 // v1.0

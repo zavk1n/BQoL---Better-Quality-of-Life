@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class BQoLConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File CONFIG_FILE = new File(
+    private static final File config_file = new File(
             FabricLoader.getInstance().getConfigDir().toFile(),
             "bqol_config.json"
     );
@@ -23,90 +23,90 @@ public class BQoLConfig {
     private static BQoLConfig instance;
 
     /// ОБЩИЕ НАСТРОЙКИ
-    public boolean debugMode = false;
+    public boolean debug = false;
     public int pvpTimerDuration = 30000;
 
     /// Better Sprint
     public boolean betterSprintEnabled = false;
 
-    public boolean betterSprintDefault = false;
-    public boolean betterSprintPvP = false;
-    public boolean betterSprintTree = false;
+    public boolean betterSprintDefaultMode = false;
+    public boolean betterSprintPvPMode = false;
+    public boolean betterSprintTreeMode = false;
     public boolean betterSprintStairUp = false;
     public boolean betterSprintWaterSprint = false;
 
     /// Better Sounds
     public boolean betterSoundsEnabled = false;
 
-    public boolean explosionMode = false;
-    public boolean enderDragonMode = false;
-    public boolean pistonMode = false;
-    public boolean iceMode = false;
-    public boolean villagerMode = false;
-    public boolean moodMode = false;
-    public boolean thunderMode = false;
-    public boolean fireMode = false;
-    public boolean eatMode = false;
-    public boolean drinkMode = false;
-    public boolean hitsMode = false;
-    public boolean storageMode = false;
-    public boolean grassMode = false;
-    public boolean totemMode = false;
-    public boolean anvilMode = false;
-    public boolean xpMode = false;
-    public boolean miningMode = false;
-    public boolean woodMode = false;
-    public boolean lavawaterMode = false;
-    public boolean enderPortalMode = false;
-    public boolean achievementsMode = false;
+    public boolean betterSoundsExplosion = false;
+    public boolean betterSoundsEnderDragon = false;
+    public boolean betterSoundsPiston = false;
+    public boolean betterSoundsIce = false;
+    public boolean betterSoundsVillager = false;
+    public boolean betterSoundsMood = false;
+    public boolean betterSoundsThunder = false;
+    public boolean betterSoundsFire = false;
+    public boolean betterSoundsEat = false;
+    public boolean betterSoundsDrink = false;
+    public boolean betterSoundsHit = false;
+    public boolean betterSoundsStorage = false;
+    public boolean betterSoundsGrass = false;
+    public boolean betterSoundsTotem = false;
+    public boolean betterSoundsAnvil = false;
+    public boolean betterSoundsXp = false;
+    public boolean betterSoundsMining = false;
+    public boolean betterSoundsWood = false;
+    public boolean betterSoundsLavaWater = false;
+    public boolean betterSoundsEnderPortal = false;
+    public boolean betterSoundsAchievements = false;
 
-    public boolean farmMode = false;
-    public boolean mobMode = false;
+    public boolean betterSoundsFarm = false;
+    public boolean betterSoundsMob = false;
 
     /// Better Spheres
     public boolean betterSpheresEnabled = false;
 
     public boolean holyWorldSpheresEnabled = false;
 
-    public boolean sphereCerberusEnabled = false;
-    public boolean sphereFlashEnabled = false;
-    public boolean sphereImmortalityEnabled = false;
-    public boolean sphereArmortalityEnabled = false;
-    public boolean sphereEternityEnabled = false;
-    public boolean sphereStingerEnabled = false;
+    public boolean sphereCerberus = false;
+    public boolean sphereFlash = false;
+    public boolean sphereImmortality = false;
+    public boolean sphereArmortality = false;
+    public boolean sphereEternity = false;
+    public boolean sphereStinger = false;
 
-    public boolean sphereDefaultEnabled = false;
-    public boolean sphereEpicEnabled = false;
-    public boolean sphereLegendaryEnabled = false;
-    public boolean sphereMythicEnabled = false;
+    public boolean holyWorldSphereDefault = false;
+    public boolean holyWorldSphereEpic = false;
+    public boolean holyWorldSphereLegendary = false;
+    public boolean holyWorldSphereMythic = false;
 
-    public boolean sphereSpeedEnabled = false;
-    public boolean sphereMinerEnabled = false;
-    public boolean spherePvPEnabled = false;
+    public boolean holyWorldSphereSpeed = false;
+    public boolean holyWorldSphereMiner = false;
+    public boolean holyWorldSpherePvP = false;
 
-    public boolean coloredParametersEnabled = false;
-    public boolean coloredNamesEnabled = false;
-    public boolean goldenSpheresEnabled = false;
+    public boolean coloredParameters = false;
+    public boolean coloredNames = false;
+    public boolean goldenSpheres = false;
 
     /// Shulker Particles
     public boolean shulkerParticlesEnabled = false;
 
-    public boolean shulkerConstantEnabled = false;
-    public boolean shulkerBreakingEnabled = false;
-    public boolean shulkerVanillaBreakingEnabled = false;
-    public boolean shulkerConstantDependence = false;
-    public boolean shulkerBreakingDependence = false;
-    public int shulkerConstantColor = 0xFFFFFF;
-    public int shulkerBreakingColor = 0xFFFFFF;
+    public boolean shulkerParticlesConstant = false;
+    public boolean shulkerParticlesBreaking = false;
+    public boolean shulkerParticlesVanillaBreaking = false;
+    public boolean shulkerParticlesConstantDependence = false;
+    public boolean shulkerParticlesBreakingDependence = false;
+    public int shulkerParticlesConstantColor = 0xFFFFFF;
+    public int shulkerParticlesBreakingColor = 0xFFFFFF;
 
     /// Custom Fog
     private boolean customFogEnabled = false;
 
     private int customFogRange = 16;
     private int customFogColor = 0xFFFFFF;
-    private boolean noFogEnabled = false;
-    public boolean biomeFogEnabled = false;
-    public boolean nightVisionEnabled = false;
+    private boolean noFog = false;
+    public boolean biomeFog = false;
+    public boolean nightVision = false;
     public Map<String, Boolean> biomeFogGroups = new HashMap<>();
 
     /// Custom Health
@@ -121,6 +121,29 @@ public class BQoLConfig {
     private boolean customHealthGoldenHearts = false;
     private boolean customHealthGoldenHeartsPlus = false;
 
+    /// No Render
+    public enum RenderMode {
+        NO_RENDER,
+        SMALL,
+        FULL
+    }
+
+    public boolean noRenderEnabled = false;
+
+    public boolean noRenderTotemOverlayEnabled = false;
+    public boolean noRenderFireOverlayEnabled = false;
+    public boolean noRenderWeatherEnabled = false;
+    public boolean noRenderFireworksEnabled = false;
+    public boolean noRenderPlayersEnabled = false;
+    public boolean noRenderHandEnabled = false;
+
+    public RenderMode noRenderTotemOverlay = RenderMode.FULL;
+    public RenderMode noRenderFireOverlay = RenderMode.FULL;
+    public RenderMode noRenderWeather = RenderMode.FULL;
+    public RenderMode noRenderFireworks = RenderMode.FULL;
+    public RenderMode noRenderPlayers = RenderMode.FULL;
+    public RenderMode noRenderHand = RenderMode.FULL;
+
     /// Конструктор и методы
     private BQoLConfig() {
         validateSettings();
@@ -133,16 +156,25 @@ public class BQoLConfig {
     }
 
     public static BQoLConfig load() {
-        if (CONFIG_FILE.exists()) {
-            try (FileReader reader = new FileReader(CONFIG_FILE)) {
+        if (config_file.exists()) {
+            try (FileReader reader = new FileReader(config_file)) {
+
                 BQoLConfig config = GSON.fromJson(reader, BQoLConfig.class);
-                config.validateSettings();
-                config.initBiomeGroups();
+
+                if (config == null) {
+                    config = new BQoLConfig();
+                } else {
+                    config.validateSettings();
+                    config.initBiomeGroups();
+                }
+
                 return config;
-            } catch (IOException e) {
+
+            } catch (Exception e) {
                 BQoL.LOGGER.error("Failed to load BQoL config", e);
             }
         }
+
         BQoLConfig config = new BQoLConfig();
         config.save();
         return config;
@@ -150,11 +182,15 @@ public class BQoLConfig {
 
     public void save() {
         validateSettings();
+
         try {
-            if (!CONFIG_FILE.getParentFile().exists()) CONFIG_FILE.getParentFile().mkdirs();
-            try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
+            if (!config_file.getParentFile().exists()) {
+                config_file.getParentFile().mkdirs();
+            }
+
+            try (FileWriter writer = new FileWriter(config_file)) {
                 GSON.toJson(this, writer);
-                BQoL.LOGGER.info("Saved BQoL config to {}", CONFIG_FILE.getAbsolutePath());
+                BQoL.LOGGER.info("Saved BQoL config to {}", config_file.getAbsolutePath());
             }
         } catch (IOException e) {
             BQoL.LOGGER.error("Failed to save BQoL config", e);
@@ -190,27 +226,27 @@ public class BQoLConfig {
         this.betterSprintEnabled = enabled;
     }
 
-    public boolean isBetterSprintDefault() { return betterSprintDefault; }
-    public void setBetterSprintDefault(boolean enabled) {
-        this.betterSprintDefault = enabled;
-        if (enabled) { this.betterSprintTree = false; this.betterSprintPvP = false; }
+    public boolean isBetterSprintDefaultModeEnabled() { return betterSprintDefaultMode; }
+    public void setBetterSprintDefaultModeEnabled(boolean enabled) {
+        this.betterSprintDefaultMode = enabled;
+        if (enabled) { this.betterSprintTreeMode = false; this.betterSprintPvPMode = false; }
     }
-    public boolean isBetterSprintPvP() { return betterSprintPvP; }
-    public void setBetterSprintPvP(boolean enabled) {
-        this.betterSprintPvP = enabled;
-        if (enabled) { this.betterSprintDefault = false; this.betterSprintTree = false; }
+    public boolean isBetterSprintPvPModeEnabled() { return betterSprintPvPMode; }
+    public void setBetterSprintPvPModeEnabled(boolean enabled) {
+        this.betterSprintPvPMode = enabled;
+        if (enabled) { this.betterSprintDefaultMode = false; this.betterSprintTreeMode = false; }
     }
-    public boolean isBetterSprintTree() { return betterSprintTree; }
-    public void setBetterSprintTree(boolean enabled) {
-        this.betterSprintTree = enabled;
-        if (enabled) { this.betterSprintDefault = false; this.betterSprintPvP = false; }
+    public boolean isBetterSprintTreeModeEnabled() { return betterSprintTreeMode; }
+    public void setBetterSprintTreeModeEnabled(boolean enabled) {
+        this.betterSprintTreeMode = enabled;
+        if (enabled) { this.betterSprintDefaultMode = false; this.betterSprintPvPMode = false; }
     }
-    public boolean isBetterSprintStairUp() { return betterSprintStairUp; }
-    public void setBetterSprintStairUp(boolean enabled) {
+    public boolean isBetterSprintStairUpEnabled() { return betterSprintStairUp; }
+    public void setBetterSprintStairUpEnabled(boolean enabled) {
         this.betterSprintStairUp = enabled;
     }
-    public boolean isBetterSprintWaterSprint() { return betterSprintWaterSprint; }
-    public void setBetterSprintWaterSprint(boolean enabled) {
+    public boolean isBetterSprintWaterSprintEnabled() { return betterSprintWaterSprint; }
+    public void setBetterSprintWaterSprintEnabled(boolean enabled) {
         this.betterSprintWaterSprint = enabled;
     }
 
@@ -218,53 +254,53 @@ public class BQoLConfig {
     public boolean isBetterSoundsEnabled() { return betterSoundsEnabled; }
     public void setBetterSoundsEnabled(boolean enabled) { this.betterSoundsEnabled = enabled; save(); }
 
-    public boolean isExplosionMode() { return explosionMode; }
-    public void setExplosionMode(boolean enabled) { this.explosionMode = enabled; save(); }
-    public boolean isEnderDragonMode() { return enderDragonMode; }
-    public void setEnderDragonMode(boolean enabled) { this.enderDragonMode = enabled; save(); }
-    public boolean isPistonMode() { return pistonMode; }
-    public void setPistonMode(boolean enabled) { this.pistonMode = enabled; save(); }
-    public boolean isIceMode() { return iceMode; }
-    public void setIceMode(boolean enabled) { this.iceMode = enabled; save(); }
-    public boolean isVillagerMode() { return villagerMode; }
-    public void setVillagerMode(boolean enabled) { this.villagerMode = enabled; save(); }
-    public boolean isMoodMode() { return moodMode; }
-    public void setMoodMode(boolean enabled) { this.moodMode = enabled; save(); }
-    public boolean isThunderMode() { return thunderMode; }
-    public void setThunderMode(boolean enabled) { this.thunderMode = enabled; save(); }
-    public boolean isFireMode() { return fireMode; }
-    public void setFireMode(boolean enabled) { this.fireMode = enabled; save(); }
-    public boolean isEatMode() { return eatMode; }
-    public void setEatMode(boolean enabled) { this.eatMode = enabled; save(); }
-    public boolean isDrinkMode() { return drinkMode; }
-    public void setDrinkMode(boolean enabled) { this.drinkMode = enabled; save(); }
-    public boolean isHitsMode() { return hitsMode; }
-    public void setHitsMode(boolean enabled) { this.hitsMode = enabled; save(); }
-    public boolean isStorageMode() { return storageMode; }
-    public void setStorageMode(boolean enabled) { this.storageMode = enabled; save(); }
-    public boolean isGrassMode() { return grassMode; }
-    public void setGrassMode(boolean enabled) { this.grassMode = enabled; save(); }
-    public boolean isTotemMode() { return totemMode; }
-    public void setTotemMode(boolean enabled) { this.totemMode = enabled; save(); }
-    public boolean isAnvilMode() { return anvilMode; }
-    public void setAnvilMode(boolean enabled) { this.anvilMode = enabled; save(); }
-    public boolean isXpMode() { return xpMode; }
-    public void setXpMode(boolean enabled) { this.xpMode = enabled; save(); }
-    public boolean isMiningMode() { return miningMode; }
-    public void setMiningMode(boolean v) { this.miningMode = v; save(); }
-    public boolean isWoodMode() { return woodMode; }
-    public void setWoodMode(boolean v) { this.woodMode = v; save(); }
-    public boolean isLavaWaterMode() { return lavawaterMode; }
-    public void setLavaWaterMode(boolean v) { this.lavawaterMode = v; save(); }
-    public boolean isEnderPortalMode() { return enderPortalMode; }
-    public void setEnderPortalMode(boolean enabled) { this.enderPortalMode = enabled; save(); }
-    public boolean isAchievementsMode() { return achievementsMode; }
-    public void setAchievementsMode(boolean enabled) { this.achievementsMode = enabled; save(); }
+    public boolean isBetterSoundsExplosion() { return betterSoundsExplosion; }
+    public void setBetterSoundsExplosion(boolean enabled) { this.betterSoundsExplosion = enabled; save(); }
+    public boolean isBetterSoundsEnderDragon() { return betterSoundsEnderDragon; }
+    public void setBetterSoundsEnderDragon(boolean enabled) { this.betterSoundsEnderDragon = enabled; save(); }
+    public boolean isBetterSoundsPiston() { return betterSoundsPiston; }
+    public void setBetterSoundsPiston(boolean enabled) { this.betterSoundsPiston = enabled; save(); }
+    public boolean isBetterSoundsIce() { return betterSoundsIce; }
+    public void setBetterSoundsIce(boolean enabled) { this.betterSoundsIce = enabled; save(); }
+    public boolean isBetterSoundsVillager() { return betterSoundsVillager; }
+    public void setBetterSoundsVillager(boolean enabled) { this.betterSoundsVillager = enabled; save(); }
+    public boolean isBetterSoundsMood() { return betterSoundsMood; }
+    public void setBetterSoundsMood(boolean enabled) { this.betterSoundsMood = enabled; save(); }
+    public boolean isBetterSoundsThunder() { return betterSoundsThunder; }
+    public void setBetterSoundsThunder(boolean enabled) { this.betterSoundsThunder = enabled; save(); }
+    public boolean isBetterSoundsFire() { return betterSoundsFire; }
+    public void setBetterSoundsFire(boolean enabled) { this.betterSoundsFire = enabled; save(); }
+    public boolean isBetterSoundsEat() { return betterSoundsEat; }
+    public void setBetterSoundsEat(boolean enabled) { this.betterSoundsEat = enabled; save(); }
+    public boolean isBetterSoundsDrink() { return betterSoundsDrink; }
+    public void setBetterSoundsDrink(boolean enabled) { this.betterSoundsDrink = enabled; save(); }
+    public boolean isBetterSoundsHit() { return betterSoundsHit; }
+    public void setBetterSoundsHit(boolean enabled) { this.betterSoundsHit = enabled; save(); }
+    public boolean isBetterSoundsStorage() { return betterSoundsStorage; }
+    public void setBetterSoundsStorage(boolean enabled) { this.betterSoundsStorage = enabled; save(); }
+    public boolean isBetterSoundsGrass() { return betterSoundsGrass; }
+    public void setBetterSoundsGrass(boolean enabled) { this.betterSoundsGrass = enabled; save(); }
+    public boolean isBetterSoundsTotem() { return betterSoundsTotem; }
+    public void setBetterSoundsTotem(boolean enabled) { this.betterSoundsTotem = enabled; save(); }
+    public boolean isBetterSoundsAnvil() { return betterSoundsAnvil; }
+    public void setBetterSoundsAnvil(boolean enabled) { this.betterSoundsAnvil = enabled; save(); }
+    public boolean isBetterSoundsXp() { return betterSoundsXp; }
+    public void setBetterSoundsXp(boolean enabled) { this.betterSoundsXp = enabled; save(); }
+    public boolean isBetterSoundsMining() { return betterSoundsMining; }
+    public void setBetterSoundsMining(boolean v) { this.betterSoundsMining = v; save(); }
+    public boolean isBetterSoundsWood() { return betterSoundsWood; }
+    public void setBetterSoundsWood(boolean v) { this.betterSoundsWood = v; save(); }
+    public boolean isBetterSoundsLavaWater() { return betterSoundsLavaWater; }
+    public void setBetterSoundsLavaWater(boolean v) { this.betterSoundsLavaWater = v; save(); }
+    public boolean isBetterSoundsEnderPortal() { return betterSoundsEnderPortal; }
+    public void setBetterSoundsEnderPortal(boolean enabled) { this.betterSoundsEnderPortal = enabled; save(); }
+    public boolean isBetterSoundsAchievements() { return betterSoundsAchievements; }
+    public void setBetterSoundsAchievements(boolean enabled) { this.betterSoundsAchievements = enabled; save(); }
 
-    public boolean isFarmMode() { return farmMode; }
-    public void setFarmMode(boolean enabled) { this.farmMode = enabled; save(); }
-    public boolean isMobMode() { return mobMode; }
-    public void setMobMode(boolean enabled) { this.mobMode = enabled; save(); }
+    public boolean isBetterSoundsFarm() { return betterSoundsFarm; }
+    public void setBetterSoundsFarm(boolean enabled) { this.betterSoundsFarm = enabled; save(); }
+    public boolean isBetterSoundsMob() { return betterSoundsMob; }
+    public void setBetterSoundsMob(boolean enabled) { this.betterSoundsMob = enabled; save(); }
 
     /// Better Spheres
     public boolean isBetterSpheresEnabled() { return betterSpheresEnabled; }
@@ -273,60 +309,60 @@ public class BQoLConfig {
     public boolean isHolyWorldSpheresEnabled() { return holyWorldSpheresEnabled; }
     public void setHolyWorldSpheresEnabled(boolean enabled) { this.holyWorldSpheresEnabled = enabled; save(); }
 
-    public boolean isSphereCerberusEnabled() { return sphereCerberusEnabled; }
-    public void setSphereCerberusEnabled(boolean enabled) { this.sphereCerberusEnabled = enabled; save(); }
-    public boolean isSphereFlashEnabled() { return sphereFlashEnabled; }
-    public void setSphereFlashEnabled(boolean enabled) { this.sphereFlashEnabled = enabled; save(); }
-    public boolean isSphereImmortalityEnabled() { return sphereImmortalityEnabled; }
-    public void setSphereImmortalityEnabled(boolean enabled) { this.sphereImmortalityEnabled = enabled; save(); }
-    public boolean isSphereArmortalityEnabled() { return sphereArmortalityEnabled; }
-    public void setSphereArmortalityEnabled(boolean enabled) { this.sphereArmortalityEnabled = enabled; save(); }
-    public boolean isSphereEternityEnabled() { return sphereEternityEnabled; }
-    public void setSphereEternityEnabled(boolean enabled) { this.sphereEternityEnabled = enabled; save(); }
-    public boolean isSphereStingerEnabled() { return sphereStingerEnabled; }
-    public void setSphereStingerEnabled(boolean enabled) { this.sphereStingerEnabled = enabled; save(); }
+    public boolean isSphereCerberus() { return sphereCerberus; }
+    public void setSphereCerberus(boolean enabled) { this.sphereCerberus = enabled; save(); }
+    public boolean isSphereFlash() { return sphereFlash; }
+    public void setSphereFlash(boolean enabled) { this.sphereFlash = enabled; save(); }
+    public boolean isSphereImmortality() { return sphereImmortality; }
+    public void setSphereImmortality(boolean enabled) { this.sphereImmortality = enabled; save(); }
+    public boolean isSphereArmortality() { return sphereArmortality; }
+    public void setSphereArmortality(boolean enabled) { this.sphereArmortality = enabled; save(); }
+    public boolean isSphereEternity() { return sphereEternity; }
+    public void setSphereEternity(boolean enabled) { this.sphereEternity = enabled; save(); }
+    public boolean isSphereStinger() { return sphereStinger; }
+    public void setSphereStinger(boolean enabled) { this.sphereStinger = enabled; save(); }
 
-    public boolean isSphereMythicEnabled() { return sphereMythicEnabled; }
-    public void setSphereMythicEnabled(boolean enabled) { this.sphereMythicEnabled = enabled; save(); }
-    public boolean isSphereLegendaryEnabled() { return sphereLegendaryEnabled; }
-    public void setSphereLegendaryEnabled(boolean enabled) { this.sphereLegendaryEnabled = enabled; save(); }
-    public boolean isSphereEpicEnabled() { return sphereEpicEnabled; }
-    public void setSphereEpicEnabled(boolean enabled) { this.sphereEpicEnabled = enabled; save(); }
-    public boolean isSphereDefaultEnabled() { return sphereDefaultEnabled; }
-    public void setSphereDefaultEnabled(boolean enabled) { this.sphereDefaultEnabled = enabled; save(); }
+    public boolean isHolyWorldSphereMythic() { return holyWorldSphereMythic; }
+    public void setHolyWorldSphereMythic(boolean enabled) { this.holyWorldSphereMythic = enabled; save(); }
+    public boolean isHolyWorldSphereLegendary() { return holyWorldSphereLegendary; }
+    public void setHolyWorldSphereLegendary(boolean enabled) { this.holyWorldSphereLegendary = enabled; save(); }
+    public boolean isHolyWorldSphereEpic() { return holyWorldSphereEpic; }
+    public void setHolyWorldSphereEpic(boolean enabled) { this.holyWorldSphereEpic = enabled; save(); }
+    public boolean isHolyWorldSphereDefault() { return holyWorldSphereDefault; }
+    public void setHolyWorldSphereDefault(boolean enabled) { this.holyWorldSphereDefault = enabled; save(); }
 
-    public boolean isSphereSpeedEnabled() { return sphereSpeedEnabled; }
-    public void setSphereSpeedEnabled(boolean enabled) { this.sphereSpeedEnabled = enabled; save(); }
-    public boolean isSphereMinerEnabled() { return sphereMinerEnabled; }
-    public void setSphereMinerEnabled(boolean enabled) { this.sphereMinerEnabled = enabled; save(); }
-    public boolean isSpherePvPEnabled() { return spherePvPEnabled; }
-    public void setSpherePvPEnabled(boolean enabled) { this.spherePvPEnabled = enabled; save(); }
+    public boolean isHolyWorldSphereSpeed() { return holyWorldSphereSpeed; }
+    public void setHolyWorldSphereSpeed(boolean enabled) { this.holyWorldSphereSpeed = enabled; save(); }
+    public boolean isHolyWorldSphereMiner() { return holyWorldSphereMiner; }
+    public void setHolyWorldSphereMiner(boolean enabled) { this.holyWorldSphereMiner = enabled; save(); }
+    public boolean isHolyWorldSpherePvP() { return holyWorldSpherePvP; }
+    public void setHolyWorldSpherePvP(boolean enabled) { this.holyWorldSpherePvP = enabled; save(); }
 
-    public boolean isColoredParametersEnabled() { return coloredParametersEnabled; }
-    public void setColoredParametersEnabled(boolean enabled) { this.coloredParametersEnabled = enabled; save(); }
-    public boolean isColoredNamesEnabled() { return coloredNamesEnabled; }
-    public void setColoredNamesEnabled(boolean enabled) { this.coloredNamesEnabled = enabled; save(); }
-    public boolean isGoldenSpheresEnabled() { return goldenSpheresEnabled; }
-    public void setGoldenSpheresEnabled(boolean enabled) { this.goldenSpheresEnabled = enabled; save(); }
+    public boolean isColoredParameters() { return coloredParameters; }
+    public void setColoredParameters(boolean enabled) { this.coloredParameters = enabled; save(); }
+    public boolean isColoredNames() { return coloredNames; }
+    public void setColoredNames(boolean enabled) { this.coloredNames = enabled; save(); }
+    public boolean isGoldenSpheres() { return goldenSpheres; }
+    public void setGoldenSpheres(boolean enabled) { this.goldenSpheres = enabled; save(); }
 
     /// Shulker Paricles
     public boolean isShulkerParticlesEnabled() { return shulkerParticlesEnabled; }
     public void setShulkerParticlesEnabled(boolean enabled) { this.shulkerParticlesEnabled = enabled; save(); }
 
-    public boolean isShulkerConstantEnabled() { return shulkerConstantEnabled; }
-    public void setShulkerConstantEnabled(boolean enabled) { this.shulkerConstantEnabled = enabled; save(); }
-    public boolean isShulkerBreakingEnabled() { return shulkerBreakingEnabled; }
-    public void setShulkerBreakingEnabled(boolean enabled) { this.shulkerBreakingEnabled = enabled; save(); }
-    public boolean isShulkerVanillaBreakingEnabled() { return shulkerVanillaBreakingEnabled; }
-    public void setShulkerVanillaBreakingEnabled(boolean enabled) { this.shulkerVanillaBreakingEnabled = enabled; save(); }
-    public boolean isShulkerConstantDependence() { return shulkerConstantDependence; }
-    public void setShulkerConstantDependence(boolean enabled) { this.shulkerConstantDependence = enabled; save(); }
-    public boolean isShulkerBreakingDependence() { return shulkerBreakingDependence; }
-    public void setShulkerBreakingDependence(boolean enabled) { this.shulkerBreakingDependence = enabled; save(); }
-    public int getShulkerConstantColor() { return shulkerConstantColor; }
-    public void setShulkerConstantColor(int color) { this.shulkerConstantColor = color; save(); }
-    public int getShulkerBreakingColor() { return shulkerBreakingColor; }
-    public void setShulkerBreakingColor(int color) { this.shulkerBreakingColor = color; save(); }
+    public boolean isShulkerParticlesConstant() { return shulkerParticlesConstant; }
+    public void setShulkerParticlesConstant(boolean enabled) { this.shulkerParticlesConstant = enabled; save(); }
+    public boolean isShulkerParticlesBreaking() { return shulkerParticlesBreaking; }
+    public void setShulkerParticlesBreaking(boolean enabled) { this.shulkerParticlesBreaking = enabled; save(); }
+    public boolean isShulkerParticlesVanillaBreaking() { return shulkerParticlesVanillaBreaking; }
+    public void setShulkerParticlesVanillaBreaking(boolean enabled) { this.shulkerParticlesVanillaBreaking = enabled; save(); }
+    public boolean isShulkerParticlesConstantDependence() { return shulkerParticlesConstantDependence; }
+    public void setShulkerParticlesConstantDependence(boolean enabled) { this.shulkerParticlesConstantDependence = enabled; save(); }
+    public boolean isShulkerParticlesBreakingDependence() { return shulkerParticlesBreakingDependence; }
+    public void setShulkerParticlesBreakingDependence(boolean enabled) { this.shulkerParticlesBreakingDependence = enabled; save(); }
+    public int getShulkerParticlesConstantColor() { return shulkerParticlesConstantColor; }
+    public void setShulkerParticlesConstantColor(int color) { this.shulkerParticlesConstantColor = color; save(); }
+    public int getShulkerParticlesBreakingColor() { return shulkerParticlesBreakingColor; }
+    public void setShulkerParticlesBreakingColor(int color) { this.shulkerParticlesBreakingColor = color; save(); }
 
     /// Custom Fog
     public boolean isCustomFogEnabled() { return customFogEnabled; }
@@ -336,12 +372,12 @@ public class BQoLConfig {
     public void setCustomFogRange(int range) { this.customFogRange = MathHelper.clamp(range, 0, 32); save(); }
     public int getCustomFogColor() { return customFogColor; }
     public void setCustomFogColor(int color) { this.customFogColor = color; save(); }
-    public boolean isNoFogEnabled() { return noFogEnabled; }
-    public void setNoFogEnabled(boolean enabled) { this.noFogEnabled = enabled; save(); }
-    public boolean isNightVisionEnabled() { return nightVisionEnabled; }
-    public void setNightVisionEnabled(boolean enabled) { this.nightVisionEnabled = enabled; save(); }
-    public boolean isBiomeFogEnabled() { return biomeFogEnabled; }
-    public void setBiomeFogEnabled(boolean enabled) { this.biomeFogEnabled = enabled; save(); }
+    public boolean isNoFog() { return noFog; }
+    public void setNoFog(boolean enabled) { this.noFog = enabled; save(); }
+    public boolean isNightVision() { return nightVision; }
+    public void setNightVision(boolean enabled) { this.nightVision = enabled; save(); }
+    public boolean isBiomeFog() { return biomeFog; }
+    public void setBiomeFog(boolean enabled) { this.biomeFog = enabled; save(); }
     public boolean isBiomeGroupEnabled(String group) { return biomeFogGroups.getOrDefault(group, false); }
     public void setBiomeGroupEnabled(String group, boolean enabled) { biomeFogGroups.put(group, enabled); save(); }
 
@@ -366,7 +402,114 @@ public class BQoLConfig {
     public boolean isCustomHealthGoldenHeartsPlus() { return customHealthGoldenHeartsPlus; }
     public void setCustomHealthGoldenHeartsPlus(boolean enabled) { this.customHealthGoldenHeartsPlus = enabled && this.customHealthGoldenHearts; save(); }
 
-    public boolean isDebugMode() { return debugMode; }
+    /// No Render
+    public boolean isNoRenderEnabled() { return noRenderEnabled; }
+    public void setNoRenderEnabled(boolean enabled) { this.noRenderEnabled = enabled; save(); }
+    public boolean isNoRenderTotemOverlayEnabled() {
+        return noRenderTotemOverlayEnabled;
+    }
+
+    public void setNoRenderTotemOverlayEnabled(boolean enabled) {
+        this.noRenderTotemOverlayEnabled = enabled;
+        save();
+    }
+
+    public RenderMode getNoRenderTotemOverlay() {
+        return noRenderTotemOverlay;
+    }
+
+    public void setNoRenderTotemOverlay(RenderMode mode) {
+        this.noRenderTotemOverlay = mode;
+        save();
+    }
+    public boolean isNoRenderFireOverlayEnabled() {
+        return noRenderFireOverlayEnabled;
+    }
+
+    public void setNoRenderFireOverlayEnabled(boolean enabled) {
+        this.noRenderFireOverlayEnabled = enabled;
+        save();
+    }
+
+    public RenderMode getNoRenderFireOverlay() {
+        return noRenderFireOverlay;
+    }
+
+    public void setNoRenderFireOverlay(RenderMode mode) {
+        this.noRenderFireOverlay = mode;
+        save();
+    }
+
+    public boolean isNoRenderWeatherEnabled() {
+        return noRenderWeatherEnabled;
+    }
+
+    public void setNoRenderWeatherEnabled(boolean enabled) {
+        noRenderWeatherEnabled = enabled;
+        save();
+    }
+    public RenderMode getNoRenderWeather() {
+        return noRenderWeather;
+    }
+
+    public void setNoRenderWeather(RenderMode mode) {
+        noRenderWeather = mode;
+        save();
+    }
+    public boolean isNoRenderFireworksEnabled() {
+        return noRenderFireworksEnabled;
+    }
+
+    public void setNoRenderFireworksEnabled(boolean enabled) {
+        this.noRenderFireworksEnabled = enabled;
+        save();
+    }
+
+    public RenderMode getNoRenderFireworks() {
+        return noRenderFireworks;
+    }
+
+    public void setNoRenderFireworks(RenderMode mode) {
+        this.noRenderFireworks = mode;
+        save();
+    }
+    public boolean isNoRenderPlayersEnabled() {
+        return noRenderPlayersEnabled;
+    }
+
+    public void setNoRenderPlayersEnabled(boolean enabled) {
+        this.noRenderPlayersEnabled = enabled;
+        save();
+    }
+
+    public RenderMode getNoRenderPlayers() {
+        return noRenderPlayers;
+    }
+
+    public void setNoRenderPlayers(RenderMode mode) {
+        this.noRenderPlayers = mode;
+        save();
+    }
+
+    public boolean isNoRenderHandEnabled() {
+        return noRenderHandEnabled;
+    }
+
+    public void setNoRenderHandEnabled(boolean enabled) {
+        this.noRenderHandEnabled = enabled;
+        save();
+    }
+
+    public RenderMode getNoRenderHand() {
+        return noRenderHand;
+    }
+
+    public void setNoRenderHand(RenderMode mode) {
+        this.noRenderHand = mode;
+        save();
+    }
+
+    public boolean isDebugMode() { return debug; }
 
     public int getPvpTimerDuration() { return pvpTimerDuration; }
     public void setPvpTimerDuration(int duration) { this.pvpTimerDuration = Math.max(5000, Math.min(60000, duration)); save(); }
@@ -391,89 +534,89 @@ public class BQoLConfig {
     public void resetToDefaults() {
         BQoLConfig defaults = new BQoLConfig();
 
-        this.debugMode = defaults.debugMode;
+        this.debug = defaults.debug;
         this.pvpTimerDuration = defaults.pvpTimerDuration;
 
         /// BetterSprint
         this.betterSprintEnabled = defaults.betterSprintEnabled;
 
-        this.betterSprintDefault = defaults.betterSprintDefault;
-        this.betterSprintPvP = defaults.betterSprintPvP;
-        this.betterSprintTree = defaults.betterSprintTree;
+        this.betterSprintDefaultMode = defaults.betterSprintDefaultMode;
+        this.betterSprintPvPMode = defaults.betterSprintPvPMode;
+        this.betterSprintTreeMode = defaults.betterSprintTreeMode;
         this.betterSprintStairUp = defaults.betterSprintStairUp;
         this.betterSprintWaterSprint = defaults.betterSprintWaterSprint;
 
         /// Better Sounds
         this.betterSoundsEnabled = defaults.betterSoundsEnabled;
 
-        this.explosionMode = defaults.explosionMode;
-        this.enderDragonMode = defaults.enderDragonMode;
-        this.pistonMode = defaults.pistonMode;
-        this.iceMode = defaults.iceMode;
-        this.villagerMode = defaults.villagerMode;
-        this.moodMode = defaults.moodMode;
-        this.thunderMode = defaults.thunderMode;
-        this.fireMode = defaults.fireMode;
-        this.eatMode = defaults.eatMode;
-        this.drinkMode = defaults.drinkMode;
-        this.hitsMode = defaults.hitsMode;
-        this.storageMode = defaults.storageMode;
-        this.grassMode = defaults.grassMode;
-        this.totemMode = defaults.totemMode;
-        this.anvilMode = defaults.anvilMode;
-        this.xpMode = defaults.xpMode;
-        this.miningMode = defaults.miningMode;
-        this.woodMode = defaults.woodMode;
-        this.lavawaterMode = defaults.lavawaterMode;
-        this.enderPortalMode = defaults.enderPortalMode;
-        this.achievementsMode = defaults.achievementsMode;
+        this.betterSoundsExplosion = defaults.betterSoundsExplosion;
+        this.betterSoundsEnderDragon = defaults.betterSoundsEnderDragon;
+        this.betterSoundsPiston = defaults.betterSoundsPiston;
+        this.betterSoundsIce = defaults.betterSoundsIce;
+        this.betterSoundsVillager = defaults.betterSoundsVillager;
+        this.betterSoundsMood = defaults.betterSoundsMood;
+        this.betterSoundsThunder = defaults.betterSoundsThunder;
+        this.betterSoundsFire = defaults.betterSoundsFire;
+        this.betterSoundsEat = defaults.betterSoundsEat;
+        this.betterSoundsDrink = defaults.betterSoundsDrink;
+        this.betterSoundsHit = defaults.betterSoundsHit;
+        this.betterSoundsStorage = defaults.betterSoundsStorage;
+        this.betterSoundsGrass = defaults.betterSoundsGrass;
+        this.betterSoundsTotem = defaults.betterSoundsTotem;
+        this.betterSoundsAnvil = defaults.betterSoundsAnvil;
+        this.betterSoundsXp = defaults.betterSoundsXp;
+        this.betterSoundsMining = defaults.betterSoundsMining;
+        this.betterSoundsWood = defaults.betterSoundsWood;
+        this.betterSoundsLavaWater = defaults.betterSoundsLavaWater;
+        this.betterSoundsEnderPortal = defaults.betterSoundsEnderPortal;
+        this.betterSoundsAchievements = defaults.betterSoundsAchievements;
 
-        this.farmMode = defaults.farmMode;
-        this.mobMode = defaults.mobMode;
+        this.betterSoundsFarm = defaults.betterSoundsFarm;
+        this.betterSoundsMob = defaults.betterSoundsMob;
 
         /// Better Spheres
         this.betterSpheresEnabled = defaults.betterSpheresEnabled;
 
-        this.sphereCerberusEnabled = defaults.sphereCerberusEnabled;
-        this.sphereFlashEnabled = defaults.sphereFlashEnabled;
-        this.sphereImmortalityEnabled = defaults.sphereImmortalityEnabled;
-        this.sphereArmortalityEnabled = defaults.sphereArmortalityEnabled;
-        this.sphereEternityEnabled = defaults.sphereEternityEnabled;
-        this.sphereStingerEnabled = defaults.sphereStingerEnabled;
+        this.sphereCerberus = defaults.sphereCerberus;
+        this.sphereFlash = defaults.sphereFlash;
+        this.sphereImmortality = defaults.sphereImmortality;
+        this.sphereArmortality = defaults.sphereArmortality;
+        this.sphereEternity = defaults.sphereEternity;
+        this.sphereStinger = defaults.sphereStinger;
 
-        this.sphereMythicEnabled = defaults.sphereMythicEnabled;
-        this.sphereLegendaryEnabled = defaults.sphereLegendaryEnabled;
-        this.sphereEpicEnabled = defaults.sphereEpicEnabled;
-        this.sphereDefaultEnabled = defaults.sphereDefaultEnabled;
+        this.holyWorldSphereMythic = defaults.holyWorldSphereMythic;
+        this.holyWorldSphereLegendary = defaults.holyWorldSphereLegendary;
+        this.holyWorldSphereEpic = defaults.holyWorldSphereEpic;
+        this.holyWorldSphereDefault = defaults.holyWorldSphereDefault;
         this.holyWorldSpheresEnabled = defaults.holyWorldSpheresEnabled;
 
-        this.sphereSpeedEnabled = defaults.sphereSpeedEnabled;
-        this.sphereMinerEnabled = defaults.sphereMinerEnabled;
-        this.spherePvPEnabled = defaults.spherePvPEnabled;
+        this.holyWorldSphereSpeed = defaults.holyWorldSphereSpeed;
+        this.holyWorldSphereMiner = defaults.holyWorldSphereMiner;
+        this.holyWorldSpherePvP = defaults.holyWorldSpherePvP;
 
-        this.coloredParametersEnabled = defaults.coloredParametersEnabled;
-        this.coloredNamesEnabled = defaults.coloredNamesEnabled;
-        this.goldenSpheresEnabled = defaults.goldenSpheresEnabled;
+        this.coloredParameters = defaults.coloredParameters;
+        this.coloredNames = defaults.coloredNames;
+        this.goldenSpheres = defaults.goldenSpheres;
 
         /// Shulker Particles
         this.shulkerParticlesEnabled = defaults.shulkerParticlesEnabled;
 
-        this.shulkerConstantEnabled = defaults.shulkerConstantEnabled;
-        this.shulkerBreakingEnabled = defaults.shulkerBreakingEnabled;
-        this.shulkerVanillaBreakingEnabled = defaults.shulkerVanillaBreakingEnabled;
-        this.shulkerConstantDependence = defaults.shulkerConstantDependence;
-        this.shulkerBreakingDependence = defaults.shulkerBreakingDependence;
-        this.shulkerConstantColor = defaults.shulkerConstantColor;
-        this.shulkerBreakingColor = defaults.shulkerBreakingColor;
+        this.shulkerParticlesConstant = defaults.shulkerParticlesConstant;
+        this.shulkerParticlesBreaking = defaults.shulkerParticlesBreaking;
+        this.shulkerParticlesVanillaBreaking = defaults.shulkerParticlesVanillaBreaking;
+        this.shulkerParticlesConstantDependence = defaults.shulkerParticlesConstantDependence;
+        this.shulkerParticlesBreakingDependence = defaults.shulkerParticlesBreakingDependence;
+        this.shulkerParticlesConstantColor = defaults.shulkerParticlesConstantColor;
+        this.shulkerParticlesBreakingColor = defaults.shulkerParticlesBreakingColor;
 
         /// Custom Fog
         this.customFogEnabled = defaults.customFogEnabled;
 
         this.customFogRange = defaults.customFogRange;
         this.customFogColor = defaults.customFogColor;
-        this.noFogEnabled = defaults.noFogEnabled;
-        this.nightVisionEnabled = defaults.nightVisionEnabled;
-        this.biomeFogEnabled = defaults.biomeFogEnabled;
+        this.noFog = defaults.noFog;
+        this.nightVision = defaults.nightVision;
+        this.biomeFog = defaults.biomeFog;
         this.biomeFogGroups.clear();
         this.biomeFogGroups.putAll(defaults.biomeFogGroups);
 
@@ -488,6 +631,22 @@ public class BQoLConfig {
         this.customHealthDecimal = defaults.customHealthDecimal;
         this.customHealthGoldenHearts = defaults.customHealthGoldenHearts;
         this.customHealthGoldenHeartsPlus = defaults.customHealthGoldenHeartsPlus;
+
+        /// No Render
+        this.noRenderTotemOverlayEnabled = defaults.noRenderTotemOverlayEnabled;
+        this.noRenderFireOverlayEnabled = defaults.noRenderFireOverlayEnabled;
+        this.noRenderWeatherEnabled = defaults.noRenderWeatherEnabled;
+        this.noRenderFireworksEnabled = defaults.noRenderFireworksEnabled;
+        this.noRenderPlayersEnabled = defaults.noRenderPlayersEnabled;
+        this.noRenderHandEnabled = defaults.noRenderHandEnabled;
+
+        this.noRenderEnabled = defaults.noRenderEnabled;
+        this.noRenderTotemOverlay = defaults.noRenderTotemOverlay;
+        this.noRenderFireOverlay = defaults.noRenderFireOverlay;
+        this.noRenderWeather = defaults.noRenderWeather;
+        this.noRenderFireworks = defaults.noRenderFireworks;
+        this.noRenderPlayers = defaults.noRenderPlayers;
+        this.noRenderHand = defaults.noRenderHand;
 
         validateSettings();
         save();

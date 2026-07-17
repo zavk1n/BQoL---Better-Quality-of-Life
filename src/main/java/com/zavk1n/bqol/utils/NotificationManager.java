@@ -159,29 +159,28 @@ public final class NotificationManager {
         showFeatureNotification("Better Sprint", enabled);
     }
 
-
     public static void showBetterSoundsNotification(boolean enabled) {
         showFeatureNotification("Better Sounds", enabled);
     }
-
 
     public static void showBetterSpheresNotification(boolean enabled) {
         showFeatureNotification("Better Spheres", enabled);
     }
 
-
     public static void showShulkerParticlesNotification(boolean enabled) {
         showFeatureNotification("Shulker Particles", enabled);
     }
-
 
     public static void showCustomFogNotification(boolean enabled) {
         showFeatureNotification("Custom Fog", enabled);
     }
 
-
     public static void showCustomHealthNotification(boolean enabled) {
         showFeatureNotification("Custom Health", enabled);
+    }
+
+    public static void showNoRenderNotification(boolean enabled) {
+        showFeatureNotification("No Render", enabled);
     }
 
     /// Рендер

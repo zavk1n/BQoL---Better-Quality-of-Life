@@ -12,7 +12,8 @@ base {
 }
 
 repositories {
-    maven { url "https://maven.terraformersmc.com/releases/" }
+    maven { url = "https://maven.terraformersmc.com/releases/" }
+    maven { url = "https://repo.llamalad7.com/releases" }
     mavenCentral()
 }
 
@@ -70,6 +71,7 @@ publishing {
     repositories {
     }
 }
+
 kotlin {
     jvmToolchain(17)
 }

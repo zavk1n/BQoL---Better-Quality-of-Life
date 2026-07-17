@@ -32,7 +32,7 @@ public class BiomeFogConfigScreen extends MainConfigScreen {
 
     /// Конструктор
     public BiomeFogConfigScreen(Screen parent) {
-        super(Text.literal("BiomeFog Settings"), parent);
+        super(Text.literal("Biome Fog Settings"), parent);
     }
 
     @Override

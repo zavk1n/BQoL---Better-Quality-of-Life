@@ -23,11 +23,12 @@ public class CustomFogConfigScreen extends MainConfigScreen {
     private TextFieldWidget hexField;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45, CONTROL_WIDTH = 180;
+    private boolean updatingHexField = false;
     private boolean changed = false;
 
     /// Конструктор
     public CustomFogConfigScreen(Screen parent) {
-        super(Text.literal("CustomFog Settings"), parent);
+        super(Text.literal("Custom Fog Settings"), parent);
     }
 
     @Override
@@ -75,13 +76,9 @@ public class CustomFogConfigScreen extends MainConfigScreen {
             int rgb = parseHex(text);
 
             if (rgb != -1) {
-                config.setCustomFogColor(rgb);
+                CustomFog.setColorRGB(rgb);
                 changed = true;
                 updateHexField();
-
-                if (colorSlider != null) {
-                    colorSlider.setValue(rgbToHue(rgb) / 360.0);
-                }
             }
         });
 
@@ -92,8 +89,8 @@ public class CustomFogConfigScreen extends MainConfigScreen {
 
         if (!LiteApiManager.isFeatureBlocked("custom_fog_no_fog")) {
             noFogBtn = ButtonWidget.builder(Text.literal(""), button -> {
-                    boolean state = !config.isNoFogEnabled();
-                    config.setNoFogEnabled(state);
+                    boolean state = !config.isNoFog();
+                    config.setNoFog(state);
                     changed = true;
                     updateButton(noFogBtn, state);
                 })
@@ -108,8 +105,8 @@ public class CustomFogConfigScreen extends MainConfigScreen {
         if (!LiteApiManager.isFeatureBlocked("custom_fog_biome_fog")) {
 
             biomeFogBtn = ButtonWidget.builder(Text.literal(""), button -> {
-                    boolean state = !config.isBiomeFogEnabled();
-                    config.setBiomeFogEnabled(state);
+                    boolean state = !config.isBiomeFog();
+                    config.setBiomeFog(state);
                     changed = true;
                     updateButton(biomeFogBtn, state);
                 })
@@ -132,8 +129,8 @@ public class CustomFogConfigScreen extends MainConfigScreen {
 
         if (!LiteApiManager.isFeatureBlocked("custom_fog_night_vision")) {
             nightVisionBtn = ButtonWidget.builder(Text.literal(""), button -> {
-                    boolean state = !config.isNightVisionEnabled();
-                    config.setNightVisionEnabled(state);
+                    boolean state = !config.isNightVision();
+                    config.setNightVision(state);
                     changed = true;
                     updateButton(nightVisionBtn, state);
                 })
@@ -177,8 +174,22 @@ public class CustomFogConfigScreen extends MainConfigScreen {
     private TextFieldWidget createHexField(int x, int y, int rgb, Consumer<String> onHexChange) {
         TextFieldWidget field = new TextFieldWidget(textRenderer, x, y, 70, 20, Text.literal("#RRGGBB"));
 
-        field.setText(String.format("#%06X", rgb));
-        field.setChangedListener(onHexChange::accept);
+        field.setText(String.format("#%06X", rgb & 0xFFFFFF));
+
+        field.setChangedListener(text -> {
+            if (updatingHexField) {
+                return;
+            }
+
+            String value = text.startsWith("#") ? text.substring(1) : text;
+
+            if (value.length() != 6) {
+                return;
+            }
+
+            onHexChange.accept(text);
+        });
+
         field.setFocusUnlocked(true);
         field.setEditable(true);
 
@@ -191,27 +202,28 @@ public class CustomFogConfigScreen extends MainConfigScreen {
             return;
         }
 
-        String hex = String.format("#%06X", config.getCustomFogColor());
+        String hex = String.format("#%06X", config.getCustomFogColor() & 0xFFFFFF);
 
         if (!hex.equalsIgnoreCase(hexField.getText())) {
+            updatingHexField = true;
             hexField.setText(hex);
+            updatingHexField = false;
         }
     }
 
     private void updateAllButtons() {
         if (noFogBtn != null) {
-            updateButton(noFogBtn, config.isNoFogEnabled());
+            updateButton(noFogBtn, config.isNoFog());
         }
 
         if (biomeFogBtn != null) {
-            updateButton(biomeFogBtn, config.isBiomeFogEnabled());
+            updateButton(biomeFogBtn, config.isBiomeFog());
         }
 
         if (nightVisionBtn != null) {
-            updateButton(nightVisionBtn, config.isNightVisionEnabled());
+            updateButton(nightVisionBtn, config.isNightVision());
         }
     }
-
 
     private void updateButton(ButtonWidget button, boolean enabled) {
         button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
@@ -220,19 +232,25 @@ public class CustomFogConfigScreen extends MainConfigScreen {
 
     /// Работа с цветами
     private int parseHex(String hex) {
-        try {
-            if (hex.startsWith("#")) {
-                hex = hex.substring(1);
-            }
-
-            if (hex.length() == 6) {
-                return Integer.parseInt(hex, 16);
-            }
-
-        } catch (NumberFormatException ignored) {
+        if (hex == null) {
+            return -1;
         }
 
-        return -1;
+        hex = hex.trim();
+
+        if (hex.startsWith("#")) {
+            hex = hex.substring(1);
+        }
+
+        if (!hex.matches("[0-9a-fA-F]{6}")) {
+            return -1;
+        }
+
+        try {
+            return Integer.parseInt(hex, 16) & 0xFFFFFF;
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
     }
 
     private int rgbToHue(int rgb) {

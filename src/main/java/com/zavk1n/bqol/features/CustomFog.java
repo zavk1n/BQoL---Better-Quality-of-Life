@@ -242,8 +242,8 @@ public class CustomFog {
     private void reloadFromConfigInternal() {
         refreshBlockedStatusInternal();
 
-        chunksRange = config.getCustomFogRange();
-        rgbColor = config.getCustomFogColor();
+        chunksRange = MathHelper.clamp(config.getCustomFogRange(), 1, 32);
+        rgbColor = config.getCustomFogColor() & 0xFFFFFF;
 
         transitionState.targetColor.set(
             getRedFromColor(rgbColor),
@@ -275,27 +275,27 @@ public class CustomFog {
     }
 
     private boolean isNoFogEnabledInternal() {
-        return config.isNoFogEnabled() && !blocked.noFog;
+        return config.isNoFog() && !blocked.noFog;
     }
 
     private void setNoFogEnabledInternal(boolean enabled) {
-        config.setNoFogEnabled(enabled);
+        config.setNoFog(enabled);
     }
 
     private boolean isNightVisionEnabledInternal() {
-        return config.isNightVisionEnabled() && !blocked.nightVision;
+        return config.isNightVision() && !blocked.nightVision;
     }
 
     private void setNightVisionEnabledInternal(boolean enabled) {
-        config.setNightVisionEnabled(enabled);
+        config.setNightVision(enabled);
     }
 
     private boolean isBiomeFogEnabledInternal() {
-        return config.isBiomeFogEnabled() && !blocked.biomeFog;
+        return config.isBiomeFog() && !blocked.biomeFog;
     }
 
     private void setBiomeFogEnabledInternal(boolean enabled) {
-        config.setBiomeFogEnabled(enabled);
+        config.setBiomeFog(enabled);
     }
 
     private void setRangeChunksInternal(int chunks) {
@@ -309,6 +309,8 @@ public class CustomFog {
     }
 
     private void setColorRGBInternal(int rgb) {
+        rgb &= 0xFFFFFF;
+
         rgbColor = rgb;
         config.setCustomFogColor(rgb);
 
@@ -316,7 +318,8 @@ public class CustomFog {
             transitionState.targetColor.set(
                 getRedFromColor(rgb),
                 getGreenFromColor(rgb),
-                getBlueFromColor(rgb));
+                getBlueFromColor(rgb)
+            );
 
             transitionState.active = true;
         }
@@ -456,8 +459,19 @@ public class CustomFog {
         return BIOME_TO_GROUP.get(id.toString());
     }
 
-    private float getRedFromColor(int rgb) { return ((rgb >> 16) & 0xFF) / 255.0f; }
-    private float getBlueFromColor(int rgb) { return (rgb & 0xFF) / 255.0f; }
-    private float getGreenFromColor(int rgb) { return ((rgb >> 8) & 0xFF) / 255.0f; }
+    private float getRedFromColor(int rgb) {
+        rgb &= 0xFFFFFF;
+        return ((rgb >> 16) & 0xFF) / 255.0f;
+    }
+
+    private float getBlueFromColor(int rgb) {
+        rgb &= 0xFFFFFF;
+        return (rgb & 0xFF) / 255.0f;
+    }
+
+    private float getGreenFromColor(int rgb) {
+        rgb &= 0xFFFFFF;
+        return ((rgb >> 8) & 0xFF) / 255.0f;
+    }
 }
 // v1.0

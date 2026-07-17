@@ -184,37 +184,37 @@ public class BetterSpheres {
     private List<DefaultSphereMatch> createSphereMatches() {
         return List.of(
             new DefaultSphereMatch(
-                config::isSphereStingerEnabled,
+                config::isSphereStinger,
                 Map.of("Урон", 2, "Броня", 2, "Скорость", 1),
                 List.of("Урон 2", "Броня 2", "Скорость 1"),
                 List.of(0xFF2600, 0xFF4E2E, 0xFF6E54)
             ),
             new DefaultSphereMatch(
-                config::isSphereEternityEnabled,
+                config::isSphereEternity,
                 Map.of("Урон", 2, "Броня", 2, "Скорость", 2),
                 List.of("Урон 2", "Броня 2", "Скорость 2"),
                 List.of(0xFF008C, 0xFF47A9, 0xFF69B9)
             ),
             new DefaultSphereMatch(
-                config::isSphereImmortalityEnabled,
+                config::isSphereImmortality,
                 Map.of("Урон", 3, "Скорость", 2),
                 List.of("Урон 3", "Скорость 2"),
                 List.of(0x7600ED, 0x6100BA)
             ),
             new DefaultSphereMatch(
-                config::isSphereArmortalityEnabled,
+                config::isSphereArmortality,
                 Map.of("Урон", 2, "Броня", 2, "Макс. здоровье", 2),
                 List.of("Урон 2", "Броня 2", "Макс. здоровье 2"),
                 List.of(0x3A4A78, 0x4E6299, 0x687AB0)
             ),
             new DefaultSphereMatch(
-                config::isSphereCerberusEnabled,
+                config::isSphereCerberus,
                 Map.of("Проклятие утраты", 0, "Урон", 5, "Спешка", 1),
                 List.of("Урон 5", "Спешка 1", "Проклятие утраты"),
                 List.of(0xCF0000, 0xF70000, 0xFF3333)
             ),
             new DefaultSphereMatch(
-                config::isSphereFlashEnabled,
+                config::isSphereFlash,
                 Map.of("Проклятие утраты", 0, "Скорость", 3, "Броня", 1),
                 List.of("Скорость 3", "Броня 1", "Проклятие утраты"),
                 List.of(0xCCF8FF, 0xB0F3FF, 0x8FEEFF)
@@ -225,21 +225,21 @@ public class BetterSpheres {
     private List<GoldenSphereMatch> createGoldenSphereMatches() {
         return List.of(
             new GoldenSphereMatch(
-                config::isSphereSpeedEnabled,
+                config::isHolyWorldSphereSpeed,
                 Map.of("Скорость", 3),
                 "Сфера Лива",
                 List.of("Скорость 3"),
                 List.of(0xFFE500)
             ),
             new GoldenSphereMatch(
-                config::isSphereMinerEnabled,
+                config::isHolyWorldSphereMiner,
                 Map.of("Спешка", 3),
                 "Сфера Шахтера",
                 List.of("Спешка 3"),
                 List.of(0xFFE500)
             ),
             new GoldenSphereMatch(
-                config::isSpherePvPEnabled,
+                config::isHolyWorldSpherePvP,
                 Map.of("Броня", 3, "Урон", 2),
                 "Сфера ПвП",
                 List.of("Урон 2", "Броня 3"),
@@ -566,7 +566,7 @@ public class BetterSpheres {
     }
 
     private void applyDefaultSphereParameters(List<Text> lines, Map<String, Integer> parameters, SphereInfo sphereInfo, DefaultSphereMatch defaultMatch) {
-        if (!config.isColoredParametersEnabled() || blocked.parameters) {
+        if (!config.isColoredParameters() || blocked.parameters) {
             return;
         }
 
@@ -597,7 +597,7 @@ public class BetterSpheres {
     }
 
     private void applyGoldenSphereParameters(List<Text> lines, GoldenSphereMatch match) {
-        if (!config.isGoldenSpheresEnabled() || blocked.golden || match == null) {
+        if (!config.isGoldenSpheres() || blocked.golden || match == null) {
             return;
         }
 
@@ -614,7 +614,7 @@ public class BetterSpheres {
     }
 
     private void applyDefaultSphereName(ItemStack stack, String originalName, SphereInfo sphereInfo) {
-        if (!config.isColoredNamesEnabled()
+        if (!config.isColoredNames()
             || blocked.names
             || sphereInfo == null
             || sphereInfo.type() == SphereType.LEGENDARY
@@ -628,7 +628,7 @@ public class BetterSpheres {
     }
 
     private void applyGoldenSphereName(ItemStack stack, GoldenSphereMatch match) {
-        if (!config.isGoldenSpheresEnabled()
+        if (!config.isGoldenSpheres()
             || blocked.names
             || match == null) {
             return;

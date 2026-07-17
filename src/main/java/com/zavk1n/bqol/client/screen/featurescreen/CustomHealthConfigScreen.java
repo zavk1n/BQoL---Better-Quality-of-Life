@@ -28,7 +28,7 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
 
     /// Конструктор
     public CustomHealthConfigScreen(Screen parent) {
-        super(Text.literal("CustomHealth Settings"), parent);
+        super(Text.literal("Custom Health Settings"), parent);
     }
 
     @Override

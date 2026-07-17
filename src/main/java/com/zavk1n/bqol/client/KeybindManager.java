@@ -28,6 +28,7 @@ public final class KeybindManager {
     private static final String SHULKER_PARTICLES_TOGGLE = "shulker_particles_toggle";
     private static final String CUSTOM_FOG_TOGGLE = "custom_fog_toggle";
     private static final String CUSTOM_HEALTH_TOGGLE = "custom_health_toggle";
+    private static final String NO_RENDER_TOGGLE = "no_render_toggle";
 
     private static final long SPRINT_TOGGLE_COOLDOWN = 200L;
     private static long lastSprintToggleTime;
@@ -44,7 +45,8 @@ public final class KeybindManager {
             BETTER_SPHERES_TOGGLE,
             SHULKER_PARTICLES_TOGGLE,
             CUSTOM_FOG_TOGGLE,
-            CUSTOM_HEALTH_TOGGLE
+            CUSTOM_HEALTH_TOGGLE,
+            NO_RENDER_TOGGLE
         };
 
         for (String toggle : toggles) {
@@ -187,11 +189,18 @@ public final class KeybindManager {
                     config::setCustomHealthEnabled,
                     NotificationManager::showCustomHealthNotification
                 );
+
+            case NO_RENDER_TOGGLE ->
+                toggleFeature(
+                    !config.isNoRenderEnabled(),
+                    NoRender::setEnabled,
+                    config::setNoRenderEnabled,
+                    NotificationManager::showNoRenderNotification
+                );
         }
     }
 
-    private static void toggleFeature(
-        boolean enabled,
+    private static void toggleFeature(boolean enabled,
         java.util.function.Consumer<Boolean> featureSetter,
         java.util.function.Consumer<Boolean> configSetter,
         java.util.function.Consumer<Boolean> notification

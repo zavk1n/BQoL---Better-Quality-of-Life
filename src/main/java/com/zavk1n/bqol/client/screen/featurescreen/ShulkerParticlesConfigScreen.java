@@ -9,7 +9,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -34,8 +33,8 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
     public ShulkerParticlesConfigScreen(Screen parent) {
         super(Text.literal("Shulker Particles Settings"), parent);
 
-        constantCurrentColor = config.getShulkerConstantColor();
-        breakingCurrentColor = config.getShulkerBreakingColor();
+        constantCurrentColor = config.getShulkerParticlesConstantColor();
+        breakingCurrentColor = config.getShulkerParticlesBreakingColor();
     }
 
     @Override
@@ -85,9 +84,9 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
             constantBtn = createButton(
                 controlX,
                 y,
-                config::isShulkerConstantEnabled,
+                config::isShulkerParticlesConstant,
                 value -> {
-                    config.setShulkerConstantEnabled(value);
+                    config.setShulkerParticlesConstant(value);
                     changed = true;
                 }
             );
@@ -102,9 +101,9 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
                 constantDependenceBtn = createButton(
                     depBtnX,
                     y,
-                    config::isShulkerConstantDependence,
+                    config::isShulkerParticlesConstantDependence,
                     value -> {
-                        config.setShulkerConstantDependence(value);
+                        config.setShulkerParticlesConstantDependence(value);
                         changed = true;
                     }
                 );
@@ -125,9 +124,9 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
             breakingBtn = createButton(
                 controlX,
                 y,
-                config::isShulkerBreakingEnabled,
+                config::isShulkerParticlesBreaking,
                 value -> {
-                    config.setShulkerBreakingEnabled(value);
+                    config.setShulkerParticlesBreaking(value);
                     changed = true;
                 }
             );
@@ -142,9 +141,9 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
                 breakingDependenceBtn = createButton(
                     depBtnX,
                     y,
-                    config::isShulkerBreakingDependence,
+                    config::isShulkerParticlesBreakingDependence,
                     value -> {
-                        config.setShulkerBreakingDependence(value);
+                        config.setShulkerParticlesBreakingDependence(value);
                         changed = true;
                     }
                 );
@@ -162,9 +161,9 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
             vanillaBreakingBtn = createButton(
                 controlX,
                 y,
-                config::isShulkerVanillaBreakingEnabled,
+                config::isShulkerParticlesVanillaBreaking,
                 value -> {
-                    config.setShulkerVanillaBreakingEnabled(value);
+                    config.setShulkerParticlesVanillaBreaking(value);
                     changed = true;
                 }
             );
@@ -183,7 +182,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
                 constantCurrentColor,
                 newColor -> {
                     constantCurrentColor = newColor;
-                    config.setShulkerConstantColor(newColor);
+                    config.setShulkerParticlesConstantColor(newColor);
 
                     if (constantHexField != null) {
                         updateHexField(constantHexField, newColor);
@@ -202,7 +201,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
 
                     if (rgb != -1) {
                         constantCurrentColor = rgb;
-                        config.setShulkerConstantColor(rgb);
+                        config.setShulkerParticlesConstantColor(rgb);
 
                         updateColorSlider(constantColorSlider, rgb);
 
@@ -226,7 +225,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
                 breakingCurrentColor,
                 newColor -> {
                     breakingCurrentColor = newColor;
-                    config.setShulkerBreakingColor(newColor);
+                    config.setShulkerParticlesBreakingColor(newColor);
 
                     if (breakingHexField != null) {
                         updateHexField(breakingHexField, newColor);
@@ -245,7 +244,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
 
                     if (rgb != -1) {
                         breakingCurrentColor = rgb;
-                        config.setShulkerBreakingColor(rgb);
+                        config.setShulkerParticlesBreakingColor(rgb);
 
                         updateColorSlider(breakingColorSlider, rgb);
 

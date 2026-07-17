@@ -22,7 +22,7 @@ public class SpheresConfigScreen extends MainConfigScreen {
 
     /// Конструктор
     public SpheresConfigScreen(Screen parent) {
-        super(Text.literal("BetterSpheres Settings"), parent);
+        super(Text.literal("Better Spheres Settings"), parent);
     }
 
     @Override

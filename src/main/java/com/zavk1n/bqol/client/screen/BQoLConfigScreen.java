@@ -15,12 +15,16 @@ import net.minecraft.util.math.MathHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-
 class FeaturePanel {
 
     String title;
     String description;
     String configKey;
+
+    Text titleText;
+    Text descriptionText;
+
+    int titleWidth;
 
     boolean enabled;
     boolean hasConfig;
@@ -50,6 +54,9 @@ class FeaturePanel {
         this.y = y;
         this.originalY = y;
         this.hasConfig = hasConfig;
+
+        this.titleText = Text.literal(title);
+        this.descriptionText = Text.literal(description);
     }
 }
 
@@ -84,111 +91,106 @@ public class BQoLConfigScreen extends MainConfigScreen {
     protected void init() {
         super.init();
 
-        this.clearChildren();
-
+        clearChildren();
         featurePanels.clear();
 
         scrollOffset = 0f;
 
-        boolean isConnected = this.client != null && this.client.world != null && this.client.player != null;
+        boolean isConnected = client != null &&
+                client.world != null &&
+                client.player != null;
 
         if (!isConnected) {
-            this.addDrawableChild(
+            addDrawableChild(
                 ButtonWidget.builder(
-                        Text.literal(
-                            "Not connected to server"
-                        ),
+                        Text.literal("Not connected to server"),
                         button -> {}
                     )
                     .dimensions(
-                        this.width / 2 - 100,
-                        this.height / 2 - 10,
+                        width / 2 - 100,
+                        height / 2 - 10,
                         200,
                         20
                     )
                     .build()
             );
-
             return;
         }
 
         int panelStartY = 60;
         int panelSpacing = 45;
 
-        List<FeaturePanel> allPanels = List.of(
-            new FeaturePanel(
-                "BetterSprint",
-                "Auto sprint when pressing W",
-                "better_sprint",
-                config.isBetterSprintEnabled(),
-                this.width / 4,
-                panelStartY,
-                true
-            ),
+        featurePanels.add(new FeaturePanel(
+            "Better Sprint",
+            "Auto sprint when pressing W",
+            "better_sprint",
+            config.isBetterSprintEnabled(),
+            width / 4,
+            panelStartY,
+            true
+        ));
 
+        featurePanels.add(new FeaturePanel(
+            "Better Sounds",
+            "Sound management modes",
+            "better_sounds",
+            config.isBetterSoundsEnabled(),
+            width / 4,
+            panelStartY + panelSpacing * 2,
+            true
+        ));
 
-            new FeaturePanel(
-                "BetterSounds",
-                "Sound management modes",
-                "better_sounds",
-                config.isBetterSoundsEnabled(),
-                this.width / 4,
-                panelStartY + panelSpacing * 2,
-                true
-            ),
+        featurePanels.add(new FeaturePanel(
+            "Better Spheres",
+            "Visual sphere indicators",
+            "better_spheres",
+            config.isBetterSpheresEnabled(),
+            width / 4,
+            panelStartY + panelSpacing * 3,
+            true
+        ));
 
+        featurePanels.add(new FeaturePanel(
+            "Shulker Particles",
+            "Custom shulker box particles",
+            "shulker_particles",
+            config.isShulkerParticlesEnabled(),
+            width / 4,
+            panelStartY + panelSpacing * 4,
+            true
+        ));
 
-            new FeaturePanel(
-                "BetterSpheres",
-                "Visual sphere indicators",
-                "better_spheres",
-                config.isBetterSpheresEnabled(),
-                this.width / 4,
-                panelStartY + panelSpacing * 3,
-                true
-            ),
+        featurePanels.add(new FeaturePanel(
+            "Custom Fog",
+            "Fog distance and biome settings",
+            "custom_fog",
+            config.isCustomFogEnabled(),
+            width / 4,
+            panelStartY + panelSpacing * 5,
+            true
+        ));
 
+        featurePanels.add(new FeaturePanel(
+            "Custom Health",
+            "Health rendering options",
+            "custom_health",
+            config.isCustomHealthEnabled(),
+            width / 4,
+            panelStartY + panelSpacing * 6,
+            true
+        ));
 
-            new FeaturePanel(
-                "ShulkerParticles",
-                "Custom shulker box particles",
-                "shulker_particles",
-                config.isShulkerParticlesEnabled(),
-                this.width / 4,
-                panelStartY + panelSpacing * 4,
-                true
-            ),
+        featurePanels.add(new FeaturePanel(
+            "No Render",
+            "No render",
+            "no_render",
+            config.isNoRenderEnabled(),
+            width / 4,
+            panelStartY + panelSpacing * 7,
+            true
+        ));
 
-
-            new FeaturePanel(
-                "CustomFog",
-                "Fog distance and biome settings",
-                "custom_fog",
-                config.isCustomFogEnabled(),
-                this.width / 4,
-                panelStartY + panelSpacing * 5,
-                true
-            ),
-
-
-            new FeaturePanel(
-                "CustomHealth",
-                "Health rendering options",
-                "custom_health",
-                config.isCustomHealthEnabled(),
-                this.width / 4,
-                panelStartY + panelSpacing * 6,
-                true
-            )
-        );
-
-
-
-        for (FeaturePanel panel : allPanels) {
-            if (!isModuleBlocked(panel.configKey)) {
-                featurePanels.add(panel);
-            }
-        }
+        featurePanels.removeIf(panel -> isModuleBlocked(panel.configKey));
 
         int index = 0;
 
@@ -196,37 +198,37 @@ public class BQoLConfigScreen extends MainConfigScreen {
             panel.originalY = panelStartY + index * panelSpacing;
             panel.y = panel.originalY;
 
+            panel.titleWidth = textRenderer.getWidth(panel.titleText);
+
+            createButtons(panel);
+
             index++;
         }
 
         float totalHeight = panelStartY + index * panelSpacing + 40;
-        float screenHeight = this.height - visibleAreaTop - visibleAreaBottom;
+        float screenHeight = height - visibleAreaTop - visibleAreaBottom;
 
         maxScroll = Math.max(0, totalHeight - screenHeight);
 
-        for (FeaturePanel panel : featurePanels) {
-            createButtons(panel);
-        }
-
-        ButtonWidget saveButton = ButtonWidget.builder(
+        addDrawableChild(
+            ButtonWidget.builder(
                     Text.literal("Save & Back"),
                     button -> {
                         config.save();
 
-                        if (this.client != null) {
-                            this.client.setScreen(parent);
+                        if (client != null) {
+                            client.setScreen(parent);
                         }
                     }
                 )
                 .dimensions(
-                    this.width / 2 - 50,
-                    this.height - 40,
+                    width / 2 - 50,
+                    height - 40,
                     100,
                     25
                 )
-                .build();
-
-        this.addDrawableChild(saveButton);
+                .build()
+        );
 
         updateAllButtons();
     }
@@ -243,6 +245,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "shulker_particles" -> this.client.setScreen(new ShulkerParticlesConfigScreen(this));
             case "custom_fog" -> this.client.setScreen(new CustomFogConfigScreen(this));
             case "custom_health" -> this.client.setScreen(new CustomHealthConfigScreen(this));
+            case "no_render" -> this.client.setScreen(new NoRenderConfigScreen(this));
         }
     }
 
@@ -256,6 +259,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "shulker_particles" -> "shulker_particles";
             case "custom_fog" -> "custom_fog";
             case "custom_health" -> "custom_health";
+            case "no_render" -> "no_render";
 
             default -> null;
         };
@@ -304,6 +308,12 @@ public class BQoLConfigScreen extends MainConfigScreen {
                     CustomHealth.resetDisplay();
                 }
             }
+
+            case "no_render" -> {
+                panel.enabled = !panel.enabled;
+                config.setNoRenderEnabled(panel.enabled);
+                NoRender.setEnabled(panel.enabled);
+            }
         }
 
         config.save();
@@ -313,65 +323,20 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
     private void rebuildUI() {
         for (FeaturePanel panel : featurePanels) {
-            panel.enabled = switch (panel.configKey) {
-                case "better_sprint" -> config.isBetterSprintEnabled();
-                case "better_sounds" -> config.isBetterSoundsEnabled();
-                case "better_spheres" -> config.isBetterSpheresEnabled();
-                case "shulker_particles" -> config.isShulkerParticlesEnabled();
-                case "custom_fog" -> config.isCustomFogEnabled();
-                case "custom_health" -> config.isCustomHealthEnabled();
-
-
-                default -> panel.enabled;
-            };
-        }
-
-        featurePanels.removeIf(
-            panel -> isModuleBlocked(panel.configKey)
-        );
-
-
-        int baseY = 60;
-
-        int index = 0;
-
-        for (FeaturePanel panel : featurePanels) {
-            panel.originalY = baseY + index * 45;
-
-            index++;
-        }
-
-        clearChildren();
-        super.init();
-
-        for (FeaturePanel panel : featurePanels) {
             panel.y = (int) (panel.originalY - scrollOffset);
 
-            if (panel.y + 30 >= visibleAreaTop && panel.y <= height - visibleAreaBottom) {
-                createButtons(panel);
+            boolean visible = panel.y + 30 >= visibleAreaTop && panel.y <= height - visibleAreaBottom;
+
+            if (panel.toggleButton != null) {
+                panel.toggleButton.setY(panel.y - 3);
+                panel.toggleButton.visible = visible;
+            }
+
+            if (panel.configButton != null) {
+                panel.configButton.setY(panel.y - 3);
+                panel.configButton.visible = visible;
             }
         }
-
-        ButtonWidget saveButton = ButtonWidget.builder(
-                    Text.literal("Save & Back"),
-                    button -> {
-                        config.save();
-                        if (client != null) {
-                            client.setScreen(parent);
-                        }
-                    }
-                )
-                .dimensions(
-                    width / 2 - 50,
-                    height - 40,
-                    100,
-                    25
-                )
-                .build();
-
-        addDrawableChild(saveButton);
-
-        updateAllButtons();
     }
 
     private void createButtons(FeaturePanel panel) {
@@ -466,21 +431,22 @@ public class BQoLConfigScreen extends MainConfigScreen {
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 30, titleColor);
 
         for (FeaturePanel panel : featurePanels) {
-            if (panel.y + 30 < visibleAreaTop || panel.y > height - visibleAreaBottom) {
+            if (panel.y + 30 < visibleAreaTop ||
+                panel.y > height - visibleAreaBottom) {
                 continue;
             }
 
-            int titleWidth = textRenderer.getWidth(panel.title);
-
             boolean hovered = mouseX >= panel.x &&
-                mouseX <= panel.x + titleWidth &&
-                mouseY >= panel.y &&
-                mouseY <= panel.y + textRenderer.fontHeight;
+                    mouseX <= panel.x + panel.titleWidth &&
+                    mouseY >= panel.y &&
+                    mouseY <= panel.y + textRenderer.fontHeight;
 
-            int color = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
+            int color = hovered
+                ? ACCENT_COLOR
+                : 0xFFFFFFFF;
 
-            context.drawText(textRenderer, Text.literal(panel.title), panel.x, panel.y, color, false);
-            context.drawText(textRenderer, Text.literal(panel.description), panel.x, panel.y + 12, 0xFF888888, false);
+            context.drawText(textRenderer, panel.titleText, panel.x, panel.y, color, false);
+            context.drawText(textRenderer, panel.descriptionText, panel.x, panel.y + 12, 0xFF888888, false);
         }
     }
 

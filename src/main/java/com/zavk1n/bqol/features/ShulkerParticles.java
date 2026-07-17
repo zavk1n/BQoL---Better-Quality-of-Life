@@ -138,19 +138,19 @@ public class ShulkerParticles {
 
     private boolean shouldCancelVanillaBreakingInternal() {
         return isEnabledInternal()
-                && config.isShulkerVanillaBreakingEnabled()
+                && config.isShulkerParticlesVanillaBreaking()
                 && !blocked.vanillaBreaking;
     }
 
     private boolean canSpawnConstantParticlesInternal() {
         return isEnabledInternal()
-                && config.isShulkerConstantEnabled()
+                && config.isShulkerParticlesConstant()
                 && !blocked.constant;
     }
 
     private boolean canSpawnBreakingParticlesInternal() {
         return isEnabledInternal()
-                && config.isShulkerBreakingEnabled()
+                && config.isShulkerParticlesBreaking()
                 && !blocked.breaking;
     }
 
@@ -172,9 +172,9 @@ public class ShulkerParticles {
             return;
         }
 
-        Vector3f defaultColor = instance.rgb(instance.config.getShulkerConstantColor());
+        Vector3f defaultColor = instance.rgb(instance.config.getShulkerParticlesConstantColor());
 
-        boolean useDependence = instance.config.isShulkerConstantDependence() && !blocked.constantDependence;
+        boolean useDependence = instance.config.isShulkerParticlesConstantDependence() && !blocked.constantDependence;
 
         instance.scanChunks(client, client.world, defaultColor, useDependence);
     }
@@ -242,10 +242,10 @@ public class ShulkerParticles {
     }
 
     private Vector3f resolveBreakingColor(BlockState state) {
-        boolean useDependence = config.isShulkerBreakingDependence() && !blocked.breakingDependence;
+        boolean useDependence = config.isShulkerParticlesBreakingDependence() && !blocked.breakingDependence;
 
         if (!useDependence || !(state.getBlock() instanceof ShulkerBoxBlock box)) {
-            return rgb(config.getShulkerBreakingColor());
+            return rgb(config.getShulkerParticlesBreakingColor());
         }
 
         return dyeColorToVector(box.getColor());

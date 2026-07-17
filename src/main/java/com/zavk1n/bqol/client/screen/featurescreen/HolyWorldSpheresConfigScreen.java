@@ -92,19 +92,19 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         int gridStartY = 60;
 
         List<SphereEntry> spheres = List.of(
-            new SphereEntry("Cerberus Sphere", config::isSphereCerberusEnabled, config::setSphereCerberusEnabled),
-            new SphereEntry("Sphere Eternity", config::isSphereEternityEnabled, config::setSphereEternityEnabled),
-            new SphereEntry("Flash Sphere", config::isSphereFlashEnabled, config::setSphereFlashEnabled),
-            new SphereEntry("Sphere Armortality", config::isSphereArmortalityEnabled, config::setSphereArmortalityEnabled),
-            new SphereEntry("Sphere Stinger", config::isSphereStingerEnabled, config::setSphereStingerEnabled),
-            new SphereEntry("Sphere Immortality", config::isSphereImmortalityEnabled, config::setSphereImmortalityEnabled),
-            new SphereEntry("Default Sphere", config::isSphereDefaultEnabled, config::setSphereDefaultEnabled),
-            new SphereEntry("Epic Sphere", config::isSphereEpicEnabled, config::setSphereEpicEnabled),
-            new SphereEntry("Legendary Sphere", config::isSphereLegendaryEnabled, config::setSphereLegendaryEnabled),
-            new SphereEntry("Miner's Sphere", config::isSphereMinerEnabled, config::setSphereMinerEnabled),
-            new SphereEntry("PvP Sphere", config::isSpherePvPEnabled, config::setSpherePvPEnabled),
-            new SphereEntry("Sphere of Speed", config::isSphereSpeedEnabled, config::setSphereSpeedEnabled),
-            new SphereEntry("Mythic Sphere", config::isSphereMythicEnabled, config::setSphereMythicEnabled)
+            new SphereEntry("Cerberus Sphere", config::isSphereCerberus, config::setSphereCerberus),
+            new SphereEntry("Sphere Eternity", config::isSphereEternity, config::setSphereEternity),
+            new SphereEntry("Flash Sphere", config::isSphereFlash, config::setSphereFlash),
+            new SphereEntry("Sphere Armortality", config::isSphereArmortality, config::setSphereArmortality),
+            new SphereEntry("Sphere Stinger", config::isSphereStinger, config::setSphereStinger),
+            new SphereEntry("Sphere Immortality", config::isSphereImmortality, config::setSphereImmortality),
+            new SphereEntry("Default Sphere", config::isHolyWorldSphereDefault, config::setHolyWorldSphereDefault),
+            new SphereEntry("Epic Sphere", config::isHolyWorldSphereEpic, config::setHolyWorldSphereEpic),
+            new SphereEntry("Legendary Sphere", config::isHolyWorldSphereLegendary, config::setHolyWorldSphereLegendary),
+            new SphereEntry("Miner's Sphere", config::isHolyWorldSphereMiner, config::setHolyWorldSphereMiner),
+            new SphereEntry("PvP Sphere", config::isHolyWorldSpherePvP, config::setHolyWorldSpherePvP),
+            new SphereEntry("Sphere of Speed", config::isHolyWorldSphereSpeed, config::setHolyWorldSphereSpeed),
+            new SphereEntry("Mythic Sphere", config::isHolyWorldSphereMythic, config::setHolyWorldSphereMythic)
         );
 
         int col = 0;
@@ -181,8 +181,8 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
             coloredParametersBtn = createButton(
                 controlsX + LABEL_WIDTH + BUTTON_OFFSET,
                 controlsStartY,
-                config::isColoredParametersEnabled,
-                config::setColoredParametersEnabled
+                config::isColoredParameters,
+                config::setColoredParameters
             );
         }
 
@@ -190,8 +190,8 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
             coloredNamesBtn = createButton(
                 controlsX + LABEL_WIDTH + BUTTON_OFFSET,
                 controlsStartY + CONTROL_SPACING,
-                config::isColoredNamesEnabled,
-                config::setColoredNamesEnabled
+                config::isColoredNames,
+                config::setColoredNames
             );
         }
 
@@ -199,8 +199,8 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
             goldenSpheresBtn = createSpecialButton(
                 controlsX + LABEL_WIDTH + BUTTON_OFFSET,
                 controlsStartY + CONTROL_SPACING * 2,
-                config::isGoldenSpheresEnabled,
-                config::setGoldenSpheresEnabled
+                config::isGoldenSpheres,
+                config::setGoldenSpheres
             );
         }
     }
@@ -274,11 +274,11 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
 
     private void updateAllButtons() {
         if (coloredParametersBtn != null) {
-            updateButton(coloredParametersBtn, config.isColoredParametersEnabled());
+            updateButton(coloredParametersBtn, config.isColoredParameters());
         }
 
         if (coloredNamesBtn != null) {
-            updateButton(coloredNamesBtn, config.isColoredNamesEnabled());
+            updateButton(coloredNamesBtn, config.isColoredNames());
         }
 
         updateGoldenSpheresButton();
@@ -291,7 +291,7 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
 
         updateButton(
             goldenSpheresBtn,
-            config.isGoldenSpheresEnabled()
+            config.isGoldenSpheres()
         );
     }
 

@@ -2,20 +2,21 @@ package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.CustomFog;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(GameRenderer.class)
-public class FOGRenderNightVision {
-    private static final float FULL_NIGHT_VISION = 1.0F;
+@Mixin(LivingEntity.class)
+public abstract class FOGRenderNightVision {
 
-    @Inject(method = "getNightVisionStrength", at = @At("HEAD"), cancellable = true)
-    private static void onGetNightVisionStrength(LivingEntity entity, float tickDelta, CallbackInfoReturnable<Float> cir) {
+    @Inject(method = "hasStatusEffect", at = @At("HEAD"), cancellable = true)
+    private void bqol$hasStatusEffect(StatusEffect effect, CallbackInfoReturnable<Boolean> cir) {
+        LivingEntity entity = (LivingEntity) (Object) this;
         MinecraftClient client = MinecraftClient.getInstance();
 
         if (client.player == null
@@ -25,14 +26,38 @@ public class FOGRenderNightVision {
             return;
         }
 
-        cir.setReturnValue(FULL_NIGHT_VISION);
+        if (effect == StatusEffects.NIGHT_VISION) {
+            cir.setReturnValue(true);
+        }
     }
 
-    /// Список эффектов
+    @Inject(method = "getStatusEffect", at = @At("HEAD"), cancellable = true)
+    private void bqol$getStatusEffect(StatusEffect effect, CallbackInfoReturnable<StatusEffectInstance> cir) {
+        LivingEntity entity = (LivingEntity) (Object) this;
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        if (client.player == null
+            || entity != client.player
+            || !CustomFog.isNightVisionEnabled()
+            || hasBlockingEffect(entity)) {
+            return;
+        }
+
+        if (effect == StatusEffects.NIGHT_VISION) {
+            cir.setReturnValue(new StatusEffectInstance(
+                StatusEffects.NIGHT_VISION,
+                Integer.MAX_VALUE,
+                0,
+                false,
+                false,
+                false
+            ));
+        }
+    }
+
     private static boolean hasBlockingEffect(LivingEntity entity) {
-        return entity.hasStatusEffect(StatusEffects.BLINDNESS)
-            || entity.hasStatusEffect(StatusEffects.DARKNESS)
-            || entity.hasStatusEffect(StatusEffects.NAUSEA);
+        return entity.getActiveStatusEffects().containsKey(StatusEffects.BLINDNESS)
+            || entity.getActiveStatusEffects().containsKey(StatusEffects.DARKNESS)
+            || entity.getActiveStatusEffects().containsKey(StatusEffects.NAUSEA);
     }
 }
-// v1.0

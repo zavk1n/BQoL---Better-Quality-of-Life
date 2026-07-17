@@ -69,7 +69,15 @@ public final class LiteApiManager {
             "custom_health_pvp",
             "custom_health_decimal",
             "custom_health_golden_hearts",
-            "custom_health_golden_plus"
+            "custom_health_golden_plus",
+
+            /// No Render
+            "no_render",
+            "no_render_totem_overlay",
+            "no_render_fire_overlay",
+            "no_render_weather",
+            "no_render_fireworks",
+            "no_render_players"
     );
 
     private static long lastRequestTime = 0;
@@ -316,11 +324,11 @@ public final class LiteApiManager {
 
         /// BetterSprint
         if (isFeatureBlocked("better_sprint")) config.setBetterSprintEnabled(false);
-        if (isFeatureBlocked("better_sprint_default")) config.setBetterSprintDefault(false);
-        if (isFeatureBlocked("better_sprint_pvp")) config.setBetterSprintPvP(false);
-        if (isFeatureBlocked("better_sprint_tree")) config.setBetterSprintTree(false);
-        if (isFeatureBlocked("better_sprint_stair_up")) config.setBetterSprintStairUp(false);
-        if (isFeatureBlocked("better_sprint_water_sprint")) config.setBetterSprintWaterSprint(false);
+        if (isFeatureBlocked("better_sprint_default")) config.setBetterSprintDefaultModeEnabled(false);
+        if (isFeatureBlocked("better_sprint_pvp")) config.setBetterSprintPvPModeEnabled(false);
+        if (isFeatureBlocked("better_sprint_tree")) config.setBetterSprintTreeModeEnabled(false);
+        if (isFeatureBlocked("better_sprint_stair_up")) config.setBetterSprintStairUpEnabled(false);
+        if (isFeatureBlocked("better_sprint_water_sprint")) config.setBetterSprintWaterSprintEnabled(false);
 
         BetterSprint.refreshBlockedStatus();
 
@@ -333,23 +341,23 @@ public final class LiteApiManager {
         if (isFeatureBlocked("better_spheres")) config.setBetterSpheresEnabled(false);
         if (isFeatureBlocked("better_spheres_holyworld")) {
             config.setHolyWorldSpheresEnabled(false);
-            config.setColoredParametersEnabled(false);
-            config.setColoredNamesEnabled(false);
-            config.setGoldenSpheresEnabled(false);
+            config.setColoredParameters(false);
+            config.setColoredNames(false);
+            config.setGoldenSpheres(false);
         }
-        if (isFeatureBlocked("better_spheres_parameters")) config.setColoredParametersEnabled(false);
-        if (isFeatureBlocked("better_spheres_names")) config.setColoredNamesEnabled(false);
-        if (isFeatureBlocked("better_spheres_golden")) config.setGoldenSpheresEnabled(false);
+        if (isFeatureBlocked("better_spheres_parameters")) config.setColoredParameters(false);
+        if (isFeatureBlocked("better_spheres_names")) config.setColoredNames(false);
+        if (isFeatureBlocked("better_spheres_golden")) config.setGoldenSpheres(false);
 
         BetterSpheres.refreshBlockedStatus();
 
         /// ShulkerParticles
         if (isFeatureBlocked("shulker_particles")) config.setShulkerParticlesEnabled(false);
-        if (isFeatureBlocked("shulker_particles_constant")) config.setShulkerConstantEnabled(false);
-        if (isFeatureBlocked("shulker_particles_breaking")) config.setShulkerBreakingEnabled(false);
-        if (isFeatureBlocked("shulker_particles_vanilla_breaking")) config.setShulkerVanillaBreakingEnabled(false);
-        if (isFeatureBlocked("shulker_particles_constant_dependence")) config.setShulkerConstantDependence(false);
-        if (isFeatureBlocked("shulker_particles_breaking_dependence")) config.setShulkerBreakingDependence(false);
+        if (isFeatureBlocked("shulker_particles_constant")) config.setShulkerParticlesConstant(false);
+        if (isFeatureBlocked("shulker_particles_breaking")) config.setShulkerParticlesBreaking(false);
+        if (isFeatureBlocked("shulker_particles_vanilla_breaking")) config.setShulkerParticlesVanillaBreaking(false);
+        if (isFeatureBlocked("shulker_particles_constant_dependence")) config.setShulkerParticlesConstantDependence(false);
+        if (isFeatureBlocked("shulker_particles_breaking_dependence")) config.setShulkerParticlesBreakingDependence(false);
 
         ShulkerParticles.refreshBlockedStatus();
 
@@ -359,9 +367,9 @@ public final class LiteApiManager {
             if (client != null && client.worldRenderer != null) client.worldRenderer.reload();
         }
 
-        if (isFeatureBlocked("custom_fog_no_fog")) config.setNoFogEnabled(false);
-        if (isFeatureBlocked("custom_fog_night_vision")) config.setNightVisionEnabled(false);
-        if (isFeatureBlocked("custom_fog_biome_fog")) config.setBiomeFogEnabled(false);
+        if (isFeatureBlocked("custom_fog_no_fog")) config.setNoFog(false);
+        if (isFeatureBlocked("custom_fog_night_vision")) config.setNightVision(false);
+        if (isFeatureBlocked("custom_fog_biome_fog")) config.setBiomeFog(false);
 
         CustomFog.refreshBlockedStatus();
 
@@ -372,17 +380,26 @@ public final class LiteApiManager {
         }
 
         if (isFeatureBlocked("custom_health_hovering")) config.setCustomHealthHovering(false);
+        if (isFeatureBlocked("custom_health_scaling")) config.setCustomHealthScaling(false);
+        if (isFeatureBlocked("custom_health_pvp")) config.setCustomHealthPvPMode(false);
         if (isFeatureBlocked("custom_health_decimal")) config.setCustomHealthDecimal(false);
         if (isFeatureBlocked("custom_health_golden_hearts")) {
             config.setCustomHealthGoldenHearts(false);
             config.setCustomHealthGoldenHeartsPlus(false);
         }
-
         if (isFeatureBlocked("custom_health_golden_plus")) config.setCustomHealthGoldenHeartsPlus(false);
-        if (isFeatureBlocked("custom_health_scaling")) config.setCustomHealthScaling(false);
-        if (isFeatureBlocked("custom_health_pvp")) config.setCustomHealthPvPMode(false);
 
         CustomHealth.refreshBlockedStatus();
+
+        /// No Renders
+        if (isFeatureBlocked("no_render")) config.setNoRenderEnabled(false);
+        if (isFeatureBlocked("no_render_totem_overlay")) config.setNoRenderTotemOverlayEnabled(false);
+        if (isFeatureBlocked("no_render_fire_overlay")) config.setNoRenderFireOverlayEnabled(false);
+        if (isFeatureBlocked("no_render_weather")) config.setNoRenderWeatherEnabled(false);
+        if (isFeatureBlocked("no_render_fireworks")) config.setNoRenderFireworksEnabled(false);
+        if (isFeatureBlocked("no_render_players")) config.setNoRenderPlayersEnabled(false);
+
+        NoRender.refreshBlockedStatus();
     }
 
     public static boolean isFeatureBlocked(String feature) {
