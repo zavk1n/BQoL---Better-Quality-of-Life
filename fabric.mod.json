@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "bqol",
+	"version": "1.0.0",
+	"name": "BQoL",
+	"description": "Better Quality of Life. The mod is in BETA TEST. SOON I will add work with the HolyWorld API (LITE API). There is currently no support and the mod may be BANNED on some servers",
+	"authors": [
+		"zavk1n"
+	],
+	"contact": {},
+	"license": "MIT",
+	"icon": "assets/bqol/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.zavk1n.bqol.BQoL"
+		],
+		"client": [
+			"com.zavk1n.bqol.client.BQoLClient"
+		],
+		"modmenu": [
+			"com.zavk1n.bqol.integration.ModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"bqol.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.0",
+		"fabric-api": "*",
+		"minecraft": "~1.20.1",
+		"java": ">=17"
+	}
+}
