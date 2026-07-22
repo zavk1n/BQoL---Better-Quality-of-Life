@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
-
 public final class NotificationManager {
 
     private static final LinkedList<Notification> activeNotifications = new LinkedList<>();
@@ -103,12 +102,7 @@ public final class NotificationManager {
             }
         }
 
-        Notification notification = new Notification(
-            id,
-            message,
-            now,
-            0
-        );
+        Notification notification = new Notification(id, message, now, 0);
 
         if (activeNotifications.size() < MAX_ACTIVE) {
             addActive(notification);
@@ -165,6 +159,10 @@ public final class NotificationManager {
 
     public static void showBetterSpheresNotification(boolean enabled) {
         showFeatureNotification("Better Spheres", enabled);
+    }
+
+    public static void showBetterSkyNotification(boolean enabled) {
+        showFeatureNotification("Better Sky", enabled);
     }
 
     public static void showShulkerParticlesNotification(boolean enabled) {

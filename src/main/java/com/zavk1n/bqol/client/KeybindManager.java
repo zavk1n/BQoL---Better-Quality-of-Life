@@ -25,6 +25,7 @@ public final class KeybindManager {
     private static final String BETTER_SPRINT_TOGGLE = "better_sprint_toggle";
     private static final String BETTER_SOUNDS_TOGGLE = "better_sounds_toggle";
     private static final String BETTER_SPHERES_TOGGLE = "better_spheres_toggle";
+    private static final String BETTER_SKY_TOGGLE = "better_sky_toggle";
     private static final String SHULKER_PARTICLES_TOGGLE = "shulker_particles_toggle";
     private static final String CUSTOM_FOG_TOGGLE = "custom_fog_toggle";
     private static final String CUSTOM_HEALTH_TOGGLE = "custom_health_toggle";
@@ -43,6 +44,7 @@ public final class KeybindManager {
             BETTER_SPRINT_TOGGLE,
             BETTER_SOUNDS_TOGGLE,
             BETTER_SPHERES_TOGGLE,
+            BETTER_SKY_TOGGLE,
             SHULKER_PARTICLES_TOGGLE,
             CUSTOM_FOG_TOGGLE,
             CUSTOM_HEALTH_TOGGLE,
@@ -158,6 +160,14 @@ public final class KeybindManager {
                     BetterSpheres::setEnabled,
                     config::setBetterSpheresEnabled,
                     NotificationManager::showBetterSpheresNotification
+                );
+
+            case BETTER_SKY_TOGGLE ->
+                toggleFeature(
+                    !config.isBetterSkyEnabled(),
+                    BetterSky::setEnabled,
+                    config::setBetterSkyEnabled,
+                    NotificationManager::showBetterSkyNotification
                 );
 
             case SHULKER_PARTICLES_TOGGLE ->

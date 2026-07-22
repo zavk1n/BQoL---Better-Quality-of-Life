@@ -75,9 +75,17 @@ public final class LiteApiManager {
             "no_render",
             "no_render_totem_overlay",
             "no_render_fire_overlay",
+            "no_render_totem_particles",
+            "no_render_potion_particles",
             "no_render_weather",
+            "no_render_arrows",
             "no_render_fireworks",
-            "no_render_players"
+            "no_render_names",
+            "no_render_players",
+            "no_render_hand",
+
+            /// Better Sky
+            "better_sky"
     );
 
     private static long lastRequestTime = 0;
@@ -324,11 +332,11 @@ public final class LiteApiManager {
 
         /// BetterSprint
         if (isFeatureBlocked("better_sprint")) config.setBetterSprintEnabled(false);
-        if (isFeatureBlocked("better_sprint_default")) config.setBetterSprintDefaultModeEnabled(false);
-        if (isFeatureBlocked("better_sprint_pvp")) config.setBetterSprintPvPModeEnabled(false);
-        if (isFeatureBlocked("better_sprint_tree")) config.setBetterSprintTreeModeEnabled(false);
-        if (isFeatureBlocked("better_sprint_stair_up")) config.setBetterSprintStairUpEnabled(false);
-        if (isFeatureBlocked("better_sprint_water_sprint")) config.setBetterSprintWaterSprintEnabled(false);
+        if (isFeatureBlocked("better_sprint_default")) config.setBetterSprintDefaultMode(false);
+        if (isFeatureBlocked("better_sprint_pvp")) config.setBetterSprintPvPMode(false);
+        if (isFeatureBlocked("better_sprint_tree")) config.setBetterSprintTreeMode(false);
+        if (isFeatureBlocked("better_sprint_stair_up")) config.setBetterSprintStairUp(false);
+        if (isFeatureBlocked("better_sprint_water_sprint")) config.setBetterSprintWaterSprint(false);
 
         BetterSprint.refreshBlockedStatus();
 
@@ -393,13 +401,23 @@ public final class LiteApiManager {
 
         /// No Renders
         if (isFeatureBlocked("no_render")) config.setNoRenderEnabled(false);
-        if (isFeatureBlocked("no_render_totem_overlay")) config.setNoRenderTotemOverlayEnabled(false);
+        if (isFeatureBlocked("no_render_totem_overlay")) config.setNoRenderTotemOverlay(false);
         if (isFeatureBlocked("no_render_fire_overlay")) config.setNoRenderFireOverlayEnabled(false);
+        if (isFeatureBlocked("no_render_totem_particles")) config.setNoRenderTotemParticlesEnabled(false);
+        if (isFeatureBlocked("no_render_potion_particles")) config.setNoRenderPotionParticlesEnabled(false);
         if (isFeatureBlocked("no_render_weather")) config.setNoRenderWeatherEnabled(false);
+        if (isFeatureBlocked("no_render_arrows")) config.setNoRenderArrowsEnabled(false);
         if (isFeatureBlocked("no_render_fireworks")) config.setNoRenderFireworksEnabled(false);
+        if (isFeatureBlocked("no_render_names")) config.setNoRenderNamesEnabled(false);
         if (isFeatureBlocked("no_render_players")) config.setNoRenderPlayersEnabled(false);
+        if (isFeatureBlocked("no_render_hand")) config.setNoRenderHandEnabled(false);
 
         NoRender.refreshBlockedStatus();
+
+        /// BetterSky
+        if (isFeatureBlocked("better_sky")) config.setBetterSkyEnabled(false);
+
+        BetterSky.refreshBlockedStatus();
     }
 
     public static boolean isFeatureBlocked(String feature) {

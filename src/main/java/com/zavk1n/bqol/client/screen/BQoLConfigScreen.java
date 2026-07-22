@@ -122,7 +122,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
         featurePanels.add(new FeaturePanel(
             "Better Sprint",
-            "Auto sprint when pressing W",
+            "Advanced Auto-sprint.",
             "better_sprint",
             config.isBetterSprintEnabled(),
             width / 4,
@@ -132,7 +132,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
         featurePanels.add(new FeaturePanel(
             "Better Sounds",
-            "Sound management modes",
+            "Sound management.",
             "better_sounds",
             config.isBetterSoundsEnabled(),
             width / 4,
@@ -142,7 +142,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
         featurePanels.add(new FeaturePanel(
             "Better Spheres",
-            "Visual sphere indicators",
+            "Customization of server spheres.",
             "better_spheres",
             config.isBetterSpheresEnabled(),
             width / 4,
@@ -151,42 +151,52 @@ public class BQoLConfigScreen extends MainConfigScreen {
         ));
 
         featurePanels.add(new FeaturePanel(
-            "Shulker Particles",
-            "Custom shulker box particles",
-            "shulker_particles",
-            config.isShulkerParticlesEnabled(),
+            "Better Sky",
+            "Customization of sky.",
+            "better_sky",
+            config.isBetterSkyEnabled(),
             width / 4,
             panelStartY + panelSpacing * 4,
             true
         ));
 
         featurePanels.add(new FeaturePanel(
-            "Custom Fog",
-            "Fog distance and biome settings",
-            "custom_fog",
-            config.isCustomFogEnabled(),
+            "Shulker Particles",
+            "Custom particles for shulkers.",
+            "shulker_particles",
+            config.isShulkerParticlesEnabled(),
             width / 4,
             panelStartY + panelSpacing * 5,
             true
         ));
 
         featurePanels.add(new FeaturePanel(
-            "Custom Health",
-            "Health rendering options",
-            "custom_health",
-            config.isCustomHealthEnabled(),
+            "Custom Fog",
+            "Variably customizable fog.",
+            "custom_fog",
+            config.isCustomFogEnabled(),
             width / 4,
             panelStartY + panelSpacing * 6,
             true
         ));
 
         featurePanels.add(new FeaturePanel(
+            "Custom Health",
+            "Custom indicator displaying players health.",
+            "custom_health",
+            config.isCustomHealthEnabled(),
+            width / 4,
+            panelStartY + panelSpacing * 7,
+            true
+        ));
+
+        featurePanels.add(new FeaturePanel(
             "No Render",
-            "No render",
+            "Disables the rendering of various things.",
             "no_render",
             config.isNoRenderEnabled(),
             width / 4,
-            panelStartY + panelSpacing * 7,
+            panelStartY + panelSpacing * 8,
             true
         ));
 
@@ -242,6 +252,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_sprint" -> this.client.setScreen(new SprintConfigScreen(this));
             case "better_sounds" -> this.client.setScreen(new SoundsConfigScreen(this));
             case "better_spheres" -> this.client.setScreen(new SpheresConfigScreen(this));
+            case "better_sky" -> this.client.setScreen(new SkyConfigScreen(this));
             case "shulker_particles" -> this.client.setScreen(new ShulkerParticlesConfigScreen(this));
             case "custom_fog" -> this.client.setScreen(new CustomFogConfigScreen(this));
             case "custom_health" -> this.client.setScreen(new CustomHealthConfigScreen(this));
@@ -256,6 +267,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_sprint" -> "better_sprint";
             case "better_sounds" -> "better_sounds";
             case "better_spheres" -> "better_spheres";
+            case "better_sky" -> "better_sky";
             case "shulker_particles" -> "shulker_particles";
             case "custom_fog" -> "custom_fog";
             case "custom_health" -> "custom_health";
@@ -285,6 +297,12 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 panel.enabled = !panel.enabled;
                 config.setBetterSpheresEnabled(panel.enabled);
                 BetterSpheres.setEnabled(panel.enabled);
+            }
+
+            case "better_sky" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterSkyEnabled(panel.enabled);
+                BetterSky.setEnabled(panel.enabled);
             }
 
             case "shulker_particles" -> {

@@ -23,6 +23,11 @@ public enum FeatureRegistry {
         () -> {},
         BetterSpheres::refreshBlockedStatus
     ),
+    BETTER_SKY(
+        BetterSky::initialize,
+        () -> {},
+        BetterSky::refreshBlockedStatus
+    ),
     SHULKER_PARTICLES(
         ShulkerParticles::initialize,
         ShulkerParticles::onTick,
@@ -37,6 +42,11 @@ public enum FeatureRegistry {
         CustomHealth::initialize,
         () -> {},
         CustomHealth::refreshBlockedStatus
+    ),
+    NO_RENDER(
+        NoRender::initialize,
+        () -> {},
+        NoRender::refreshBlockedStatus
     );
 
     private static final FeatureRegistry[] VALUES = values();

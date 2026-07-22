@@ -27,9 +27,12 @@ public class NoRender {
         boolean main;
         boolean totemOverlay;
         boolean fireOverlay;
-        boolean portalOverlay;
+        boolean totemParticles;
+        boolean potionParticles;
+        boolean arrows;
         boolean weather;
         boolean fireworks;
+        boolean names;
         boolean players;
         boolean hand;
     }
@@ -75,10 +78,14 @@ public class NoRender {
     /// Внутренние динамические методы
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("no_render");
-        blocked.totemOverlay = LiteApiManager.isFeatureBlocked("no_render_totem");
-        blocked.fireOverlay = LiteApiManager.isFeatureBlocked("no_render_fire");
+        blocked.totemOverlay = LiteApiManager.isFeatureBlocked("no_render_totem_overlay");
+        blocked.fireOverlay = LiteApiManager.isFeatureBlocked("no_render_fire_overlay");
+        blocked.totemParticles = LiteApiManager.isFeatureBlocked("no_render_totem_particles");
+        blocked.potionParticles = LiteApiManager.isFeatureBlocked("no_render_potion_particles");
         blocked.weather = LiteApiManager.isFeatureBlocked("no_render_weather");
+        blocked.arrows = LiteApiManager.isFeatureBlocked("no_render_arrows");
         blocked.fireworks = LiteApiManager.isFeatureBlocked("no_render_fireworks");
+        blocked.names = LiteApiManager.isFeatureBlocked("no_render_names");
         blocked.players = LiteApiManager.isFeatureBlocked("no_render_players");
         blocked.hand = LiteApiManager.isFeatureBlocked("no_render_hand");
     }
@@ -97,6 +104,7 @@ public class NoRender {
         reloadFromConfigInternal();
     }
 
+    /// Методы для режимов
     public boolean isTotemOverlayEnabled() {
         return isEnabledInternal() && !blocked.totemOverlay;
     }
@@ -113,6 +121,20 @@ public class NoRender {
         return config.getNoRenderFireOverlay();
     }
 
+    public boolean isTotemParticlesEnabled() { return isEnabledInternal() && !blocked.totemParticles; }
+
+    public BQoLConfig.RenderMode getTotemParticlesMode() {
+        return config.getNoRenderTotemParticles();
+    }
+
+    public boolean isPotionParticlesEnabled() {
+        return isEnabledInternal() && !blocked.potionParticles;
+    }
+
+    public BQoLConfig.RenderMode getPotionParticlesMode() {
+        return config.getNoRenderPotionParticles();
+    }
+
     public boolean isWeatherEnabled() {
         return isEnabledInternal() && !blocked.weather;
     }
@@ -121,12 +143,28 @@ public class NoRender {
         return config.getNoRenderWeather();
     }
 
+    public boolean isArrowsEnabled() {
+        return isEnabledInternal() && !blocked.arrows;
+    }
+
+    public BQoLConfig.RenderMode getArrowsMode() {
+        return config.getNoRenderArrows();
+    }
+
     public boolean isFireworksEnabled() {
         return isEnabledInternal() && !blocked.fireworks;
     }
 
     public BQoLConfig.RenderMode getFireworksMode() {
         return config.getNoRenderFireworks();
+    }
+
+    public boolean isNamesEnabled() {
+        return isEnabledInternal() && !blocked.names;
+    }
+
+    public BQoLConfig.RenderMode getNamesMode() {
+        return config.getNoRenderNames();
     }
 
     public boolean isPlayersEnabled() {

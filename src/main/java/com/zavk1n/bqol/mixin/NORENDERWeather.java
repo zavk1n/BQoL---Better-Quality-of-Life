@@ -23,8 +23,13 @@ public class NORENDERWeather {
 
         BQoLConfig config = BQoLConfig.getInstance();
 
+        if (!config.isNoRenderEnabled() || config.getNoRenderPotionParticles() != BQoLConfig.RenderMode.NO_RENDER) {
+            return;
+        }
+
         if (config.isNoRenderEnabled() && config.getNoRenderWeather() == RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }
 }
+// v1.0

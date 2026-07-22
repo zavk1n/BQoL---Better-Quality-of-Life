@@ -88,6 +88,13 @@ public class BQoLConfig {
     public boolean coloredNames = false;
     public boolean goldenSpheres = false;
 
+    /// Better Sky
+    private boolean betterSkyEnabled = false;
+
+    private boolean betterSkyColorEnabled = false;
+    private int betterSkyColor = 0xFFFFFF;
+    private long betterSkyTime = 6000;
+
     /// Shulker Particles
     public boolean shulkerParticlesEnabled = false;
 
@@ -132,15 +139,23 @@ public class BQoLConfig {
 
     public boolean noRenderTotemOverlayEnabled = false;
     public boolean noRenderFireOverlayEnabled = false;
+    public boolean noRenderTotemParticlesEnabled = false;
+    public boolean noRenderPotionParticlesEnabled = false;
     public boolean noRenderWeatherEnabled = false;
+    public boolean noRenderArrowsEnabled = false;
     public boolean noRenderFireworksEnabled = false;
+    public boolean noRenderNamesEnabled = false;
     public boolean noRenderPlayersEnabled = false;
     public boolean noRenderHandEnabled = false;
 
     public RenderMode noRenderTotemOverlay = RenderMode.FULL;
     public RenderMode noRenderFireOverlay = RenderMode.FULL;
+    public RenderMode noRenderTotemParticles = RenderMode.FULL;
+    public RenderMode noRenderPotionParticles = RenderMode.FULL;
     public RenderMode noRenderWeather = RenderMode.FULL;
+    public RenderMode noRenderArrows = RenderMode.FULL;
     public RenderMode noRenderFireworks = RenderMode.FULL;
+    public RenderMode noRenderNames = RenderMode.FULL;
     public RenderMode noRenderPlayers = RenderMode.FULL;
     public RenderMode noRenderHand = RenderMode.FULL;
 
@@ -226,27 +241,27 @@ public class BQoLConfig {
         this.betterSprintEnabled = enabled;
     }
 
-    public boolean isBetterSprintDefaultModeEnabled() { return betterSprintDefaultMode; }
-    public void setBetterSprintDefaultModeEnabled(boolean enabled) {
+    public boolean isBetterSprintDefaultMode() { return betterSprintDefaultMode; }
+    public void setBetterSprintDefaultMode(boolean enabled) {
         this.betterSprintDefaultMode = enabled;
         if (enabled) { this.betterSprintTreeMode = false; this.betterSprintPvPMode = false; }
     }
-    public boolean isBetterSprintPvPModeEnabled() { return betterSprintPvPMode; }
-    public void setBetterSprintPvPModeEnabled(boolean enabled) {
+    public boolean isBetterSprintPvPMode() { return betterSprintPvPMode; }
+    public void setBetterSprintPvPMode(boolean enabled) {
         this.betterSprintPvPMode = enabled;
         if (enabled) { this.betterSprintDefaultMode = false; this.betterSprintTreeMode = false; }
     }
-    public boolean isBetterSprintTreeModeEnabled() { return betterSprintTreeMode; }
-    public void setBetterSprintTreeModeEnabled(boolean enabled) {
+    public boolean isBetterSprintTreeMode() { return betterSprintTreeMode; }
+    public void setBetterSprintTreeMode(boolean enabled) {
         this.betterSprintTreeMode = enabled;
         if (enabled) { this.betterSprintDefaultMode = false; this.betterSprintPvPMode = false; }
     }
-    public boolean isBetterSprintStairUpEnabled() { return betterSprintStairUp; }
-    public void setBetterSprintStairUpEnabled(boolean enabled) {
+    public boolean isBetterSprintStairUp() { return betterSprintStairUp; }
+    public void setBetterSprintStairUp(boolean enabled) {
         this.betterSprintStairUp = enabled;
     }
-    public boolean isBetterSprintWaterSprintEnabled() { return betterSprintWaterSprint; }
-    public void setBetterSprintWaterSprintEnabled(boolean enabled) {
+    public boolean isBetterSprintWaterSprint() { return betterSprintWaterSprint; }
+    public void setBetterSprintWaterSprint(boolean enabled) {
         this.betterSprintWaterSprint = enabled;
     }
 
@@ -345,6 +360,17 @@ public class BQoLConfig {
     public boolean isGoldenSpheres() { return goldenSpheres; }
     public void setGoldenSpheres(boolean enabled) { this.goldenSpheres = enabled; save(); }
 
+    /// Better Sky
+    public boolean isBetterSkyEnabled() { return betterSkyEnabled; }
+    public void setBetterSkyEnabled(boolean betterSkyEnabled) { this.betterSkyEnabled = betterSkyEnabled; }
+
+    public boolean isBetterSkyColorEnabled() { return betterSkyColorEnabled; }
+    public void setBetterSkyColorEnabled(boolean enabled) { this.betterSkyColorEnabled = enabled; save(); }
+    public int getBetterSkyColor() { return betterSkyColor; }
+    public void setBetterSkyColor(int betterSkyColor) { this.betterSkyColor = betterSkyColor; }
+    public long getBetterSkyTime() { return betterSkyTime; }
+    public void setBetterSkyTime(long betterSkyTime) { this.betterSkyTime = betterSkyTime; }
+
     /// Shulker Paricles
     public boolean isShulkerParticlesEnabled() { return shulkerParticlesEnabled; }
     public void setShulkerParticlesEnabled(boolean enabled) { this.shulkerParticlesEnabled = enabled; save(); }
@@ -405,19 +431,15 @@ public class BQoLConfig {
     /// No Render
     public boolean isNoRenderEnabled() { return noRenderEnabled; }
     public void setNoRenderEnabled(boolean enabled) { this.noRenderEnabled = enabled; save(); }
-    public boolean isNoRenderTotemOverlayEnabled() {
-        return noRenderTotemOverlayEnabled;
-    }
 
-    public void setNoRenderTotemOverlayEnabled(boolean enabled) {
+    public boolean isNoRenderTotemOverlayEnabled() { return noRenderTotemOverlayEnabled; }
+    public void setNoRenderTotemOverlay(boolean enabled) {
         this.noRenderTotemOverlayEnabled = enabled;
         save();
     }
-
     public RenderMode getNoRenderTotemOverlay() {
         return noRenderTotemOverlay;
     }
-
     public void setNoRenderTotemOverlay(RenderMode mode) {
         this.noRenderTotemOverlay = mode;
         save();
@@ -425,25 +447,51 @@ public class BQoLConfig {
     public boolean isNoRenderFireOverlayEnabled() {
         return noRenderFireOverlayEnabled;
     }
-
     public void setNoRenderFireOverlayEnabled(boolean enabled) {
         this.noRenderFireOverlayEnabled = enabled;
         save();
     }
-
     public RenderMode getNoRenderFireOverlay() {
         return noRenderFireOverlay;
     }
-
     public void setNoRenderFireOverlay(RenderMode mode) {
         this.noRenderFireOverlay = mode;
+        save();
+    }
+
+    public boolean isNoRenderTotemParticlesEnabled() {
+        return noRenderTotemParticlesEnabled;
+    }
+    public void setNoRenderTotemParticlesEnabled(boolean enabled) {
+        this.noRenderTotemParticlesEnabled = enabled;
+        save();
+    }
+    public RenderMode getNoRenderTotemParticles() {
+        return noRenderTotemParticles;
+    }
+    public void setNoRenderTotemParticles(RenderMode mode) {
+        this.noRenderTotemParticles = mode;
+        save();
+    }
+
+    public boolean isNoRenderPotionParticlesEnabled() {
+        return noRenderPotionParticlesEnabled;
+    }
+    public void setNoRenderPotionParticlesEnabled(boolean enabled) {
+        this.noRenderPotionParticlesEnabled = enabled;
+        save();
+    }
+    public RenderMode getNoRenderPotionParticles() {
+        return noRenderPotionParticles;
+    }
+    public void setNoRenderPotionParticles(RenderMode mode) {
+        this.noRenderPotionParticles = mode;
         save();
     }
 
     public boolean isNoRenderWeatherEnabled() {
         return noRenderWeatherEnabled;
     }
-
     public void setNoRenderWeatherEnabled(boolean enabled) {
         noRenderWeatherEnabled = enabled;
         save();
@@ -451,41 +499,66 @@ public class BQoLConfig {
     public RenderMode getNoRenderWeather() {
         return noRenderWeather;
     }
-
     public void setNoRenderWeather(RenderMode mode) {
         noRenderWeather = mode;
         save();
     }
+
+    public boolean isNoRenderArrowsEnabled() {
+        return noRenderArrowsEnabled;
+    }
+    public void setNoRenderArrowsEnabled(boolean enabled) {
+        noRenderArrowsEnabled = enabled;
+        save();
+    }
+    public RenderMode getNoRenderArrows() {
+        return noRenderArrows;
+    }
+    public void setNoRenderArrows(RenderMode mode) {
+        noRenderArrows = mode;
+        save();
+    }
+
     public boolean isNoRenderFireworksEnabled() {
         return noRenderFireworksEnabled;
     }
-
     public void setNoRenderFireworksEnabled(boolean enabled) {
         this.noRenderFireworksEnabled = enabled;
         save();
     }
-
     public RenderMode getNoRenderFireworks() {
         return noRenderFireworks;
     }
-
     public void setNoRenderFireworks(RenderMode mode) {
         this.noRenderFireworks = mode;
         save();
     }
+
+    public boolean isNoRenderNamesEnabled() {
+        return noRenderNamesEnabled;
+    }
+    public void setNoRenderNamesEnabled(boolean enabled) {
+        this.noRenderNamesEnabled = enabled;
+        save();
+    }
+    public RenderMode getNoRenderNames() {
+        return noRenderNames;
+    }
+    public void setNoRenderNames(RenderMode mode) {
+        this.noRenderNames = mode;
+        save();
+    }
+
     public boolean isNoRenderPlayersEnabled() {
         return noRenderPlayersEnabled;
     }
-
     public void setNoRenderPlayersEnabled(boolean enabled) {
         this.noRenderPlayersEnabled = enabled;
         save();
     }
-
     public RenderMode getNoRenderPlayers() {
         return noRenderPlayers;
     }
-
     public void setNoRenderPlayers(RenderMode mode) {
         this.noRenderPlayers = mode;
         save();
@@ -494,16 +567,13 @@ public class BQoLConfig {
     public boolean isNoRenderHandEnabled() {
         return noRenderHandEnabled;
     }
-
     public void setNoRenderHandEnabled(boolean enabled) {
         this.noRenderHandEnabled = enabled;
         save();
     }
-
     public RenderMode getNoRenderHand() {
         return noRenderHand;
     }
-
     public void setNoRenderHand(RenderMode mode) {
         this.noRenderHand = mode;
         save();
@@ -598,6 +668,13 @@ public class BQoLConfig {
         this.coloredNames = defaults.coloredNames;
         this.goldenSpheres = defaults.goldenSpheres;
 
+        /// BetterSky
+        this.betterSkyEnabled = defaults.betterSkyEnabled;
+
+        this.betterSkyColorEnabled = defaults.betterSkyColorEnabled;
+        this.betterSkyColor = defaults.betterSkyColor;
+        this.betterSkyTime = defaults.betterSkyTime;
+
         /// Shulker Particles
         this.shulkerParticlesEnabled = defaults.shulkerParticlesEnabled;
 
@@ -635,16 +712,24 @@ public class BQoLConfig {
         /// No Render
         this.noRenderTotemOverlayEnabled = defaults.noRenderTotemOverlayEnabled;
         this.noRenderFireOverlayEnabled = defaults.noRenderFireOverlayEnabled;
+        this.noRenderTotemParticlesEnabled = defaults.noRenderTotemParticlesEnabled;
+        this.noRenderPotionParticlesEnabled = defaults.noRenderPotionParticlesEnabled;
         this.noRenderWeatherEnabled = defaults.noRenderWeatherEnabled;
+        this.noRenderArrowsEnabled = defaults.noRenderArrowsEnabled;
         this.noRenderFireworksEnabled = defaults.noRenderFireworksEnabled;
+        this.noRenderNamesEnabled = defaults.noRenderNamesEnabled;
         this.noRenderPlayersEnabled = defaults.noRenderPlayersEnabled;
         this.noRenderHandEnabled = defaults.noRenderHandEnabled;
 
         this.noRenderEnabled = defaults.noRenderEnabled;
         this.noRenderTotemOverlay = defaults.noRenderTotemOverlay;
         this.noRenderFireOverlay = defaults.noRenderFireOverlay;
+        this.noRenderTotemParticles = defaults.noRenderTotemParticles;
+        this.noRenderPotionParticles = defaults.noRenderPotionParticles;
         this.noRenderWeather = defaults.noRenderWeather;
+        this.noRenderArrows = defaults.noRenderArrows;
         this.noRenderFireworks = defaults.noRenderFireworks;
+        this.noRenderNames = defaults.noRenderNames;
         this.noRenderPlayers = defaults.noRenderPlayers;
         this.noRenderHand = defaults.noRenderHand;
 

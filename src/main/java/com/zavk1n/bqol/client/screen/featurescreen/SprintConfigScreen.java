@@ -59,7 +59,7 @@ public class SprintConfigScreen extends MainConfigScreen {
                 rightX,
                 y,
                 "Default Mode",
-                config::isBetterSprintDefaultModeEnabled,
+                config::isBetterSprintDefaultMode,
                 SprintMode.DEFAULT
             );
 
@@ -71,7 +71,7 @@ public class SprintConfigScreen extends MainConfigScreen {
                 rightX,
                 y,
                 "PvP Mode",
-                config::isBetterSprintPvPModeEnabled,
+                config::isBetterSprintPvPMode,
                 SprintMode.PVP
             );
 
@@ -83,7 +83,7 @@ public class SprintConfigScreen extends MainConfigScreen {
                 rightX,
                 y,
                 "Tree Mode",
-                config::isBetterSprintTreeModeEnabled,
+                config::isBetterSprintTreeMode,
                 SprintMode.TREE
             );
 
@@ -92,10 +92,10 @@ public class SprintConfigScreen extends MainConfigScreen {
 
         if (!LiteApiManager.isFeatureBlocked("better_sprint_stair_up")) {
             stairupBtn = ButtonWidget.builder(
-                    Text.literal(config.isBetterSprintStairUpEnabled() ? "Enabled" : "Disabled"),
+                    Text.literal(config.isBetterSprintStairUp() ? "Enabled" : "Disabled"),
                     button -> {
-                        boolean state = !config.isBetterSprintStairUpEnabled();
-                        config.setBetterSprintStairUpEnabled(state);
+                        boolean state = !config.isBetterSprintStairUp();
+                        config.setBetterSprintStairUp(state);
                         changed = true;
                         updateButton(stairupBtn, state);
                         save();
@@ -109,10 +109,10 @@ public class SprintConfigScreen extends MainConfigScreen {
 
         if (!LiteApiManager.isFeatureBlocked("better_sprint_water_sprint")) {
             watersprintBtn = ButtonWidget.builder(
-                    Text.literal(config.isBetterSprintWaterSprintEnabled() ? "Enabled" : "Disabled"),
+                    Text.literal(config.isBetterSprintWaterSprint() ? "Enabled" : "Disabled"),
                     button -> {
-                        boolean state = !config.isBetterSprintWaterSprintEnabled();
-                        config.setBetterSprintWaterSprintEnabled(state);
+                        boolean state = !config.isBetterSprintWaterSprint();
+                        config.setBetterSprintWaterSprint(state);
                         changed = true;
                         updateButton(watersprintBtn, state);
                         save();
@@ -162,38 +162,38 @@ public class SprintConfigScreen extends MainConfigScreen {
         disableAllModes();
 
         switch (mode) {
-            case DEFAULT -> config.setBetterSprintDefaultModeEnabled(true);
-            case PVP -> config.setBetterSprintPvPModeEnabled(true);
-            case TREE -> config.setBetterSprintTreeModeEnabled(true);
+            case DEFAULT -> config.setBetterSprintDefaultMode(true);
+            case PVP -> config.setBetterSprintPvPMode(true);
+            case TREE -> config.setBetterSprintTreeMode(true);
         }
     }
 
     private void disableAllModes() {
-        config.setBetterSprintDefaultModeEnabled(false);
-        config.setBetterSprintPvPModeEnabled(false);
-        config.setBetterSprintTreeModeEnabled(false);
+        config.setBetterSprintDefaultMode(false);
+        config.setBetterSprintPvPMode(false);
+        config.setBetterSprintTreeMode(false);
     }
 
     /// Обновление состояния кнопок
     private void updateAllButtons() {
         if (defaultModeBtn != null) {
-            updateButton(defaultModeBtn, config.isBetterSprintDefaultModeEnabled());
+            updateButton(defaultModeBtn, config.isBetterSprintDefaultMode());
         }
 
         if (pvpModeBtn != null) {
-            updateButton(pvpModeBtn, config.isBetterSprintPvPModeEnabled());
+            updateButton(pvpModeBtn, config.isBetterSprintPvPMode());
         }
 
         if (treeModeBtn != null) {
-            updateButton(treeModeBtn, config.isBetterSprintTreeModeEnabled());
+            updateButton(treeModeBtn, config.isBetterSprintTreeMode());
         }
 
         if (stairupBtn != null) {
-            updateButton(stairupBtn, config.isBetterSprintStairUpEnabled());
+            updateButton(stairupBtn, config.isBetterSprintStairUp());
         }
 
         if (watersprintBtn != null) {
-            updateButton(watersprintBtn, config.isBetterSprintWaterSprintEnabled());
+            updateButton(watersprintBtn, config.isBetterSprintWaterSprint());
         }
     }
 

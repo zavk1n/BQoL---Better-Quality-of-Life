@@ -10,8 +10,12 @@
     "NORENDERFireworks",
     "NORENDERPlayers",
     "NORENDERHand",
+    "NORENDERNames",
+    "NORENDERArrows",
     "NORENDERFireOverlay",
     "NORENDERTotemOverlay",
+    "NORENDERPotionParticles",
+    "NORENDERTotemParticles",
     "NORENDERWeather",
     "GLOBALAttackEntityMixin",
     "GLOBALDamageEntityMixin",
@@ -20,7 +24,9 @@
     "SOUNDSPlaySound",
     "SPRINTStairUpAllowFastMoving",
     "SPRINTStairUpJumpBlock",
-    "SPRINTStairUpHideVanillaButton"
+    "SPRINTStairUpHideVanillaButton",
+    "SKYColor",
+    "SKYTime"
   ],
   "client": [],
   "injectors": {

@@ -157,30 +157,30 @@ public class BetterSprint {
     private void reloadFromConfigInternal() {
         refreshBlockedStatusInternal();
 
-        if (!config.isBetterSprintDefaultModeEnabled()) {
+        if (!config.isBetterSprintDefaultMode()) {
             defaultState.delayUntilTick = 0;
             defaultState.sprint = false;
             defaultState.active = false;
         }
 
-        if (!config.isBetterSprintPvPModeEnabled()) {
+        if (!config.isBetterSprintPvPMode()) {
             pvpState.delayUntilTick = 0;
             pvpState.sprint = false;
             pvpState.active = false;
         }
 
-        if (!config.isBetterSprintTreeModeEnabled()) {
+        if (!config.isBetterSprintTreeMode()) {
             treeState.delayUntilTick = 0;
             treeState.sprint = false;
             treeState.active = false;
         }
 
-        if (!config.isBetterSprintWaterSprintEnabled()) {
+        if (!config.isBetterSprintWaterSprint()) {
             waterSprintState.sprint = false;
             waterSprintState.active = false;
         }
 
-        if (!config.isBetterSprintStairUpEnabled()) {
+        if (!config.isBetterSprintStairUp()) {
             disableStairUp();
         }
     }
@@ -203,7 +203,7 @@ public class BetterSprint {
     }
 
     private void setDefaultModeInternal(boolean enabled) {
-        config.setBetterSprintDefaultModeEnabled(enabled);
+        config.setBetterSprintDefaultMode(enabled);
 
         if (enabled) {
             defaultState.delayUntilTick = 0;
@@ -214,7 +214,7 @@ public class BetterSprint {
     }
 
     private void setPvPModeInternal(boolean enabled) {
-        config.setBetterSprintPvPModeEnabled(enabled);
+        config.setBetterSprintPvPMode(enabled);
 
         if (enabled) {
             pvpState.delayUntilTick = 0;
@@ -225,7 +225,7 @@ public class BetterSprint {
     }
 
     private void setTreeModeInternal(boolean enabled) {
-        config.setBetterSprintTreeModeEnabled(enabled);
+        config.setBetterSprintTreeMode(enabled);
 
         if (enabled) {
             treeState.delayUntilTick = 0;
@@ -236,7 +236,7 @@ public class BetterSprint {
     }
 
     private void setStairUpInternal(boolean enabled) {
-        config.setBetterSprintStairUpEnabled(enabled);
+        config.setBetterSprintStairUp(enabled);
 
         if (!enabled) {
             disableStairUp();
@@ -244,7 +244,7 @@ public class BetterSprint {
     }
 
     private void setWaterSprintInternal(boolean enabled) {
-        config.setBetterSprintWaterSprintEnabled(enabled);
+        config.setBetterSprintWaterSprint(enabled);
 
         if (!enabled) {
             waterSprintState.active = false;
@@ -262,7 +262,7 @@ public class BetterSprint {
             || target == client.player
             || target.isRemoved()
             || target.isDead()
-            || !config.isBetterSprintPvPModeEnabled()
+            || !config.isBetterSprintPvPMode()
             || blocked.pvpMode) {
             return;
         }
@@ -276,7 +276,7 @@ public class BetterSprint {
 
         if (client == null
             || client.player == null
-            || !config.isBetterSprintPvPModeEnabled()
+            || !config.isBetterSprintPvPMode()
             || blocked.pvpMode) {
             return;
         }
@@ -373,10 +373,10 @@ public class BetterSprint {
             return;
         }
 
-        boolean anySprintModeEnabled = (!blocked.defaultMode && config.isBetterSprintDefaultModeEnabled())
-            || (!blocked.pvpMode && config.isBetterSprintPvPModeEnabled())
-            || (!blocked.treeMode && config.isBetterSprintTreeModeEnabled())
-            || (!blocked.waterSprint && config.isBetterSprintWaterSprintEnabled());
+        boolean anySprintModeEnabled = (!blocked.defaultMode && config.isBetterSprintDefaultMode())
+            || (!blocked.pvpMode && config.isBetterSprintPvPMode())
+            || (!blocked.treeMode && config.isBetterSprintTreeMode())
+            || (!blocked.waterSprint && config.isBetterSprintWaterSprint());
 
         if (!anySprintModeEnabled) {
             return;
@@ -450,7 +450,7 @@ public class BetterSprint {
     private void updateInternalDefault(long currentTick, boolean moving, boolean hasFood, boolean inWaterOrLava) {
         updateMode(
             defaultState,
-            config.isBetterSprintDefaultModeEnabled() && !blocked.defaultMode && !inWaterOrLava,
+            config.isBetterSprintDefaultMode() && !blocked.defaultMode && !inWaterOrLava,
             moving && hasFood,
             true,
             33,
@@ -462,7 +462,7 @@ public class BetterSprint {
     private void updateInternalPvP(long currentTick, boolean moving, boolean hasFood, boolean inWaterOrLava) {
         updateMode(
             pvpState,
-            config.isBetterSprintPvPModeEnabled() && !blocked.pvpMode && !inWaterOrLava && currentTick < pvpExpireTick,
+            config.isBetterSprintPvPMode() && !blocked.pvpMode && !inWaterOrLava && currentTick < pvpExpireTick,
             moving && hasFood,
             true,
             25,
@@ -474,7 +474,7 @@ public class BetterSprint {
     private void updateInternalTree(long currentTick, boolean moving, boolean hasFood, boolean inWaterOrLava) {
         updateMode(
             treeState,
-            config.isBetterSprintTreeModeEnabled() && !blocked.treeMode && !inWaterOrLava && isFoliageAboveHead(mc(), currentTick),
+            config.isBetterSprintTreeMode() && !blocked.treeMode && !inWaterOrLava && isFoliageAboveHead(mc(), currentTick),
             moving && hasFood,
             true,
             25,
@@ -493,7 +493,7 @@ public class BetterSprint {
         if (!config.isBetterSprintEnabled()
             || blocked.main
             || blocked.stairUp
-            || !config.isBetterSprintStairUpEnabled()) {
+            || !config.isBetterSprintStairUp()) {
 
             disableStairUp();
             return;
@@ -506,7 +506,7 @@ public class BetterSprint {
 
     private void updateInternalWaterSprint(ClientPlayerEntity player, boolean moving, boolean hasFood) {
         waterSprintState.active = !blocked.waterSprint
-            && config.isBetterSprintWaterSprintEnabled()
+            && config.isBetterSprintWaterSprint()
             && player.isTouchingWater()
             && !player.isInLava()
             && hasFood
@@ -652,7 +652,7 @@ public class BetterSprint {
     public static boolean isStairUpActive() {
         return instance != null && instance.isEnabledInternal()
             && !instance.blocked.stairUp
-            && instance.config.isBetterSprintStairUpEnabled();
+            && instance.config.isBetterSprintStairUp();
     }
 
     private void disableStairUp() {
