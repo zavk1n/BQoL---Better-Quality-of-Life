@@ -26,11 +26,7 @@ public class NORENDERPlayers {
 
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (!config.isNoRenderEnabled() || config.getNoRenderPlayers() != RenderMode.NO_RENDER) {
-            return;
-        }
-
-        if (!(entity instanceof AbstractClientPlayerEntity player)) {
+        if (!config.isNoRenderPlayersEnabled() || config.getNoRenderPlayers() != RenderMode.NO_RENDER || !(entity instanceof AbstractClientPlayerEntity player)) {
             return;
         }
 
@@ -41,4 +37,3 @@ public class NORENDERPlayers {
         ci.cancel();
     }
 }
-// v1.0

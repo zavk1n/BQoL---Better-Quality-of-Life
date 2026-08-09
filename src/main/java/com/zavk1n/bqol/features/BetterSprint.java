@@ -4,7 +4,9 @@ import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.block.BlockState;
+import net.minecraft.world.World;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -68,6 +70,21 @@ public class BetterSprint {
     private static class WaterSprintState {
         boolean active;
         boolean sprint;
+
+        long shiftIgnoreUntilTick;
+    }
+
+    private final EndConcreteState endConcreteState = new EndConcreteState();
+
+    private static class EndConcreteState {
+        boolean blocked;
+        long lastCheckTick = -1;
+
+        int lastX;
+        int lastY;
+        int lastZ;
+
+        int dimensionHash;
     }
 
     /// Остальные состояния
@@ -359,7 +376,7 @@ public class BetterSprint {
         updateInternalPvP(currentTick, moving, hasFood, inWaterOrLava);
         updateInternalTree(currentTick, moving, hasFood, inWaterOrLava);
         updateInternalStairUp(player);
-        updateInternalWaterSprint(player, moving, hasFood);
+        updateInternalWaterSprint(currentTick, player, moving, hasFood);
 
         if (!hasFood) {
             if (player.isSprinting()) {
@@ -486,7 +503,7 @@ public class BetterSprint {
     private void updateInternalStairUp(ClientPlayerEntity player) {
         MinecraftClient client = mc();
 
-        if (client == null || client.options == null) {
+        if (client == null || client.options == null || player == null || client.world == null) {
             return;
         }
 
@@ -496,6 +513,14 @@ public class BetterSprint {
             || !config.isBetterSprintStairUp()) {
 
             disableStairUp();
+            endConcreteState.blocked = false;
+            return;
+        }
+
+        boolean blockedByEndConcrete = isEndConcreteNearby(player);
+
+        if (blockedByEndConcrete) {
+            disableStairUp();
             return;
         }
 
@@ -504,16 +529,22 @@ public class BetterSprint {
         }
     }
 
-    private void updateInternalWaterSprint(ClientPlayerEntity player, boolean moving, boolean hasFood) {
-        waterSprintState.active = !blocked.waterSprint
+    private void updateInternalWaterSprint(long currentTick, ClientPlayerEntity player, boolean moving, boolean hasFood) {
+        boolean wasActive = waterSprintState.active;
+
+        boolean shouldBeActive = !blocked.waterSprint
             && config.isBetterSprintWaterSprint()
             && player.isTouchingWater()
-            && !player.isInLava()
             && hasFood
             && moving
             && isInFullWaterBlock(player);
 
-        waterSprintState.sprint = waterSprintState.active;
+        waterSprintState.active = shouldBeActive;
+        waterSprintState.sprint = shouldBeActive;
+
+        if (!wasActive && shouldBeActive) {
+            waterSprintState.shiftIgnoreUntilTick = currentTick + 8;
+        }
     }
 
     /// Расчет задержек для режимов
@@ -648,11 +679,13 @@ public class BetterSprint {
         return leavesState.cachedResult;
     }
 
-    /// Дополнительные методы для Stair Up (Активация/Отключение)
+    /// Дополнительные методы для Stair Up (Активация/Отключение/Проверки)
     public static boolean isStairUpActive() {
-        return instance != null && instance.isEnabledInternal()
+        return instance != null
+            && instance.isEnabledInternal()
             && !instance.blocked.stairUp
-            && instance.config.isBetterSprintStairUp();
+            && instance.config.isBetterSprintStairUp()
+            && !instance.endConcreteState.blocked;
     }
 
     private void disableStairUp() {
@@ -661,6 +694,64 @@ public class BetterSprint {
         if (client != null && client.options != null) {
             client.options.getAutoJump().setValue(false);
         }
+    }
+
+    private boolean isEndConcreteNearby(ClientPlayerEntity player) {
+        MinecraftClient client = mc();
+
+        if (client == null || client.world == null || player == null) {
+            return false;
+        }
+
+        if (client.world.getRegistryKey() != World.END) {
+            endConcreteState.blocked = false;
+            return false;
+        }
+
+        long currentTick = player.age;
+
+        int playerX = player.getBlockPos().getX();
+        int playerY = player.getBlockPos().getY();
+        int playerZ = player.getBlockPos().getZ();
+
+        int dimensionHash = client.world.getRegistryKey().hashCode();
+
+        boolean samePosition = endConcreteState.lastX == playerX
+                && endConcreteState.lastY == playerY
+                && endConcreteState.lastZ == playerZ
+                && endConcreteState.dimensionHash == dimensionHash;
+
+        if (samePosition && currentTick - endConcreteState.lastCheckTick < 2) {
+            return endConcreteState.blocked;
+        }
+
+        endConcreteState.lastX = playerX;
+        endConcreteState.lastY = playerY;
+        endConcreteState.lastZ = playerZ;
+        endConcreteState.dimensionHash = dimensionHash;
+        endConcreteState.lastCheckTick = currentTick;
+
+        BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+
+        for (int x = -5; x <= 5; x++) {
+            for (int y = -5; y <= 5; y++) {
+                for (int z = -5; z <= 5; z++) {
+                    mutablePos.set(
+                        playerX + x,
+                        playerY + y,
+                        playerZ + z
+                    );
+
+                    if (client.world.getBlockState(mutablePos).isOf(Blocks.BLACK_CONCRETE_POWDER)) {
+                        endConcreteState.blocked = true;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        endConcreteState.blocked = false;
+        return false;
     }
 
     /// Дополнительный метод для Water Sprint (в полном ли блоке воды я)
@@ -680,6 +771,32 @@ public class BetterSprint {
         BlockState state = client.world.getBlockState(feet);
 
         return state.getFluidState().isStill() && player.isTouchingWater();
+    }
+
+    /// Дополнительный метод для Water Sprint (Отключение Шифт-стопов на краях блоков под водой)
+    public static boolean shouldDisableWaterSprintShiftStops(PlayerEntity player) {
+        if (instance == null || player == null) {
+            return false;
+        }
+
+        return instance.isEnabledInternal()
+            && !instance.blocked.waterSprint
+            && instance.config.isBetterSprintWaterSprint()
+            && player.isTouchingWater()
+            && !player.isInLava();
+    }
+
+    /// Дополнительный метод для Water Sprint (Отключение Шифт-стопа при старте плавания)
+    public static boolean shouldDisableWaterSprintShiftStop() {
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        if (instance == null
+                || client == null || client.player == null) {
+            return false;
+        }
+
+        return instance.waterSprintState.active
+            && client.player.age < instance.waterSprintState.shiftIgnoreUntilTick;
     }
 
     /// Метод для определения сервера
@@ -727,7 +844,17 @@ public class BetterSprint {
 
         leavesState.cachedResult = false;
 
+        endConcreteState.blocked = false;
+
+        endConcreteState.lastCheckTick = -1;
+        endConcreteState.dimensionHash = 0;
+        endConcreteState.lastX = 0;
+        endConcreteState.lastY = 0;
+        endConcreteState.lastZ = 0;
+
         wasEnabledLastTick = false;
+
+        waterSprintState.shiftIgnoreUntilTick = 0;
 
         disableStairUp();
 

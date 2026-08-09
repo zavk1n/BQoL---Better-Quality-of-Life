@@ -12,7 +12,6 @@ public class SKYTime {
 
     @Inject(method = "getTimeOfDay", at = @At("HEAD"), cancellable = true)
     private void bqol$getTime(CallbackInfoReturnable<Long> cir) {
-
         if (!BetterSky.isEnabled()) {
             return;
         }
@@ -20,4 +19,3 @@ public class SKYTime {
         cir.setReturnValue(BetterSky.getTime());
     }
 }
-

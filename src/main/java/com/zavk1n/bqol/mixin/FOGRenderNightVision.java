@@ -1,6 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.features.CustomFog;
+import com.zavk1n.bqol.features.BetterFog;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
@@ -21,7 +21,7 @@ public abstract class FOGRenderNightVision {
 
         if (client.player == null
             || entity != client.player
-            || !CustomFog.isNightVisionEnabled()
+            || !BetterFog.isNightVisionEnabled()
             || hasBlockingEffect(entity)) {
             return;
         }
@@ -38,7 +38,7 @@ public abstract class FOGRenderNightVision {
 
         if (client.player == null
             || entity != client.player
-            || !CustomFog.isNightVisionEnabled()
+            || !BetterFog.isNightVisionEnabled()
             || hasBlockingEffect(entity)) {
             return;
         }

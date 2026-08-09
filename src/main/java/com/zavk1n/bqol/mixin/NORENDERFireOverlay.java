@@ -16,7 +16,7 @@ public class NORENDERFireOverlay {
     private static void bqol$renderFireOverlay(CallbackInfo ci) {
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (!config.isNoRenderEnabled()) {
+        if (!config.isNoRenderFireOverlayEnabled()) {
             return;
         }
 
@@ -31,18 +31,19 @@ public class NORENDERFireOverlay {
             value = "INVOKE",
             target = "Lnet/minecraft/client/render/BufferBuilder;vertex(Lorg/joml/Matrix4f;FFF)Lnet/minecraft/client/render/VertexConsumer;"
         ),
-        index = 2 // y
+        index = 2
     )
     private static float bqol$modifyFireOverlayY(float y) {
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (!config.isNoRenderEnabled()) {
+        if (!config.isNoRenderFireOverlayEnabled()) {
             return y;
         }
 
-        return config.getNoRenderFireOverlay() == RenderMode.SMALL
-            ? y * 0.33F
-            : y;
+        return switch (config.getNoRenderFireOverlay()) {
+            case SMALL -> y * 0.33F;
+            case FULL, NO_RENDER -> y;
+        };
     }
 }
 // v1.0

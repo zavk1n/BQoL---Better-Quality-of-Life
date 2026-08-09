@@ -19,11 +19,7 @@ public class NORENDERNames<T extends Entity> {
     private void bqol$hideNames(T entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (!config.isNoRenderEnabled()) {
-            return;
-        }
-
-        if (config.getNoRenderNames() != BQoLConfig.RenderMode.NO_RENDER) {
+        if (!config.isNoRenderNamesEnabled() || config.getNoRenderNames() != BQoLConfig.RenderMode.NO_RENDER) {
             return;
         }
 
@@ -32,3 +28,4 @@ public class NORENDERNames<T extends Entity> {
         }
     }
 }
+// v1.0

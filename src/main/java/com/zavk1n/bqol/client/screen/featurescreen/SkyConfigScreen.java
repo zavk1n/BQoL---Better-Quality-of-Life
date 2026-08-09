@@ -3,7 +3,6 @@ package com.zavk1n.bqol.client.screen.featurescreen;
 import com.zavk1n.bqol.client.screen.MainConfigScreen;
 import com.zavk1n.bqol.client.screen.featurescreen.utils.ColorSlider;
 import com.zavk1n.bqol.features.BetterSky;
-import com.zavk1n.bqol.features.CustomFog;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.minecraft.client.gui.DrawContext;
@@ -22,7 +21,7 @@ public class SkyConfigScreen extends MainConfigScreen {
     private TextFieldWidget hexField;
     private SliderWidget timeSlider;
 
-    private ButtonWidget colorEnabledBtn;
+    private ButtonWidget colorBtn;
 
     private boolean updatingHexField;
     private boolean changed;
@@ -52,59 +51,44 @@ public class SkyConfigScreen extends MainConfigScreen {
         int centerX = width / 2;
         int currentY = 60;
 
-        currentY += SPACING;
-
-        colorSlider = createColorSlider(
-            centerX - 40,
-            currentY,
-            config.getBetterSkyColor(),
-            value -> {
+        colorSlider = createColorSlider(centerX - 40, currentY, config.getBetterSkyColor(), value -> {
                 int hue = (int)(value * 360);
                 int rgb = hslToRgb(hue,100,50);
 
                 BetterSky.setSkyColor(rgb);
                 changed = true;
-
                 updateHexField();
-            });
+        });
 
         addDrawableChild(colorSlider);
 
-        hexField = createHexField(
-            centerX + 115,
-            currentY,
-            config.getBetterSkyColor(),
+        hexField = createHexField(centerX + 135, currentY, config.getBetterSkyColor(),
             text -> {
                 int rgb = parseHex(text);
-                if(rgb != -1){
-                    BetterSky.setSkyColor(rgb);
-                    colorSlider.setValue(rgbToHue(rgb)/360.0);
 
-                    changed = true;
-
-                    updateHexField();
+                if (rgb == -1 || config.getBetterSkyColor() == rgb) {
+                    return;
                 }
 
+                BetterSky.setSkyColor(rgb);
+                changed = true;
             });
 
         addDrawableChild(hexField);
 
-        colorEnabledBtn = ButtonWidget.builder(
+        colorBtn = ButtonWidget.builder(
                 Text.literal(config.isBetterSkyColorEnabled() ? "Enabled" : "Disabled"),
                 button -> {
                     boolean state = !config.isBetterSkyColorEnabled();
-
                     config.setBetterSkyColorEnabled(state);
-
                     changed = true;
-
-                    updateColorButton();
+                    updateButton(colorBtn, state);
                     save();
                 })
-            .dimensions(centerX + 195, currentY - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .dimensions(centerX + 235, currentY - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
             .build();
 
-        addDrawableChild(colorEnabledBtn);
+        addDrawableChild(colorBtn);
 
         currentY += SPACING;
 
@@ -116,6 +100,8 @@ public class SkyConfigScreen extends MainConfigScreen {
                 b->close())
             .dimensions(centerX-50,height-40,100,25)
             .build());
+
+        updateAllButtons();
     }
 
     private SliderWidget createTimeSlider(int centerX,int y){
@@ -175,7 +161,7 @@ public class SkyConfigScreen extends MainConfigScreen {
             return;
         }
 
-        String hex = String.format("#%06X", config.getCustomFogColor() & 0xFFFFFF);
+        String hex = String.format("#%06X", config.getBetterSkyColor() & 0xFFFFFF);
 
         if (!hex.equalsIgnoreCase(hexField.getText())) {
             updatingHexField = true;
@@ -184,17 +170,15 @@ public class SkyConfigScreen extends MainConfigScreen {
         }
     }
 
-    private void updateColorButton() {
-        if (colorEnabledBtn == null) {
-            return;
+    private void updateAllButtons() {
+        if (colorBtn != null) {
+            updateButton(colorBtn, config.isBetterSkyColorEnabled());
         }
+    }
 
-        boolean enabled = config.isBetterSkyColorEnabled();
-
-        colorEnabledBtn.setMessage(
-            Text.literal(enabled ? "Enabled" : "Disabled")
-                .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF))
-        );
+    private void updateButton(ButtonWidget button, boolean enabled) {
+        button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
+            .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
     }
 
     /// Работа с цветами
@@ -293,23 +277,22 @@ public class SkyConfigScreen extends MainConfigScreen {
     public void render(DrawContext context,int mouseX,int mouseY,float delta){
         super.render(context,mouseX,mouseY,delta);
 
-        int leftX=width/4;
-        int startY=60;
+        int leftX = width/4;
 
-        renderLabel(context, leftX, startY+SPACING, mouseX, mouseY,
+        renderLabel(context, leftX, 60, mouseX, mouseY,
             "Color",
             "Override vanilla sky color.");
 
-        renderLabel(context, leftX, startY+SPACING*2, mouseX, mouseY,
+        renderLabel(context, leftX, 105, mouseX, mouseY,
             "Time",
             "Freeze sky time.");
 
-        int previewSize=18;
+        int previewSize = 18;
 
-        int previewX=hexField.getX()+75;
-        int previewY=colorSlider.getY();
+        int previewX = hexField.getX() + 75;
+        int previewY = colorSlider.getY();
 
-        context.fill(previewX-1, previewY-1, previewX+previewSize+1, previewY+previewSize+1, 0xFF000000);
+        context.fill(previewX - 1, previewY - 1, previewX+previewSize+1, previewY+previewSize + 1, 0xFF000000);
         context.fill(previewX, previewY, previewX+previewSize, previewY+previewSize, 0xFF000000|config.getBetterSkyColor());
     }
 

@@ -34,9 +34,9 @@ public enum FeatureRegistry {
         ShulkerParticles::refreshBlockedStatus
     ),
     CUSTOM_FOG(
-        CustomFog::initialize,
+        BetterFog::initialize,
         () -> {},
-        CustomFog::refreshBlockedStatus
+        BetterFog::refreshBlockedStatus
     ),
     CUSTOM_HEALTH(
         CustomHealth::initialize,

@@ -25,6 +25,7 @@ public class BetterSky {
 
     private static class BlockedFeatures {
         boolean main;
+        boolean color;
     }
 
     /// Публичные статические методы
@@ -65,9 +66,18 @@ public class BetterSky {
         }
     }
 
+    public static boolean isSkyColorEnabled() {
+        return instance != null && instance.isSkyColorEnabledInternal();
+    }
+
+    public static void setSkyColorEnabled(boolean enabled) {
+        if (instance != null) instance.setSkyColorEnabledInternal(enabled);
+    }
+
     /// Внутренние динамические методы
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("better_sky");
+        blocked.color = LiteApiManager.isFeatureBlocked("better_sky_color");
     }
 
     private void reloadFromConfigInternal() {
@@ -82,6 +92,14 @@ public class BetterSky {
         config.setBetterSkyEnabled(enabled);
 
         reloadFromConfigInternal();
+    }
+
+    private boolean isSkyColorEnabledInternal() {
+        return isEnabledInternal() && config.isBetterSkyColorEnabled() && !blocked.color;
+    }
+
+    private void setSkyColorEnabledInternal(boolean enabled) {
+        config.setBetterSkyColorEnabled(enabled);
     }
 
     /// Работа с цветами
@@ -99,15 +117,15 @@ public class BetterSky {
     }
 
     public static float getRed() {
-        return ((getSkyColor() >> 16) & 255) / 255F;
+        return ((getSkyColor() >> 16) & 0xFF) / 255.0f;
     }
 
     public static float getGreen() {
-        return ((getSkyColor() >> 8) & 255) / 255F;
+        return ((getSkyColor() >> 8) & 0xFF) / 255.0f;
     }
 
     public static float getBlue() {
-        return (getSkyColor() & 255) / 255F;
+        return (getSkyColor() & 0xFF) / 255.0f;
     }
 
     /// Работа со временем
@@ -117,7 +135,6 @@ public class BetterSky {
 
     public static void setTime(long time) {
         time = Math.max(1000, Math.min(24000, time));
-
         time = Math.round(time / 1000f) * 1000L;
 
         BetterSky sky = getInstance();

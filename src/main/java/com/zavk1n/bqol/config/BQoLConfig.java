@@ -107,14 +107,10 @@ public class BQoLConfig {
     public int shulkerParticlesBreakingColor = 0xFFFFFF;
 
     /// Custom Fog
-    private boolean customFogEnabled = false;
+    private boolean betterFogEnabled = false;
 
-    private int customFogRange = 16;
-    private int customFogColor = 0xFFFFFF;
     private boolean noFog = false;
-    public boolean biomeFog = false;
     public boolean nightVision = false;
-    public Map<String, Boolean> biomeFogGroups = new HashMap<>();
 
     /// Custom Health
     public boolean customHealthEnabled = false;
@@ -141,6 +137,9 @@ public class BQoLConfig {
     public boolean noRenderFireOverlayEnabled = false;
     public boolean noRenderTotemParticlesEnabled = false;
     public boolean noRenderPotionParticlesEnabled = false;
+    public boolean noRenderExplosionEnabled = false;
+    public boolean noRenderSmokeEnabled = false;
+    public boolean noRenderBubblesEnabled = false;
     public boolean noRenderWeatherEnabled = false;
     public boolean noRenderArrowsEnabled = false;
     public boolean noRenderFireworksEnabled = false;
@@ -152,6 +151,9 @@ public class BQoLConfig {
     public RenderMode noRenderFireOverlay = RenderMode.FULL;
     public RenderMode noRenderTotemParticles = RenderMode.FULL;
     public RenderMode noRenderPotionParticles = RenderMode.FULL;
+    public RenderMode noRenderExplosion = RenderMode.FULL;
+    public RenderMode noRenderSmoke = RenderMode.FULL;
+    public RenderMode noRenderBubbles = RenderMode.FULL;
     public RenderMode noRenderWeather = RenderMode.FULL;
     public RenderMode noRenderArrows = RenderMode.FULL;
     public RenderMode noRenderFireworks = RenderMode.FULL;
@@ -162,7 +164,6 @@ public class BQoLConfig {
     /// Конструктор и методы
     private BQoLConfig() {
         validateSettings();
-        initBiomeGroups();
     }
 
     public static BQoLConfig getInstance() {
@@ -180,7 +181,6 @@ public class BQoLConfig {
                     config = new BQoLConfig();
                 } else {
                     config.validateSettings();
-                    config.initBiomeGroups();
                 }
 
                 return config;
@@ -221,17 +221,6 @@ public class BQoLConfig {
 
         if (customHealthGoldenHeartsPlus && !customHealthGoldenHearts) {
             customHealthGoldenHeartsPlus = false;
-        }
-    }
-
-    private void initBiomeGroups() {
-        if (biomeFogGroups.isEmpty()) {
-            String[] groups = {"KrimsonForest", "NetherWastes", "BasaltDeltas", "WarpedForest",
-                    "SoulSand", "GrowthTaiga", "Mushrooms", "Snow",
-                    "Desert", "Savanna", "Mesa", "End"};
-            for (String g : groups) {
-                biomeFogGroups.put(g, true);
-            }
         }
     }
 
@@ -390,22 +379,14 @@ public class BQoLConfig {
     public int getShulkerParticlesBreakingColor() { return shulkerParticlesBreakingColor; }
     public void setShulkerParticlesBreakingColor(int color) { this.shulkerParticlesBreakingColor = color; save(); }
 
-    /// Custom Fog
-    public boolean isCustomFogEnabled() { return customFogEnabled; }
-    public void setCustomFogEnabled(boolean enabled) { this.customFogEnabled = enabled; save(); }
+    /// Better Fog
+    public boolean isBetterFogEnabled() { return betterFogEnabled; }
+    public void setBetterFogEnabled(boolean enabled) { this.betterFogEnabled = enabled; save(); }
 
-    public int getCustomFogRange() { return customFogRange; }
-    public void setCustomFogRange(int range) { this.customFogRange = MathHelper.clamp(range, 0, 32); save(); }
-    public int getCustomFogColor() { return customFogColor; }
-    public void setCustomFogColor(int color) { this.customFogColor = color; save(); }
     public boolean isNoFog() { return noFog; }
     public void setNoFog(boolean enabled) { this.noFog = enabled; save(); }
     public boolean isNightVision() { return nightVision; }
     public void setNightVision(boolean enabled) { this.nightVision = enabled; save(); }
-    public boolean isBiomeFog() { return biomeFog; }
-    public void setBiomeFog(boolean enabled) { this.biomeFog = enabled; save(); }
-    public boolean isBiomeGroupEnabled(String group) { return biomeFogGroups.getOrDefault(group, false); }
-    public void setBiomeGroupEnabled(String group, boolean enabled) { biomeFogGroups.put(group, enabled); save(); }
 
     /// Custom Health
     public boolean isCustomHealthEnabled() { return customHealthEnabled; }
@@ -486,6 +467,51 @@ public class BQoLConfig {
     }
     public void setNoRenderPotionParticles(RenderMode mode) {
         this.noRenderPotionParticles = mode;
+        save();
+    }
+
+    public boolean isNoRenderExplosionEnabled() {
+        return noRenderExplosionEnabled;
+    }
+    public void setNoRenderExplosionEnabled(boolean enabled) {
+        this.noRenderExplosionEnabled = enabled;
+        save();
+    }
+    public RenderMode getNoRenderExplosion() {
+        return noRenderExplosion;
+    }
+    public void setNoRenderExplosion(RenderMode mode) {
+        this.noRenderExplosion = mode;
+        save();
+    }
+
+    public boolean isNoRenderSmokeEnabled() {
+        return noRenderSmokeEnabled;
+    }
+    public void setNoRenderSmokeEnabled(boolean enabled) {
+        this.noRenderSmokeEnabled = enabled;
+        save();
+    }
+    public RenderMode getNoRenderSmoke() {
+        return noRenderSmoke;
+    }
+    public void setNoRenderSmoke(RenderMode mode) {
+        this.noRenderSmoke = mode;
+        save();
+    }
+
+    public boolean isNoRenderBubblesEnabled() {
+        return noRenderBubblesEnabled;
+    }
+    public void setNoRenderBubblesEnabled(boolean enabled) {
+        this.noRenderBubblesEnabled = enabled;
+        save();
+    }
+    public RenderMode getNoRenderBubbles() {
+        return noRenderBubbles;
+    }
+    public void setNoRenderBubbles(RenderMode mode) {
+        this.noRenderBubbles = mode;
         save();
     }
 
@@ -594,7 +620,6 @@ public class BQoLConfig {
         }
 
         config.validateSettings();
-        config.initBiomeGroups();
 
         return config;
     }
@@ -687,15 +712,10 @@ public class BQoLConfig {
         this.shulkerParticlesBreakingColor = defaults.shulkerParticlesBreakingColor;
 
         /// Custom Fog
-        this.customFogEnabled = defaults.customFogEnabled;
+        this.betterFogEnabled = defaults.betterFogEnabled;
 
-        this.customFogRange = defaults.customFogRange;
-        this.customFogColor = defaults.customFogColor;
         this.noFog = defaults.noFog;
         this.nightVision = defaults.nightVision;
-        this.biomeFog = defaults.biomeFog;
-        this.biomeFogGroups.clear();
-        this.biomeFogGroups.putAll(defaults.biomeFogGroups);
 
         /// Custom Health
         this.customHealthEnabled = defaults.customHealthEnabled;
@@ -714,6 +734,9 @@ public class BQoLConfig {
         this.noRenderFireOverlayEnabled = defaults.noRenderFireOverlayEnabled;
         this.noRenderTotemParticlesEnabled = defaults.noRenderTotemParticlesEnabled;
         this.noRenderPotionParticlesEnabled = defaults.noRenderPotionParticlesEnabled;
+        this.noRenderExplosionEnabled = defaults.noRenderExplosionEnabled;
+        this.noRenderSmokeEnabled = defaults.noRenderSmokeEnabled;
+        this.noRenderBubblesEnabled = defaults.noRenderBubblesEnabled;
         this.noRenderWeatherEnabled = defaults.noRenderWeatherEnabled;
         this.noRenderArrowsEnabled = defaults.noRenderArrowsEnabled;
         this.noRenderFireworksEnabled = defaults.noRenderFireworksEnabled;
@@ -726,6 +749,9 @@ public class BQoLConfig {
         this.noRenderFireOverlay = defaults.noRenderFireOverlay;
         this.noRenderTotemParticles = defaults.noRenderTotemParticles;
         this.noRenderPotionParticles = defaults.noRenderPotionParticles;
+        this.noRenderExplosion = defaults.noRenderExplosion;
+        this.noRenderSmoke = defaults.noRenderSmoke;
+        this.noRenderBubbles = defaults.noRenderBubbles;
         this.noRenderWeather = defaults.noRenderWeather;
         this.noRenderArrows = defaults.noRenderArrows;
         this.noRenderFireworks = defaults.noRenderFireworks;

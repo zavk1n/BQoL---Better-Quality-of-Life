@@ -20,10 +20,12 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         fireOverlayToggleBtn, fireOverlayModeBtn,
         totemParticlesToggleBtn, totemParticlesModeBtn,
         potionParticlesToggleBtn, potionParticlesModeBtn,
+        explosionToggleBtn, explosionModeBtn,
+        smokeToggleBtn, smokeModeBtn,
+        bubblesToggleBtn, bubblesModeBtn,
         weatherToggleBtn, weatherModeBtn,
         arrowsToggleBtn, arrowsModeBtn,
         fireworksToggleBtn, fireworksModeBtn,
-        hologramsToggleBtn, hologramsModeBtn,
         namesToggleBtn, namesModeBtn,
         playersToggleBtn, playersModeBtn,
         handToggleBtn, handModeBtn;
@@ -59,10 +61,12 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         fireOverlayToggleBtn = fireOverlayModeBtn = null;
         totemParticlesToggleBtn = totemParticlesModeBtn = null;
         potionParticlesToggleBtn = potionParticlesModeBtn = null;
+        explosionToggleBtn = explosionModeBtn = null;
+        smokeToggleBtn = smokeModeBtn = null;
+        bubblesToggleBtn = bubblesModeBtn = null;
         weatherToggleBtn = weatherModeBtn = null;
         arrowsToggleBtn = arrowsModeBtn = null;
         fireworksToggleBtn = fireworksModeBtn = null;
-        hologramsToggleBtn = hologramsModeBtn = null;
         namesToggleBtn = namesModeBtn = null;
         playersToggleBtn = playersModeBtn = null;
         handToggleBtn = handModeBtn = null;
@@ -150,6 +154,69 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 config::getNoRenderPotionParticles,
                 config::setNoRenderPotionParticles,
                 true
+            );
+
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("no_render_explosion")) {
+            explosionToggleBtn = createToggleButton(
+                rightX,
+                y,
+                config::isNoRenderExplosionEnabled,
+                config::setNoRenderExplosionEnabled
+            );
+
+            explosionModeBtn = createModeButton(
+                modeX,
+                y,
+                config::isNoRenderExplosionEnabled,
+                config::setNoRenderExplosionEnabled,
+                config::getNoRenderExplosion,
+                config::setNoRenderExplosion,
+                false
+            );
+
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("no_render_smoke")) {
+            smokeToggleBtn = createToggleButton(
+                rightX,
+                y,
+                config::isNoRenderSmokeEnabled,
+                config::setNoRenderSmokeEnabled
+            );
+
+            smokeModeBtn = createModeButton(
+                modeX,
+                y,
+                config::isNoRenderSmokeEnabled,
+                config::setNoRenderSmokeEnabled,
+                config::getNoRenderSmoke,
+                config::setNoRenderSmoke,
+                false
+            );
+
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("no_render_bubbles")) {
+            bubblesToggleBtn = createToggleButton(
+                rightX,
+                y,
+                config::isNoRenderBubblesEnabled,
+                config::setNoRenderBubblesEnabled
+            );
+
+            bubblesModeBtn = createModeButton(
+                modeX,
+                y,
+                config::isNoRenderBubblesEnabled,
+                config::setNoRenderBubblesEnabled,
+                config::getNoRenderBubbles,
+                config::setNoRenderBubbles,
+                false
             );
 
             y += SPACING;
@@ -368,6 +435,21 @@ public class NoRenderConfigScreen extends MainConfigScreen {
             updateModeButton(potionParticlesModeBtn, config.getNoRenderPotionParticles());
         }
 
+        if (explosionToggleBtn != null) {
+            updateToggleButton(explosionToggleBtn, config.isNoRenderExplosionEnabled());
+            updateModeButton(explosionModeBtn, config.getNoRenderExplosion());
+        }
+
+        if (smokeToggleBtn != null) {
+            updateToggleButton(smokeToggleBtn, config.isNoRenderSmokeEnabled());
+            updateModeButton(smokeModeBtn, config.getNoRenderSmoke());
+        }
+
+        if (bubblesToggleBtn != null) {
+            updateToggleButton(bubblesToggleBtn, config.isNoRenderBubblesEnabled());
+            updateModeButton(bubblesModeBtn, config.getNoRenderBubbles());
+        }
+
         if (weatherToggleBtn != null) {
             updateToggleButton(weatherToggleBtn, config.isNoRenderWeatherEnabled());
             updateModeButton(weatherModeBtn, config.getNoRenderWeather());
@@ -464,6 +546,27 @@ public class NoRenderConfigScreen extends MainConfigScreen {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Potion Particles",
                 "Hide or reduce the potion particles.");
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("no_render_explosion")) {
+            renderLabel(context, leftX, y, mouseX, mouseY,
+                "Explosion",
+                "Hide explosion.");
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("no_render_smoke")) {
+            renderLabel(context, leftX, y, mouseX, mouseY,
+                "Smoke",
+                "Hide smoke.");
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("no_render_bubbles")) {
+            renderLabel(context, leftX, y, mouseX, mouseY,
+                "Bubbles",
+                "Hide bubbles particles.");
             y += SPACING;
         }
 
@@ -564,6 +667,30 @@ public class NoRenderConfigScreen extends MainConfigScreen {
             y += SPACING;
         }
 
+        if (explosionToggleBtn != null) {
+            explosionToggleBtn.setY(y - 3);
+            explosionModeBtn.setY(y - 3);
+            setVisible(explosionToggleBtn, explosionToggleBtn.getY());
+            setVisible(explosionModeBtn, explosionModeBtn.getY());
+            y += SPACING;
+        }
+
+        if (smokeToggleBtn != null) {
+            smokeToggleBtn.setY(y - 3);
+            smokeModeBtn.setY(y - 3);
+            setVisible(smokeToggleBtn, smokeToggleBtn.getY());
+            setVisible(smokeModeBtn, smokeModeBtn.getY());
+            y += SPACING;
+        }
+
+        if (bubblesToggleBtn != null) {
+            bubblesToggleBtn.setY(y - 3);
+            bubblesModeBtn.setY(y - 3);
+            setVisible(bubblesToggleBtn, bubblesToggleBtn.getY());
+            setVisible(bubblesModeBtn, bubblesModeBtn.getY());
+            y += SPACING;
+        }
+
         if (weatherToggleBtn != null) {
             weatherToggleBtn.setY(y - 3);
             weatherModeBtn.setY(y - 3);
@@ -585,14 +712,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
             fireworksModeBtn.setY(y - 3);
             setVisible(fireworksToggleBtn, fireworksToggleBtn.getY());
             setVisible(fireworksModeBtn, fireworksModeBtn.getY());
-            y += SPACING;
-        }
-
-        if (hologramsToggleBtn != null) {
-            hologramsToggleBtn.setY(y - 3);
-            hologramsModeBtn.setY(y - 3);
-            setVisible(hologramsToggleBtn, hologramsToggleBtn.getY());
-            setVisible(hologramsModeBtn, hologramsModeBtn.getY());
             y += SPACING;
         }
 

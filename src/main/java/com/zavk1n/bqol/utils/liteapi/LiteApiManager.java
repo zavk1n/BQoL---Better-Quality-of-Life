@@ -48,6 +48,10 @@ public final class LiteApiManager {
             "better_spheres_names",
             "better_spheres_golden",
 
+            /// Better Sky
+            "better_sky",
+            "better_sky_color",
+
             /// ShulkerParticles
             "shulker_particles",
             "shulker_particles_constant",
@@ -56,11 +60,10 @@ public final class LiteApiManager {
             "shulker_particles_constant_dependence",
             "shulker_particles_breaking_dependence",
 
-            /// Custom Fog
-            "custom_fog",
-            "custom_fog_no_fog",
-            "custom_fog_night_vision",
-            "custom_fog_biome_fog",
+            /// Better Fog
+            "better_fog",
+            "better_fog_no_fog",
+            "better_fog_night_vision",
 
             /// Custom Health
             "custom_health",
@@ -77,15 +80,15 @@ public final class LiteApiManager {
             "no_render_fire_overlay",
             "no_render_totem_particles",
             "no_render_potion_particles",
+            "no_render_ground_fire",
+            "no_render_smoke",
+            "no_render_bubbles",
             "no_render_weather",
             "no_render_arrows",
             "no_render_fireworks",
             "no_render_names",
             "no_render_players",
-            "no_render_hand",
-
-            /// Better Sky
-            "better_sky"
+            "no_render_hand"
     );
 
     private static long lastRequestTime = 0;
@@ -359,6 +362,12 @@ public final class LiteApiManager {
 
         BetterSpheres.refreshBlockedStatus();
 
+        /// BetterSky
+        if (isFeatureBlocked("better_sky")) config.setBetterSkyEnabled(false);
+        if (isFeatureBlocked("better_sky_color")) config.setBetterSkyColorEnabled(false);
+
+        BetterSky.refreshBlockedStatus();
+
         /// ShulkerParticles
         if (isFeatureBlocked("shulker_particles")) config.setShulkerParticlesEnabled(false);
         if (isFeatureBlocked("shulker_particles_constant")) config.setShulkerParticlesConstant(false);
@@ -369,17 +378,16 @@ public final class LiteApiManager {
 
         ShulkerParticles.refreshBlockedStatus();
 
-        /// Custom Fog
-        if (isFeatureBlocked("custom_fog")) {
-            config.setCustomFogEnabled(false);
+        /// Better Fog
+        if (isFeatureBlocked("better_fog")) {
+            config.setBetterFogEnabled(false);
             if (client != null && client.worldRenderer != null) client.worldRenderer.reload();
         }
 
-        if (isFeatureBlocked("custom_fog_no_fog")) config.setNoFog(false);
-        if (isFeatureBlocked("custom_fog_night_vision")) config.setNightVision(false);
-        if (isFeatureBlocked("custom_fog_biome_fog")) config.setBiomeFog(false);
+        if (isFeatureBlocked("better_fog_no_fog")) config.setNoFog(false);
+        if (isFeatureBlocked("better_fog_night_vision")) config.setNightVision(false);
 
-        CustomFog.refreshBlockedStatus();
+        BetterFog.refreshBlockedStatus();
 
         /// Custom Health
         if (isFeatureBlocked("custom_health")) {
@@ -405,6 +413,9 @@ public final class LiteApiManager {
         if (isFeatureBlocked("no_render_fire_overlay")) config.setNoRenderFireOverlayEnabled(false);
         if (isFeatureBlocked("no_render_totem_particles")) config.setNoRenderTotemParticlesEnabled(false);
         if (isFeatureBlocked("no_render_potion_particles")) config.setNoRenderPotionParticlesEnabled(false);
+        if (isFeatureBlocked("no_render_explosion")) config.setNoRenderExplosionEnabled(false);
+        if (isFeatureBlocked("no_render_smoke")) config.setNoRenderSmokeEnabled(false);
+        if (isFeatureBlocked("no_render_bubbles")) config.setNoRenderBubblesEnabled(false);
         if (isFeatureBlocked("no_render_weather")) config.setNoRenderWeatherEnabled(false);
         if (isFeatureBlocked("no_render_arrows")) config.setNoRenderArrowsEnabled(false);
         if (isFeatureBlocked("no_render_fireworks")) config.setNoRenderFireworksEnabled(false);
@@ -413,11 +424,6 @@ public final class LiteApiManager {
         if (isFeatureBlocked("no_render_hand")) config.setNoRenderHandEnabled(false);
 
         NoRender.refreshBlockedStatus();
-
-        /// BetterSky
-        if (isFeatureBlocked("better_sky")) config.setBetterSkyEnabled(false);
-
-        BetterSky.refreshBlockedStatus();
     }
 
     public static boolean isFeatureBlocked(String feature) {

@@ -25,7 +25,7 @@ public class NORENDERArrows {
 
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (!config.isNoRenderEnabled() || config.getNoRenderArrows() != BQoLConfig.RenderMode.NO_RENDER) {
+        if (!config.isNoRenderArrowsEnabled() || config.getNoRenderArrows() != BQoLConfig.RenderMode.NO_RENDER) {
             return;
         }
 

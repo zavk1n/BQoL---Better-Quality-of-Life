@@ -18,8 +18,11 @@ public class NORENDERTotemOverlay {
     private void bqol$showFloatingItem(ItemStack stack, CallbackInfo ci) {
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (config.isNoRenderEnabled()
-            && config.getNoRenderTotemOverlay() == RenderMode.NO_RENDER) {
+        if (!config.isNoRenderTotemOverlayEnabled()) {
+            return;
+        }
+
+        if (config.getNoRenderTotemOverlay() == RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }
@@ -31,16 +34,19 @@ public class NORENDERTotemOverlay {
             target = "Lnet/minecraft/client/util/math/MatrixStack;scale(FFF)V"
         )
     )
+
     private void bqol$scaleFloatingItem(MatrixStack matrices, float x, float y, float z) {
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (config.isNoRenderEnabled()
-            && config.getNoRenderTotemOverlay() == RenderMode.SMALL) {
-            matrices.scale(x * 0.5F, y * 0.5F, z * 0.5F);
+        if (!config.isNoRenderTotemOverlayEnabled()) {
+            matrices.scale(x, y, z);
             return;
         }
 
-        matrices.scale(x, y, z);
+        switch (config.getNoRenderTotemOverlay()) {
+            case SMALL -> matrices.scale(x * 0.5F, y * 0.5F, z * 0.5F);
+            case FULL, NO_RENDER -> matrices.scale(x, y, z);
+        }
     }
 }
 // v1.0

@@ -171,10 +171,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
         ));
 
         featurePanels.add(new FeaturePanel(
-            "Custom Fog",
+            "Better Fog",
             "Variably customizable fog.",
-            "custom_fog",
-            config.isCustomFogEnabled(),
+            "better_fog",
+            config.isBetterFogEnabled(),
             width / 4,
             panelStartY + panelSpacing * 6,
             true
@@ -254,7 +254,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_spheres" -> this.client.setScreen(new SpheresConfigScreen(this));
             case "better_sky" -> this.client.setScreen(new SkyConfigScreen(this));
             case "shulker_particles" -> this.client.setScreen(new ShulkerParticlesConfigScreen(this));
-            case "custom_fog" -> this.client.setScreen(new CustomFogConfigScreen(this));
+            case "better_fog" -> this.client.setScreen(new FogConfigScreen(this));
             case "custom_health" -> this.client.setScreen(new CustomHealthConfigScreen(this));
             case "no_render" -> this.client.setScreen(new NoRenderConfigScreen(this));
         }
@@ -269,7 +269,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_spheres" -> "better_spheres";
             case "better_sky" -> "better_sky";
             case "shulker_particles" -> "shulker_particles";
-            case "custom_fog" -> "custom_fog";
+            case "better_fog" -> "better_fog";
             case "custom_health" -> "custom_health";
             case "no_render" -> "no_render";
 
@@ -311,10 +311,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 ShulkerParticles.setEnabled(panel.enabled);
             }
 
-            case "custom_fog" -> {
+            case "better_fog" -> {
                 panel.enabled = !panel.enabled;
-                config.setCustomFogEnabled(panel.enabled);
-                CustomFog.setEnabled(panel.enabled);
+                config.setBetterFogEnabled(panel.enabled);
+                BetterFog.setEnabled(panel.enabled);
             }
 
             case "custom_health" -> {

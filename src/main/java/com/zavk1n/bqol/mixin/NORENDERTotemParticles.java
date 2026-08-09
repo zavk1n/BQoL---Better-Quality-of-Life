@@ -18,8 +18,12 @@ public class NORENDERTotemParticles {
     @Unique
     private static boolean bqol$skip;
 
-    @Inject(method = "addParticle(Lnet/minecraft/particle/ParticleEffect;DDDDDD)Lnet/minecraft/client/particle/Particle;", at = @At("HEAD"), cancellable = true
+    @Inject(
+        method = "addParticle(Lnet/minecraft/particle/ParticleEffect;DDDDDD)Lnet/minecraft/client/particle/Particle;",
+        at = @At("HEAD"),
+        cancellable = true
     )
+
     private void bqol$addParticle(ParticleEffect effect, double x, double y, double z, double velocityX, double velocityY, double velocityZ, CallbackInfoReturnable<Particle> cir) {
         if (effect != ParticleTypes.TOTEM_OF_UNDYING) {
             return;
@@ -27,23 +31,30 @@ public class NORENDERTotemParticles {
 
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (!config.isNoRenderEnabled()) {
+        if (!config.isNoRenderTotemParticlesEnabled()) {
             return;
         }
 
         RenderMode mode = config.getNoRenderTotemParticles();
 
-        if (mode == RenderMode.NO_RENDER) {
-            cir.setReturnValue(null);
-            return;
-        }
+        switch (mode) {
+            case FULL:
+                return;
 
-        if (mode == RenderMode.SMALL) {
-            bqol$skip = !bqol$skip;
+            case SMALL:
+                bqol$skip = !bqol$skip;
 
-            if (bqol$skip) {
+                if (bqol$skip) {
+                    cir.setReturnValue(null);
+                    cir.cancel();
+                }
+
+                return;
+
+            case NO_RENDER:
                 cir.setReturnValue(null);
-            }
+                cir.cancel();
+                return;
         }
     }
 }

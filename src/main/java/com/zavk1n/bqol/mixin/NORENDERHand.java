@@ -18,11 +18,14 @@ public class NORENDERHand {
     @Inject(method = "renderArmHoldingItem", at = @At("HEAD"), cancellable = true)
     private void bqol$renderArmHoldingItem(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float equipProgress, float swingProgress, Arm arm, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
+
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (client.player != null
-            && config.isNoRenderEnabled()
-            && config.getNoRenderHand() == RenderMode.NO_RENDER) {
+        if (client.player == null || !config.isNoRenderHandEnabled()) {
+            return;
+        }
+
+        if (config.getNoRenderHand() == RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }
@@ -30,11 +33,14 @@ public class NORENDERHand {
     @Inject(method = "renderArm", at = @At("HEAD"), cancellable = true)
     private void bqol$renderArm(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, Arm arm, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
+
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (client.player != null
-            && config.isNoRenderEnabled()
-            && config.getNoRenderHand() == RenderMode.NO_RENDER) {
+        if (client.player == null || !config.isNoRenderHandEnabled()) {
+            return;
+        }
+
+        if (config.getNoRenderHand() == RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }

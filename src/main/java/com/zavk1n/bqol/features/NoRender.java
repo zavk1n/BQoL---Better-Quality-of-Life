@@ -29,8 +29,13 @@ public class NoRender {
         boolean fireOverlay;
         boolean totemParticles;
         boolean potionParticles;
+        boolean explosion;
+        boolean smoke;
+        boolean bubbles;
         boolean arrows;
         boolean weather;
+        boolean glint;
+        boolean flowers;
         boolean fireworks;
         boolean names;
         boolean players;
@@ -82,8 +87,13 @@ public class NoRender {
         blocked.fireOverlay = LiteApiManager.isFeatureBlocked("no_render_fire_overlay");
         blocked.totemParticles = LiteApiManager.isFeatureBlocked("no_render_totem_particles");
         blocked.potionParticles = LiteApiManager.isFeatureBlocked("no_render_potion_particles");
+        blocked.explosion = LiteApiManager.isFeatureBlocked("no_render_explosion");
+        blocked.smoke = LiteApiManager.isFeatureBlocked("no_render_smoke");
+        blocked.bubbles = LiteApiManager.isFeatureBlocked("no_render_bubbles");
         blocked.weather = LiteApiManager.isFeatureBlocked("no_render_weather");
         blocked.arrows = LiteApiManager.isFeatureBlocked("no_render_arrows");
+        blocked.glint = LiteApiManager.isFeatureBlocked("no_render_fireworks");
+        blocked.flowers = LiteApiManager.isFeatureBlocked("no_render_fireworks");
         blocked.fireworks = LiteApiManager.isFeatureBlocked("no_render_fireworks");
         blocked.names = LiteApiManager.isFeatureBlocked("no_render_names");
         blocked.players = LiteApiManager.isFeatureBlocked("no_render_players");
@@ -133,6 +143,30 @@ public class NoRender {
 
     public BQoLConfig.RenderMode getPotionParticlesMode() {
         return config.getNoRenderPotionParticles();
+    }
+
+    public boolean isExplosionEnabled() {
+        return isEnabledInternal() && !blocked.explosion;
+    }
+
+    public BQoLConfig.RenderMode getExplosionMode() {
+        return config.getNoRenderExplosion();
+    }
+
+    public boolean isSmokeEnabled() {
+        return isEnabledInternal() && !blocked.smoke;
+    }
+
+    public BQoLConfig.RenderMode getSmokeMode() {
+        return config.getNoRenderSmoke();
+    }
+
+    public boolean isBubblesEnabled() {
+        return isEnabledInternal() && !blocked.bubbles;
+    }
+
+    public BQoLConfig.RenderMode getBubblesMode() {
+        return config.getNoRenderBubbles();
     }
 
     public boolean isWeatherEnabled() {

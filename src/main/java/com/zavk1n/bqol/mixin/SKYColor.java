@@ -1,6 +1,5 @@
 package com.zavk1n.bqol.mixin;
 
-
 import com.zavk1n.bqol.features.BetterSky;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.Vec3d;
@@ -14,7 +13,6 @@ public class SKYColor {
 
     @Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
     private void bqol$skyColor(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
-
         if (!BetterSky.isEnabled()) {
             return;
         }
@@ -26,4 +24,3 @@ public class SKYColor {
         ));
     }
 }
-

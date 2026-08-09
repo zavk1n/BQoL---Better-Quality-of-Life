@@ -180,9 +180,9 @@ public final class KeybindManager {
 
             case CUSTOM_FOG_TOGGLE ->
                 toggleFeature(
-                    !config.isCustomFogEnabled(),
-                    CustomFog::setEnabled,
-                    config::setCustomFogEnabled,
+                    !config.isBetterFogEnabled(),
+                    BetterFog::setEnabled,
+                    config::setBetterFogEnabled,
                     NotificationManager::showCustomFogNotification
                 );
 

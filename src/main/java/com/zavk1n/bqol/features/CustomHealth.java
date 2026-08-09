@@ -405,7 +405,7 @@ public class CustomHealth {
             animation.targetScale = visible ? 1f : 0.85f;
         }
 
-        boolean scalingEnabled = config.isCustomHealthScaling() && !blocked.scaling;
+        boolean scalingEnabled = isEnabledInternal() && config.isCustomHealthScaling() && !blocked.scaling;
 
         animation.update(worldTick, scalingEnabled);
 
@@ -445,9 +445,9 @@ public class CustomHealth {
             || state.lastSettingsHash != settingsHash;
 
         if (rebuild) {
-            boolean useGoldenHearts = config.isCustomHealthGoldenHearts() && !blocked.goldenHearts;
-            boolean useGoldenPlus = config.isCustomHealthGoldenHeartsPlus() && !blocked.goldenPlus;
-            boolean useDecimal = config.isCustomHealthDecimal() && !blocked.decimal;
+            boolean useGoldenHearts = isEnabledInternal() && config.isCustomHealthGoldenHearts() && !blocked.goldenHearts;
+            boolean useGoldenPlus = isEnabledInternal() && config.isCustomHealthGoldenHeartsPlus() && !blocked.goldenPlus;
+            boolean useDecimal = isEnabledInternal() && config.isCustomHealthDecimal() && !blocked.decimal;
 
             state.cachedRenderText = buildDisplayText(
                 normalHealth,
@@ -550,7 +550,7 @@ public class CustomHealth {
 
         Formatting color = getIndicatorFormatting(totalHealth);
 
-        boolean useDecimal = config.isCustomHealthDecimal() && !blocked.decimal;
+        boolean useDecimal = isEnabledInternal() && config.isCustomHealthDecimal() && !blocked.decimal;
 
         String healthValue = formatIndicatorString(totalHealth, useDecimal);
 

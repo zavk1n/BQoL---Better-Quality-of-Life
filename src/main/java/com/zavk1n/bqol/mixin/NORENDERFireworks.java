@@ -26,7 +26,7 @@ public class NORENDERFireworks {
 
         BQoLConfig config = BQoLConfig.getInstance();
 
-        if (!config.isNoRenderEnabled() || config.getNoRenderFireworks() != RenderMode.NO_RENDER) {
+        if (!config.isNoRenderFireworksEnabled() || config.getNoRenderFireworks() != RenderMode.NO_RENDER) {
             return;
         }
 
