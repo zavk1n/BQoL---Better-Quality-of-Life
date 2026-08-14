@@ -74,7 +74,7 @@ public class BetterSounds {
             instance = new BetterSounds();
             instance.refreshBlockedStatusInternal();
             instance.reloadFromConfigInternal();
-            BQoL.LOGGER.info("BetterSounds initialized");
+            BQoL.LOGGER.info("Better Sounds initialized");
         }
     }
 

@@ -30,29 +30,38 @@ public final class LiteApiManager {
     private static Set<String> blockedFeatures = new HashSet<>();
 
     private static final List<String> FEATURES = List.of(
-            /// BetterSprint
+            /// Better Sprint
             "better_sprint",
             "better_sprint_default",
             "better_sprint_pvp",
-            "better_sprint_tree",
             "better_sprint_stair_up",
             "better_sprint_water_sprint",
 
-            /// BetterSounds
+            /// Better Sounds
             "better_sounds",
 
-            /// BetterSpheres
+            /// Better Interact
+            "better_interact",
+            "better_interact_click_through",
+            "better_interact_auto_signs",
+            "better_interact_anti_signs",
+            "better_interact_safe_harvest",
+
+            /// Better Spheres
             "better_spheres",
+
             "better_spheres_holyworld",
-            "better_spheres_parameters",
-            "better_spheres_names",
-            "better_spheres_golden",
+            "better_spheres_holyworld_golden",
+
+            "better_spheres_reallyworld",
+            "better_spheres_reallyworld_golden",
 
             /// Better Sky
             "better_sky",
+
             "better_sky_color",
 
-            /// ShulkerParticles
+            /// Shulker Particles
             "shulker_particles",
             "shulker_particles_constant",
             "shulker_particles_breaking",
@@ -333,42 +342,49 @@ public final class LiteApiManager {
         BQoLConfig config = BQoLConfig.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
 
-        /// BetterSprint
+        /// Better Sprint
         if (isFeatureBlocked("better_sprint")) config.setBetterSprintEnabled(false);
         if (isFeatureBlocked("better_sprint_default")) config.setBetterSprintDefaultMode(false);
         if (isFeatureBlocked("better_sprint_pvp")) config.setBetterSprintPvPMode(false);
-        if (isFeatureBlocked("better_sprint_tree")) config.setBetterSprintTreeMode(false);
         if (isFeatureBlocked("better_sprint_stair_up")) config.setBetterSprintStairUp(false);
         if (isFeatureBlocked("better_sprint_water_sprint")) config.setBetterSprintWaterSprint(false);
 
         BetterSprint.refreshBlockedStatus();
 
-        /// BetterSounds
+        /// Better Sounds
         if (isFeatureBlocked("better_sounds")) config.setBetterSoundsEnabled(false);
 
         BetterSounds.refreshBlockedStatus();
 
-        /// BetterSpheres
+        /// Better Interact
+        if (isFeatureBlocked("better_interact")) config.setBetterInteractEnabled(false);
+        if (isFeatureBlocked("better_interact_click_through")) config.setBetterInteractClickThrough(false);
+        if (isFeatureBlocked("better_interact_anti_signs")) config.setBetterInteractAntiSigns(false);
+        if (isFeatureBlocked("better_interact_auto_signs")) config.setBetterInteractAutoSigns(false);
+        if (isFeatureBlocked("better_interact_safe_harvest")) config.setBetterInteractSafeHarvest(false);
+
+        BetterInteract.refreshBlockedStatus();
+
+        /// Better Spheres
         if (isFeatureBlocked("better_spheres")) config.setBetterSpheresEnabled(false);
         if (isFeatureBlocked("better_spheres_holyworld")) {
             config.setHolyWorldSpheresEnabled(false);
-            config.setColoredParameters(false);
-            config.setColoredNames(false);
-            config.setGoldenSpheres(false);
+            config.setHWGoldenSpheres(false);
         }
-        if (isFeatureBlocked("better_spheres_parameters")) config.setColoredParameters(false);
-        if (isFeatureBlocked("better_spheres_names")) config.setColoredNames(false);
-        if (isFeatureBlocked("better_spheres_golden")) config.setGoldenSpheres(false);
+        if (isFeatureBlocked("better_spheres_holyworld_golden")) config.setHWGoldenSpheres(false);
+        if (isFeatureBlocked("better_spheres_reallyworld")) {
+            config.setReallyWorldSpheresEnabled(false);
+        }
 
         BetterSpheres.refreshBlockedStatus();
 
-        /// BetterSky
+        /// Better Sky
         if (isFeatureBlocked("better_sky")) config.setBetterSkyEnabled(false);
         if (isFeatureBlocked("better_sky_color")) config.setBetterSkyColorEnabled(false);
 
         BetterSky.refreshBlockedStatus();
 
-        /// ShulkerParticles
+        /// Shulker Particles
         if (isFeatureBlocked("shulker_particles")) config.setShulkerParticlesEnabled(false);
         if (isFeatureBlocked("shulker_particles_constant")) config.setShulkerParticlesConstant(false);
         if (isFeatureBlocked("shulker_particles_breaking")) config.setShulkerParticlesBreaking(false);

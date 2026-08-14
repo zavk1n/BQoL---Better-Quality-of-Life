@@ -157,6 +157,10 @@ public final class NotificationManager {
         showFeatureNotification("Better Sounds", enabled);
     }
 
+    public static void showBetterInteractNotification(boolean enabled) {
+        showFeatureNotification("Better Interact", enabled);
+    }
+
     public static void showBetterSpheresNotification(boolean enabled) {
         showFeatureNotification("Better Spheres", enabled);
     }

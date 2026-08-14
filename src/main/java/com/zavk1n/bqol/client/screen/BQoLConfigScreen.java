@@ -141,6 +141,16 @@ public class BQoLConfigScreen extends MainConfigScreen {
         ));
 
         featurePanels.add(new FeaturePanel(
+            "Better Interact",
+            "Various interaction improvements.",
+            "better_interact",
+            config.isBetterInteractEnabled(),
+            width / 4,
+            panelStartY + panelSpacing * 2,
+            true
+        ));
+
+        featurePanels.add(new FeaturePanel(
             "Better Spheres",
             "Customization of server spheres.",
             "better_spheres",
@@ -251,6 +261,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
         switch (panel.configKey) {
             case "better_sprint" -> this.client.setScreen(new SprintConfigScreen(this));
             case "better_sounds" -> this.client.setScreen(new SoundsConfigScreen(this));
+            case "better_interact" -> this.client.setScreen(new InteractConfigScreen(this));
             case "better_spheres" -> this.client.setScreen(new SpheresConfigScreen(this));
             case "better_sky" -> this.client.setScreen(new SkyConfigScreen(this));
             case "shulker_particles" -> this.client.setScreen(new ShulkerParticlesConfigScreen(this));
@@ -266,6 +277,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
             case "better_sprint" -> "better_sprint";
             case "better_sounds" -> "better_sounds";
+            case "better_interact" -> "better_interact";
             case "better_spheres" -> "better_spheres";
             case "better_sky" -> "better_sky";
             case "shulker_particles" -> "shulker_particles";
@@ -291,6 +303,12 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 panel.enabled = !panel.enabled;
                 config.setBetterSoundsEnabled(panel.enabled);
                 BetterSounds.setEnabled(panel.enabled);
+            }
+
+            case "better_interact" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterInteractEnabled(panel.enabled);
+                BetterInteract.setEnabled(panel.enabled);
             }
 
             case "better_spheres" -> {

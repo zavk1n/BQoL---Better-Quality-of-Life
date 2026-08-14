@@ -14,7 +14,7 @@ import java.util.function.BooleanSupplier;
 public class SprintConfigScreen extends MainConfigScreen {
 
     /// Виджеты
-    private ButtonWidget defaultModeBtn, pvpModeBtn, treeModeBtn, stairupBtn, watersprintBtn;
+    private ButtonWidget defaultModeBtn, pvpModeBtn, stairupBtn, watersprintBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
@@ -22,7 +22,6 @@ public class SprintConfigScreen extends MainConfigScreen {
     private enum SprintMode {
         DEFAULT,
         PVP,
-        TREE
     }
 
     /// Конструктор
@@ -47,7 +46,6 @@ public class SprintConfigScreen extends MainConfigScreen {
 
         defaultModeBtn = null;
         pvpModeBtn = null;
-        treeModeBtn = null;
         stairupBtn = null;
         watersprintBtn = null;
 
@@ -73,18 +71,6 @@ public class SprintConfigScreen extends MainConfigScreen {
                 "PvP Mode",
                 config::isBetterSprintPvPMode,
                 SprintMode.PVP
-            );
-
-            y += SPACING;
-        }
-
-        if (!LiteApiManager.isFeatureBlocked("better_sprint_tree")) {
-            treeModeBtn = createExclusiveButton(
-                rightX,
-                y,
-                "Tree Mode",
-                config::isBetterSprintTreeMode,
-                SprintMode.TREE
             );
 
             y += SPACING;
@@ -164,14 +150,12 @@ public class SprintConfigScreen extends MainConfigScreen {
         switch (mode) {
             case DEFAULT -> config.setBetterSprintDefaultMode(true);
             case PVP -> config.setBetterSprintPvPMode(true);
-            case TREE -> config.setBetterSprintTreeMode(true);
         }
     }
 
     private void disableAllModes() {
         config.setBetterSprintDefaultMode(false);
         config.setBetterSprintPvPMode(false);
-        config.setBetterSprintTreeMode(false);
     }
 
     /// Обновление состояния кнопок
@@ -182,10 +166,6 @@ public class SprintConfigScreen extends MainConfigScreen {
 
         if (pvpModeBtn != null) {
             updateButton(pvpModeBtn, config.isBetterSprintPvPMode());
-        }
-
-        if (treeModeBtn != null) {
-            updateButton(treeModeBtn, config.isBetterSprintTreeMode());
         }
 
         if (stairupBtn != null) {
@@ -222,14 +202,6 @@ public class SprintConfigScreen extends MainConfigScreen {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "PvP Mode",
                 "Auto-sprint in PvP conditions. (Timer 30s)."
-            );
-            y += SPACING;
-        }
-
-        if (!LiteApiManager.isFeatureBlocked("better_sprint_tree")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Tree Mode",
-                "Auto-sprint when there is foliage overhead."
             );
             y += SPACING;
         }

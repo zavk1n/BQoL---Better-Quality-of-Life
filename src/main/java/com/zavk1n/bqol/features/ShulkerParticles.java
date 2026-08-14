@@ -78,7 +78,7 @@ public class ShulkerParticles {
         if (instance == null) {
             instance = new ShulkerParticles();
             instance.refreshBlockedStatusInternal();
-            BQoL.LOGGER.info("ShulkerParticles initialized");
+            BQoL.LOGGER.info("Shulker Particles initialized");
         }
     }
 

@@ -18,6 +18,11 @@ public enum FeatureRegistry {
         () -> {},
         BetterSounds::refreshBlockedStatus
     ),
+    BETTER_INTERACT(
+        BetterInteract::initialize,
+        () -> {},
+        BetterInteract::refreshBlockedStatus
+    ),
     BETTER_SPHERES(
         BetterSpheres::initialize,
         () -> {},

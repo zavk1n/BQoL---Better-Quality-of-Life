@@ -10,7 +10,8 @@ import net.minecraft.world.World;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -29,20 +30,19 @@ public class BetterSprint {
     private final BQoLConfig config = BQoLConfig.getInstance();
 
     private interface DelayCalculator {
-        long calc (long currentTick);
+        long calc(long currentMs);
     }
 
     /// Состояния в классах
     private final ModesState defaultState = new ModesState();
     private final ModesState pvpState = new ModesState();
-    private final ModesState treeState = new ModesState();
 
     private static class ModesState {
         boolean sprint;
         boolean active;
 
-        long delayUntilTick;
-        long lastStoppedTick = -1000;
+        long delayUntilMs;
+        long lastStoppedMs = -1000;
     }
 
     /// Блокировки
@@ -52,17 +52,8 @@ public class BetterSprint {
         boolean main;
         boolean defaultMode;
         boolean pvpMode;
-        boolean treeMode;
         boolean stairUp;
         boolean waterSprint;
-    }
-
-    private final LeavesState leavesState = new LeavesState();
-
-    private static class LeavesState {
-        boolean cachedResult;
-        long lastCheckTick;
-        int dimensionHash;
     }
 
     private final WaterSprintState waterSprintState = new WaterSprintState();
@@ -99,7 +90,7 @@ public class BetterSprint {
             instance = new BetterSprint();
             instance.refreshBlockedStatusInternal();
             instance.reloadFromConfigInternal();
-            BQoL.LOGGER.info("BetterSprint initialized");
+            BQoL.LOGGER.info("Better Sprint initialized");
         }
     }
 
@@ -133,10 +124,6 @@ public class BetterSprint {
         if (instance != null) instance.setPvPModeInternal(enabled);
     }
 
-    public static void setTreeMode(boolean enabled) {
-        if (instance != null) instance.setTreeModeInternal(enabled);
-    }
-
     public static void setStairUp(boolean enabled) {
         if (instance != null) instance.setStairUpInternal(enabled);
     }
@@ -166,7 +153,6 @@ public class BetterSprint {
         blocked.main = LiteApiManager.isFeatureBlocked("better_sprint");
         blocked.defaultMode = LiteApiManager.isFeatureBlocked("better_sprint_default");
         blocked.pvpMode = LiteApiManager.isFeatureBlocked("better_sprint_pvp");
-        blocked.treeMode = LiteApiManager.isFeatureBlocked("better_sprint_tree");
         blocked.stairUp = LiteApiManager.isFeatureBlocked("better_sprint_stair_up");
         blocked.waterSprint = LiteApiManager.isFeatureBlocked("better_sprint_water_sprint");
     }
@@ -175,21 +161,15 @@ public class BetterSprint {
         refreshBlockedStatusInternal();
 
         if (!config.isBetterSprintDefaultMode()) {
-            defaultState.delayUntilTick = 0;
             defaultState.sprint = false;
+            defaultState.delayUntilMs = 0;
             defaultState.active = false;
         }
 
         if (!config.isBetterSprintPvPMode()) {
-            pvpState.delayUntilTick = 0;
+            pvpState.delayUntilMs = 0;
             pvpState.sprint = false;
             pvpState.active = false;
-        }
-
-        if (!config.isBetterSprintTreeMode()) {
-            treeState.delayUntilTick = 0;
-            treeState.sprint = false;
-            treeState.active = false;
         }
 
         if (!config.isBetterSprintWaterSprint()) {
@@ -223,7 +203,7 @@ public class BetterSprint {
         config.setBetterSprintDefaultMode(enabled);
 
         if (enabled) {
-            defaultState.delayUntilTick = 0;
+            defaultState.delayUntilMs = 0;
         } else {
             defaultState.active = false;
             defaultState.sprint = false;
@@ -234,21 +214,10 @@ public class BetterSprint {
         config.setBetterSprintPvPMode(enabled);
 
         if (enabled) {
-            pvpState.delayUntilTick = 0;
+            pvpState.delayUntilMs = 0;
         } else {
             pvpState.active = false;
             pvpState.sprint = false;
-        }
-    }
-
-    private void setTreeModeInternal(boolean enabled) {
-        config.setBetterSprintTreeMode(enabled);
-
-        if (enabled) {
-            treeState.delayUntilTick = 0;
-        } else {
-            treeState.active = false;
-            treeState.sprint = false;
         }
     }
 
@@ -340,7 +309,7 @@ public class BetterSprint {
         }
 
         ClientPlayerEntity player = client.player;
-        long currentTick = player.age;
+        long currentMs = System.currentTimeMillis();
 
         updatePendingAttack();
 
@@ -369,21 +338,18 @@ public class BetterSprint {
 
         defaultState.sprint = false;
         pvpState.sprint = false;
-        treeState.sprint = false;
         waterSprintState.sprint = false;
 
-        updateInternalDefault(currentTick, moving, hasFood, inWaterOrLava);
-        updateInternalPvP(currentTick, moving, hasFood, inWaterOrLava);
-        updateInternalTree(currentTick, moving, hasFood, inWaterOrLava);
+        updateInternalDefault(currentMs, moving, hasFood, inWaterOrLava);
+        updateInternalPvP(currentMs, moving, hasFood, inWaterOrLava);
         updateInternalStairUp(player);
-        updateInternalWaterSprint(currentTick, player, moving, hasFood);
+        updateInternalWaterSprint(currentMs, player, moving, hasFood);
 
         if (!hasFood) {
             if (player.isSprinting()) {
                 player.setSprinting(false);
-                defaultState.lastStoppedTick = currentTick;
-                pvpState.lastStoppedTick = currentTick;
-                treeState.lastStoppedTick = currentTick;
+                defaultState.lastStoppedMs = currentMs;
+                pvpState.lastStoppedMs = currentMs;
             }
 
             resetAllMovementStates();
@@ -392,69 +358,59 @@ public class BetterSprint {
 
         boolean anySprintModeEnabled = (!blocked.defaultMode && config.isBetterSprintDefaultMode())
             || (!blocked.pvpMode && config.isBetterSprintPvPMode())
-            || (!blocked.treeMode && config.isBetterSprintTreeMode())
             || (!blocked.waterSprint && config.isBetterSprintWaterSprint());
 
         if (!anySprintModeEnabled) {
             return;
         }
 
-        boolean finalSprint = defaultState.sprint || pvpState.sprint || treeState.sprint || waterSprintState.sprint;
+        boolean finalSprint = defaultState.sprint || pvpState.sprint || waterSprintState.sprint;
 
         if (finalSprint) {
             if (!player.isSprinting()) {
                 player.setSprinting(true);
             }
         } else {
-            boolean shouldControlSprint = defaultState.active || pvpState.active || treeState.active || waterSprintState.active;
+            boolean shouldControlSprint = defaultState.active || pvpState.active || waterSprintState.active;
 
             if (shouldControlSprint && player.isSprinting()) {
                 player.setSprinting(false);
 
-                defaultState.lastStoppedTick = currentTick;
-                pvpState.lastStoppedTick = currentTick;
-                treeState.lastStoppedTick = currentTick;
+                defaultState.lastStoppedMs = currentMs;
+                pvpState.lastStoppedMs = currentMs;
             }
         }
     }
 
     /// Единый хелпер для режимов
-    private void updateMode(
-        ModesState state,
-        boolean enabled,
-        boolean canUse,
-        boolean instantAllowed,
-        int instantChance,
-        long currentTick,
-        DelayCalculator delayCalc) {
-
+    private void updateMode(ModesState state, boolean enabled, boolean canUse, boolean instantAllowed, int instantChance, long currentMs, DelayCalculator delayCalc) {
         if (!enabled || !canUse) {
             if (state.active) {
-                state.lastStoppedTick = currentTick;
+                state.lastStoppedMs = currentMs;
             }
 
             state.active = false;
             state.sprint = false;
-            state.delayUntilTick = 0;
+            state.delayUntilMs = 0;
             return;
         }
 
         if (!state.active) {
-            boolean canInstant = canInstantRestart(currentTick, state.lastStoppedTick, instantChance);
+            boolean canInstant = instantAllowed && canInstantRestart(currentMs, state.lastStoppedMs, instantChance);
 
             if (canInstant) {
                 state.sprint = true;
                 state.active = true;
-                state.delayUntilTick = 0;
+                state.delayUntilMs = 0;
                 return;
             }
 
-            if (state.delayUntilTick == 0) {
-                state.delayUntilTick = delayCalc.calc(currentTick);
-            } else if (currentTick >= state.delayUntilTick) {
+            if (state.delayUntilMs == 0) {
+                state.delayUntilMs = delayCalc.calc(currentMs);
+            } else if (currentMs >= state.delayUntilMs) {
                 state.sprint = true;
                 state.active = true;
-                state.delayUntilTick = 0;
+                state.delayUntilMs = 0;
             }
 
             return;
@@ -464,39 +420,32 @@ public class BetterSprint {
     }
 
     /// Обновление самих режимов
-    private void updateInternalDefault(long currentTick, boolean moving, boolean hasFood, boolean inWaterOrLava) {
+    private void updateInternalDefault(long currentMs, boolean moving, boolean hasFood, boolean inWaterOrLava) {
         updateMode(
             defaultState,
-            config.isBetterSprintDefaultMode() && !blocked.defaultMode && !inWaterOrLava,
+            config.isBetterSprintDefaultMode()
+                && !blocked.defaultMode
+                && !inWaterOrLava,
             moving && hasFood,
             true,
             33,
-            currentTick,
-            this::calculateDefaultDelayTick
+            currentMs,
+            this::calculateDefaultDelayMs
         );
     }
 
-    private void updateInternalPvP(long currentTick, boolean moving, boolean hasFood, boolean inWaterOrLava) {
+    private void updateInternalPvP(long currentMs, boolean moving, boolean hasFood, boolean inWaterOrLava) {
         updateMode(
             pvpState,
-            config.isBetterSprintPvPMode() && !blocked.pvpMode && !inWaterOrLava && currentTick < pvpExpireTick,
+            config.isBetterSprintPvPMode()
+                && !blocked.pvpMode
+                && !inWaterOrLava
+                && mc().player.age < pvpExpireTick,
             moving && hasFood,
             true,
             25,
-            currentTick,
-            this::calculatePvPDelayTick
-        );
-    }
-
-    private void updateInternalTree(long currentTick, boolean moving, boolean hasFood, boolean inWaterOrLava) {
-        updateMode(
-            treeState,
-            config.isBetterSprintTreeMode() && !blocked.treeMode && !inWaterOrLava && isFoliageAboveHead(mc(), currentTick),
-            moving && hasFood,
-            true,
-            25,
-            currentTick,
-            this::calculateTreeDelayTick
+            currentMs,
+            this::calculatePvPDelayMs
         );
     }
 
@@ -517,7 +466,7 @@ public class BetterSprint {
             return;
         }
 
-        boolean blockedByEndConcrete = isEndConcreteNearby(player);
+        boolean blockedByEndConcrete = isWaterSprintEndConcreteNearby(player);
 
         if (blockedByEndConcrete) {
             disableStairUp();
@@ -548,7 +497,7 @@ public class BetterSprint {
     }
 
     /// Расчет задержек для режимов
-    private long calculateDefaultDelayTick(long currentTick) {
+    private long calculateDefaultDelayMs(long currentMs) {
         int roll = ThreadLocalRandom.current().nextInt(100);
 
         int delayMs;
@@ -561,10 +510,15 @@ public class BetterSprint {
             delayMs = ThreadLocalRandom.current().nextInt(174, 269);
         }
 
-        return currentTick + Math.max(1, delayMs / 50);
+        PlayerEntity player = mc().player;
+
+        delayMs += (int) delayBooster(player);
+        delayMs -= (int) delayNerfer(player);
+
+        return Math.max(1L, currentMs + delayMs);
     }
 
-    private long calculatePvPDelayTick(long currentTick) {
+    private long calculatePvPDelayMs(long currentMs) {
         int roll = ThreadLocalRandom.current().nextInt(100);
 
         int delayMs;
@@ -577,23 +531,71 @@ public class BetterSprint {
             delayMs = ThreadLocalRandom.current().nextInt(184, 256);
         }
 
-        return currentTick + Math.max(1, delayMs / 50);
+        PlayerEntity player = mc().player;
+
+        delayMs += (int) delayBooster(player);
+        delayMs -= (int) delayNerfer(player);
+
+        return Math.max(1L, currentMs + delayMs);
     }
 
-    private long calculateTreeDelayTick(long currentTick) {
-        int roll = ThreadLocalRandom.current().nextInt(100);
-
-        int delayMs;
-
-        if (roll < 77) {
-            delayMs = ThreadLocalRandom.current().nextInt(41, 159);
-        } else if (roll < 93) {
-            delayMs = ThreadLocalRandom.current().nextInt(144, 164);
-        } else {
-            delayMs = ThreadLocalRandom.current().nextInt(162, 234);
+    private long delayBooster(PlayerEntity player) {
+        if (player == null) {
+            return 0L;
         }
 
-        return currentTick + Math.max(1, delayMs / 50);
+        long delay = 0L;
+
+        StatusEffectInstance speed = player.getStatusEffect(StatusEffects.SPEED);
+
+        if (speed != null) {
+            switch (speed.getAmplifier()) {
+                case 0 -> delay += randomDelayMs(1, 4);
+                case 1 -> delay += randomDelayMs(2, 6);
+                case 2 -> delay += randomDelayMs(5, 8);
+                default -> delay += randomDelayMs(5, 8);
+            }
+        }
+
+        if (player.hasStatusEffect(StatusEffects.SLOW_FALLING)) {
+            delay += randomDelayMs(6, 10);
+        }
+
+        if (player.hasStatusEffect(StatusEffects.DARKNESS)) {
+            delay += randomDelayMs(7, 12);
+        }
+
+        if (player.isOnFire()) {
+            delay += randomDelayMs(4, 13);
+        }
+
+        return delay;
+    }
+
+    private long delayNerfer(PlayerEntity player) {
+        if (player == null) {
+            return 0L;
+        }
+
+        long delay = 0L;
+
+        StatusEffectInstance slowness =
+            player.getStatusEffect(StatusEffects.SLOWNESS);
+
+        if (slowness != null) {
+            switch (slowness.getAmplifier()) {
+                case 0 -> delay += randomDelayMs(3, 7);
+                case 1 -> delay += randomDelayMs(4, 9);
+                case 2 -> delay += randomDelayMs(2, 11);
+                default -> delay += randomDelayMs(2, 11);
+            }
+        }
+
+        return delay;
+    }
+
+    private int randomDelayMs(int min, int max) {
+        return ThreadLocalRandom.current().nextInt(min, max + 1);
     }
 
     /// Дополнительные проверки и методы для режимов
@@ -625,61 +627,21 @@ public class BetterSprint {
         return player != null && player.getHungerManager().getFoodLevel() > 6;
     }
 
-    private boolean canInstantRestart(long currentTick, long lastStopTick, int chancePercent) {
-        if (lastStopTick < 0) {
+    private boolean canInstantRestart(long currentMs, long lastStopMs, int chancePercent) {
+        if (lastStopMs < 0) {
             return false;
         }
 
-        long stoppedTicks = currentTick - lastStopTick;
+        long stoppedMs = currentMs - lastStopMs;
 
-        if (stoppedTicks < 10) {
+        if (stoppedMs < 500L) {
             return false;
         }
 
         return ThreadLocalRandom.current().nextInt(100) < chancePercent;
     }
 
-    /// Дополнительный метод Tree mode (Листва над головой)
-    private boolean isFoliageAboveHead(MinecraftClient client, long currentTick) {
-        if (client.world == null) {
-            leavesState.cachedResult = false;
-            leavesState.lastCheckTick = currentTick;
-            return false;
-        }
-
-        int dimensionHash = client.world.getRegistryKey().hashCode();
-
-        if (dimensionHash != leavesState.dimensionHash) {
-            leavesState.dimensionHash = dimensionHash;
-            leavesState.cachedResult = false;
-            leavesState.lastCheckTick = 0;
-        }
-
-        if (currentTick - leavesState.lastCheckTick < 2) {
-            return leavesState.cachedResult;
-        }
-
-        ClientPlayerEntity player = client.player;
-
-        if (player == null) {
-            leavesState.cachedResult = false;
-            leavesState.lastCheckTick = currentTick;
-            return false;
-        }
-
-        BlockPos aboveHead = BlockPos.ofFloored(
-            player.getX(),
-            player.getY() + player.getHeight() + 1.0D,
-            player.getZ()
-        );
-
-        leavesState.cachedResult = client.world.getBlockState(aboveHead).isIn(BlockTags.LEAVES);
-        leavesState.lastCheckTick = currentTick;
-
-        return leavesState.cachedResult;
-    }
-
-    /// Дополнительные методы для Stair Up (Активация/Отключение/Проверки)
+    /// Дополнительные методы для Stair Up
     public static boolean isStairUpActive() {
         return instance != null
             && instance.isEnabledInternal()
@@ -696,7 +658,8 @@ public class BetterSprint {
         }
     }
 
-    private boolean isEndConcreteNearby(ClientPlayerEntity player) {
+    /// Дополнительные методы для Water Sprint
+    private boolean isWaterSprintEndConcreteNearby(ClientPlayerEntity player) {
         MinecraftClient client = mc();
 
         if (client == null || client.world == null || player == null) {
@@ -754,7 +717,6 @@ public class BetterSprint {
         return false;
     }
 
-    /// Дополнительный метод для Water Sprint (в полном ли блоке воды я)
     private boolean isInFullWaterBlock(PlayerEntity player) {
         MinecraftClient client = mc();
 
@@ -773,7 +735,6 @@ public class BetterSprint {
         return state.getFluidState().isStill() && player.isTouchingWater();
     }
 
-    /// Дополнительный метод для Water Sprint (Отключение Шифт-стопов на краях блоков под водой)
     public static boolean shouldDisableWaterSprintShiftStops(PlayerEntity player) {
         if (instance == null || player == null) {
             return false;
@@ -786,17 +747,16 @@ public class BetterSprint {
             && !player.isInLava();
     }
 
-    /// Дополнительный метод для Water Sprint (Отключение Шифт-стопа при старте плавания)
     public static boolean shouldDisableWaterSprintShiftStop() {
         MinecraftClient client = MinecraftClient.getInstance();
 
         if (instance == null
-                || client == null || client.player == null) {
+                || client == null
+                || client.player == null) {
             return false;
         }
 
-        return instance.waterSprintState.active
-            && client.player.age < instance.waterSprintState.shiftIgnoreUntilTick;
+        return instance.waterSprintState.active && client.player.age < instance.waterSprintState.shiftIgnoreUntilTick;
     }
 
     /// Метод для определения сервера
@@ -814,18 +774,15 @@ public class BetterSprint {
 
     /// Утилиты сброса состояния
     private void resetAllMovementStates() {
-        defaultState.delayUntilTick = 0;
-        pvpState.delayUntilTick = 0;
-        treeState.delayUntilTick = 0;
+        defaultState.delayUntilMs = 0;
+        pvpState.delayUntilMs = 0;
 
         defaultState.active = false;
         pvpState.active = false;
-        treeState.active = false;
         waterSprintState.active = false;
 
         defaultState.sprint = false;
         pvpState.sprint = false;
-        treeState.sprint = false;
         waterSprintState.sprint = false;
     }
 
@@ -835,14 +792,8 @@ public class BetterSprint {
 
         pvpExpireTick = 0;
 
-        defaultState.lastStoppedTick = -1000;
-        pvpState.lastStoppedTick = -1000;
-        treeState.lastStoppedTick = -1000;
-
-        leavesState.lastCheckTick = 0;
-        leavesState.dimensionHash = 0;
-
-        leavesState.cachedResult = false;
+        defaultState.lastStoppedMs = -1000;
+        pvpState.lastStoppedMs = -1000;
 
         endConcreteState.blocked = false;
 

@@ -34,7 +34,7 @@ public class BetterSky {
             instance = new BetterSky();
             instance.refreshBlockedStatusInternal();
             instance.reloadFromConfigInternal();
-            BQoL.LOGGER.info("No Render initialized");
+            BQoL.LOGGER.info("Better Sky initialized");
         }
     }
 

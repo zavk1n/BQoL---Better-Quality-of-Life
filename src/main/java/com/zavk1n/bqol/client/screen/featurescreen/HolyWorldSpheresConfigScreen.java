@@ -46,7 +46,7 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
     };
 
     /// Виджеты
-    private ButtonWidget coloredParametersBtn, coloredNamesBtn, goldenSpheresBtn;
+    private ButtonWidget goldenSpheresBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, COLUMNS = 3,
         COL_SPACING = 130, ROW_SPACING = 48, LABEL_WIDTH = 180,
@@ -75,8 +75,6 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         clearChildren();
         sphereEntries.clear();
 
-        coloredParametersBtn = null;
-        coloredNamesBtn = null;
         goldenSpheresBtn = null;
 
         createSphereGrid();
@@ -177,30 +175,12 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         int controlsX = groupX + maxFootnoteWidth + 40;
         int controlsStartY = afterGridY + 10;
 
-        if (!LiteApiManager.isFeatureBlocked("better_spheres_parameters")) {
-            coloredParametersBtn = createButton(
+        if (!LiteApiManager.isFeatureBlocked("better_spheres_holyworld_golden")) {
+            goldenSpheresBtn  = createButton(
                 controlsX + LABEL_WIDTH + BUTTON_OFFSET,
                 controlsStartY,
-                config::isColoredParameters,
-                config::setColoredParameters
-            );
-        }
-
-        if (!LiteApiManager.isFeatureBlocked("better_spheres_names")) {
-            coloredNamesBtn = createButton(
-                controlsX + LABEL_WIDTH + BUTTON_OFFSET,
-                controlsStartY + CONTROL_SPACING,
-                config::isColoredNames,
-                config::setColoredNames
-            );
-        }
-
-        if (!LiteApiManager.isFeatureBlocked("better_spheres_golden")) {
-            goldenSpheresBtn = createSpecialButton(
-                controlsX + LABEL_WIDTH + BUTTON_OFFSET,
-                controlsStartY + CONTROL_SPACING * 2,
-                config::isGoldenSpheres,
-                config::setGoldenSpheres
+                config::isHWGoldenSpheres,
+                config::setHWGoldenSpheres
             );
         }
     }
@@ -216,10 +196,6 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
 
                     updateButton(btn, enabled);
 
-                    if (btn == coloredNamesBtn) {
-                        updateGoldenSpheresButton();
-                    }
-
                     save();
                 })
             .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -228,29 +204,6 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         updateButton(button, getter.getAsBoolean());
 
         addDrawableChild(button);
-
-        return button;
-    }
-
-    private ButtonWidget createSpecialButton(int x, int y, BooleanSupplier getter, Consumer<Boolean> setter) {
-        ButtonWidget button = ButtonWidget.builder(
-                Text.literal(""),
-                btn -> {
-                    boolean enabled = !getter.getAsBoolean();
-
-                    setter.accept(enabled);
-                    changed = true;
-
-                    updateGoldenSpheresButton();
-
-                    save();
-                })
-            .dimensions(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
-            .build();
-
-        addDrawableChild(button);
-
-        updateGoldenSpheresButton();
 
         return button;
     }
@@ -273,26 +226,11 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
     }
 
     private void updateAllButtons() {
-        if (coloredParametersBtn != null) {
-            updateButton(coloredParametersBtn, config.isColoredParameters());
-        }
-
-        if (coloredNamesBtn != null) {
-            updateButton(coloredNamesBtn, config.isColoredNames());
-        }
-
-        updateGoldenSpheresButton();
-    }
-
-    private void updateGoldenSpheresButton() {
         if (goldenSpheresBtn == null) {
             return;
         }
 
-        updateButton(
-            goldenSpheresBtn,
-            config.isGoldenSpheres()
-        );
+        updateButton(goldenSpheresBtn, config.isHWGoldenSpheres());
     }
 
     /// Создание названий и описаний
@@ -351,22 +289,8 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
             );
         }
 
-        if (!LiteApiManager.isFeatureBlocked("better_spheres_parameters")) {
+        if (!LiteApiManager.isFeatureBlocked("better_spheres_holyworld_golden")) {
             renderLabel(context, controlsX, controlsStartY, mouseX, mouseY,
-                "Colored Parameters",
-                "Customization of parameters for all spheres."
-            );
-        }
-
-        if (!LiteApiManager.isFeatureBlocked("better_spheres_names")) {
-            renderLabel(context, controlsX, controlsStartY + CONTROL_SPACING, mouseX, mouseY,
-                "Colored Names",
-                "Customize of names for all spheres."
-            );
-        }
-
-        if (!LiteApiManager.isFeatureBlocked("better_spheres_golden")) {
-            renderLabel(context, controlsX, controlsStartY + CONTROL_SPACING * 2, mouseX, mouseY,
                 "Golden Spheres",
                 "Customize unique sphere properties."
             );

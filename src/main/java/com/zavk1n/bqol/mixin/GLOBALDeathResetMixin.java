@@ -16,11 +16,15 @@ public class GLOBALDeathResetMixin {
     @Inject(method = "onDeath", at = @At("HEAD"))
     private void onDeath(DamageSource source, CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
-        if (entity instanceof PlayerEntity player) {
-            MinecraftClient client = MinecraftClient.getInstance();
-            if (player == client.player || player.equals(CustomHealth.getLastAttackedPlayer())) {
-                CustomHealth.resetDisplay();
-            }
+
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        if (!(entity instanceof PlayerEntity player) || client.player == null) {
+            return;
+        }
+
+        if (player == client.player || player.equals(CustomHealth.getLastAttackedPlayer())) {
+            CustomHealth.resetDisplay();
         }
     }
 }

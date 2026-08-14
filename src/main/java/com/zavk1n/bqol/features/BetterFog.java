@@ -32,7 +32,7 @@ public class BetterFog {
         if (instance == null) {
             instance = new BetterFog();
             instance.refreshBlockedStatusInternal();
-            BQoL.LOGGER.info("BetterFog initialized");
+            BQoL.LOGGER.info("Better Fog initialized");
         }
     }
 

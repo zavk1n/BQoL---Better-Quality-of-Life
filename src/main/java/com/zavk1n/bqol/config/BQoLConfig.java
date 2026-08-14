@@ -4,14 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.zavk1n.bqol.BQoL;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.math.MathHelper;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class BQoLConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -63,9 +60,18 @@ public class BQoLConfig {
     public boolean betterSoundsFarm = false;
     public boolean betterSoundsMob = false;
 
+    /// Better Interact
+    public boolean betterInteractEnabled = false;
+    public boolean betterInteractClickThrough = false;
+    public boolean betterInteractAntiSigns = false;
+    public boolean betterInteractAutoSigns = false;
+    private String betterInteractAutoSignsText = "";
+    public boolean betterInteractSafeHarvest = false;
+
     /// Better Spheres
     public boolean betterSpheresEnabled = false;
 
+    // HolyWorld
     public boolean holyWorldSpheresEnabled = false;
 
     public boolean sphereCerberus = false;
@@ -84,9 +90,51 @@ public class BQoLConfig {
     public boolean holyWorldSphereMiner = false;
     public boolean holyWorldSpherePvP = false;
 
-    public boolean coloredParameters = false;
-    public boolean coloredNames = false;
-    public boolean goldenSpheres = false;
+    public boolean hwGoldenSpheres = false;
+
+    // ReallyWorld
+    public boolean reallyWorldSpheresEnabled = false;
+
+    public boolean sphereAir = false;
+    public boolean sphereFire = false;
+    public boolean sphereShine = false;
+    public boolean sphereChaos = false;
+    public boolean sphereWater = false;
+    public boolean sphereGround = false;
+    public boolean sphereGOD = false;
+    public boolean sphereCocaCola = false;
+    public boolean spherePepsi = false;
+    public boolean sphereRedBull = false;
+    public boolean sphereSprite = false;
+    public boolean sphereFanta = false;
+    public boolean spherePoseidon = false;
+    public boolean sphereHades = false;
+    public boolean sphereArmadillo = false;
+    public boolean sphereBUNNY = false;
+    public boolean sphereDHELPER = false;
+    public boolean sphereDiscipline = false;
+
+    public boolean headBatman = false;
+    public boolean headVampire = false;
+    public boolean headJack = false;
+    public boolean headGrinch = false;
+    public boolean headHydra = false;
+    public boolean headIronMan = false;
+    public boolean headCobra = false;
+    public boolean headBunny = false;
+    public boolean headPegasus = false;
+    public boolean headPenguin = false;
+    public boolean headGingerbread = false;
+    public boolean headRudolph = false;
+    public boolean headSanta = false;
+    public boolean headHulk = false;
+    public boolean headThor = false;
+    public boolean headNutcracker = false;
+    public boolean headElf = false;
+
+    public boolean easterEgg = false;
+
+    public boolean rwGoldenSpheres = false;
 
     /// Better Sky
     private boolean betterSkyEnabled = false;
@@ -306,10 +354,45 @@ public class BQoLConfig {
     public boolean isBetterSoundsMob() { return betterSoundsMob; }
     public void setBetterSoundsMob(boolean enabled) { this.betterSoundsMob = enabled; save(); }
 
+    /// Better Interact
+    public boolean isBetterInteractEnabled() { return betterInteractEnabled; }
+    public void setBetterInteractEnabled(boolean enabled) {
+        this.betterInteractEnabled = enabled;
+    }
+
+    public boolean isBetterInteractClickThrough() { return betterInteractClickThrough; }
+    public void setBetterInteractClickThrough(boolean enabled) {
+        this.betterInteractClickThrough = enabled; save();
+    }
+
+    public boolean isBetterInteractAntiSigns() { return betterInteractAntiSigns; }
+    public void setBetterInteractAntiSigns(boolean enabled) {
+        this.betterInteractAntiSigns = enabled; save();
+    }
+
+    public boolean isBetterInteractAutoSigns() { return betterInteractAutoSigns; }
+    public void setBetterInteractAutoSigns(boolean enabled) {
+        this.betterInteractAutoSigns = enabled; save();
+    }
+
+    public String getBetterInteractAutoSignsText() {
+        return betterInteractAutoSignsText;
+    }
+
+    public void setBetterInteractAutoSignsText(String text) {
+        betterInteractAutoSignsText = text == null ? "" : text;
+    }
+
+    public boolean isBetterInteractSafeHarvest() { return betterInteractSafeHarvest; }
+    public void setBetterInteractSafeHarvest(boolean enabled) {
+        this.betterInteractSafeHarvest = enabled; save();
+    }
+
     /// Better Spheres
     public boolean isBetterSpheresEnabled() { return betterSpheresEnabled; }
     public void setBetterSpheresEnabled(boolean enabled) { this.betterSpheresEnabled = enabled; save(); }
 
+    // Holyworld
     public boolean isHolyWorldSpheresEnabled() { return holyWorldSpheresEnabled; }
     public void setHolyWorldSpheresEnabled(boolean enabled) { this.holyWorldSpheresEnabled = enabled; save(); }
 
@@ -342,12 +425,86 @@ public class BQoLConfig {
     public boolean isHolyWorldSpherePvP() { return holyWorldSpherePvP; }
     public void setHolyWorldSpherePvP(boolean enabled) { this.holyWorldSpherePvP = enabled; save(); }
 
-    public boolean isColoredParameters() { return coloredParameters; }
-    public void setColoredParameters(boolean enabled) { this.coloredParameters = enabled; save(); }
-    public boolean isColoredNames() { return coloredNames; }
-    public void setColoredNames(boolean enabled) { this.coloredNames = enabled; save(); }
-    public boolean isGoldenSpheres() { return goldenSpheres; }
-    public void setGoldenSpheres(boolean enabled) { this.goldenSpheres = enabled; save(); }
+    public boolean isHWGoldenSpheres() { return hwGoldenSpheres; }
+    public void setHWGoldenSpheres(boolean enabled) { this.hwGoldenSpheres = enabled; save(); }
+
+    // ReallyWorld
+    public boolean isReallyWorldSpheresEnabled() { return reallyWorldSpheresEnabled; }
+    public void setReallyWorldSpheresEnabled(boolean enabled) { this.reallyWorldSpheresEnabled = enabled; save(); }
+
+    public boolean isSphereAir() { return sphereAir; }
+    public void setSphereAir(boolean enabled) { this.sphereAir = enabled; save(); }
+    public boolean isSphereFire() { return sphereFire; }
+    public void setSphereFire(boolean enabled) { this.sphereFire = enabled; save(); }
+    public boolean isSphereWater() { return sphereWater; }
+    public void setSphereWater(boolean enabled) { this.sphereWater = enabled; save(); }
+    public boolean isSphereGround() { return sphereGround; }
+    public void setSphereGround(boolean enabled) { this.sphereGround = enabled; save(); }
+    public boolean isSphereGOD() { return sphereGOD; }
+    public void setSphereGOD(boolean enabled) { this.sphereGOD = enabled; save(); }
+    public boolean isSphereCocaCola() { return sphereCocaCola; }
+    public void setSphereCocaCola(boolean enabled) { this.sphereCocaCola = enabled; save(); }
+    public boolean isSpherePepsi() { return spherePepsi; }
+    public void setSpherePepsi(boolean enabled) { this.spherePepsi = enabled; save(); }
+    public boolean isSphereRedBull() { return sphereRedBull; }
+    public void setSphereRedBull(boolean enabled) { this.sphereRedBull = enabled; save(); }
+    public boolean isSphereSprite() { return sphereSprite; }
+    public void setSphereSprite(boolean enabled) { this.sphereSprite = enabled; save(); }
+    public boolean isSphereFanta() { return sphereFanta; }
+    public void setSphereFanta(boolean enabled) { this.sphereFanta = enabled; save(); }
+    public boolean isSphereShine() { return sphereShine; }
+    public void setSphereShine(boolean enabled) { this.sphereShine = enabled; save(); }
+    public boolean isSphereChaos() { return sphereChaos; }
+    public void setSphereChaos(boolean enabled) { this.sphereChaos = enabled; save(); }
+    public boolean isSpherePoseidon() { return spherePoseidon; }
+    public void setSpherePoseidon(boolean enabled) { this.spherePoseidon = enabled; save(); }
+    public boolean isSphereHades() { return sphereHades; }
+    public void setSphereHades(boolean enabled) { this.sphereHades = enabled; save(); }
+    public boolean isSphereArmadillo() { return sphereArmadillo; }
+    public void setSphereArmadillo(boolean enabled) { this.sphereArmadillo = enabled; save(); }
+    public boolean isSphereBUNNY() { return sphereBUNNY; }
+    public void setSphereBUNNY(boolean enabled) { this.sphereBUNNY = enabled; save(); }
+    public boolean isSphereDHELPER() { return sphereDHELPER; }
+    public void setSphereDHELPER(boolean enabled) { this.sphereDHELPER = enabled; save(); }
+    public boolean isSphereDiscipline() { return sphereDiscipline; }
+    public void setSphereDiscipline(boolean enabled) { this.sphereDiscipline = enabled; save(); }
+    public boolean isHeadBatman() { return headBatman; }
+    public void setHeadBatman(boolean enabled) { this.headBatman = enabled; save(); }
+    public boolean isHeadVampire() { return headVampire; }
+    public void setHeadVampire(boolean enabled) { this.headVampire = enabled; save(); }
+    public boolean isHeadJack() { return headJack; }
+    public void setHeadJack(boolean enabled) { this.headJack = enabled; save(); }
+    public boolean isHeadGrinch() { return headGrinch; }
+    public void setHeadGrinch(boolean enabled) { this.headGrinch = enabled; save(); }
+    public boolean isHeadHydra() { return headHydra; }
+    public void setHeadHydra(boolean enabled) { this.headHydra = enabled; save(); }
+    public boolean isHeadIronMan() { return headIronMan; }
+    public void setHeadIronMan(boolean enabled) { this.headIronMan = enabled; save(); }
+    public boolean isHeadCobra() { return headCobra; }
+    public void setHeadCobra(boolean enabled) { this.headCobra = enabled; save(); }
+    public boolean isHeadBunny() { return headBunny; }
+    public void setHeadBunny(boolean enabled) { this.headBunny = enabled; save(); }
+    public boolean isHeadPegasus() { return headPegasus; }
+    public void setHeadPegasus(boolean enabled) { this.headPegasus = enabled; save(); }
+    public boolean isHeadGingerbread() { return headGingerbread; }
+    public void setHeadGingerbread(boolean enabled) { this.headGingerbread = enabled; save(); }
+    public boolean isHeadRudolph() { return headRudolph; }
+    public void setHeadRudolph(boolean enabled) { this.headRudolph = enabled; save(); }
+    public boolean isHeadSanta() { return headSanta; }
+    public void setHeadSanta(boolean enabled) { this.headSanta = enabled; save(); }
+    public boolean isHeadHulk() { return headHulk; }
+    public void setHeadHulk(boolean enabled) { this.headHulk = enabled; save(); }
+    public boolean isHeadPenguin() { return headPenguin; }
+    public void setHeadPenguin(boolean enabled) { this.headPenguin = enabled; save(); }
+    public boolean isHeadThor() { return headThor; }
+    public void setHeadThor(boolean enabled) { this.headThor = enabled; save(); }
+    public boolean isHeadNutcracker() { return headNutcracker; }
+    public void setHeadNutcracker(boolean enabled) { this.headNutcracker = enabled; save(); }
+    public boolean isHeadElf() { return headElf; }
+    public void setHeadElf(boolean enabled) { this.headElf = enabled; save(); }
+
+    public boolean isEasterEgg() { return easterEgg; }
+    public void setEasterEgg(boolean enabled) { this.easterEgg = enabled; save(); }
 
     /// Better Sky
     public boolean isBetterSkyEnabled() { return betterSkyEnabled; }
@@ -669,9 +826,18 @@ public class BQoLConfig {
         this.betterSoundsFarm = defaults.betterSoundsFarm;
         this.betterSoundsMob = defaults.betterSoundsMob;
 
+        /// Better Interact
+        this.betterInteractEnabled = defaults.betterInteractEnabled;
+
+        this.betterInteractClickThrough = defaults.betterInteractClickThrough;
+        this.betterInteractAntiSigns = defaults.betterInteractAntiSigns;
+        this.betterInteractAutoSigns = defaults.betterInteractAutoSigns;
+        this.betterInteractSafeHarvest = defaults.betterInteractSafeHarvest;
+
         /// Better Spheres
         this.betterSpheresEnabled = defaults.betterSpheresEnabled;
 
+        // HolyWorld
         this.sphereCerberus = defaults.sphereCerberus;
         this.sphereFlash = defaults.sphereFlash;
         this.sphereImmortality = defaults.sphereImmortality;
@@ -689,9 +855,48 @@ public class BQoLConfig {
         this.holyWorldSphereMiner = defaults.holyWorldSphereMiner;
         this.holyWorldSpherePvP = defaults.holyWorldSpherePvP;
 
-        this.coloredParameters = defaults.coloredParameters;
-        this.coloredNames = defaults.coloredNames;
-        this.goldenSpheres = defaults.goldenSpheres;
+        this.hwGoldenSpheres = defaults.hwGoldenSpheres;
+
+        // ReallyWorld
+        this.sphereAir = defaults.sphereAir;
+        this.sphereFire = defaults.sphereFire;
+        this.sphereShine = defaults.sphereShine;
+        this.sphereChaos = defaults.sphereChaos;
+        this.sphereWater = defaults.sphereWater;
+        this.sphereGround = defaults.sphereGround;
+        this.sphereGOD = defaults.sphereGOD;
+        this.sphereCocaCola = defaults.sphereCocaCola;
+        this.spherePepsi = defaults.spherePepsi;
+        this.sphereRedBull = defaults.sphereRedBull;
+        this.sphereSprite = defaults.sphereSprite;
+        this.sphereFanta = defaults.sphereFanta;
+        this.spherePoseidon = defaults.spherePoseidon;
+        this.sphereHades = defaults.sphereHades;
+        this.sphereArmadillo = defaults.sphereArmadillo;
+        this.sphereBUNNY = defaults.sphereBUNNY;
+        this.sphereDHELPER = defaults.sphereDHELPER;
+        this.sphereDiscipline = defaults.sphereDiscipline;
+
+        this.headBatman = defaults.headBatman;
+        this.headVampire = defaults.headVampire;
+        this.headJack = defaults.headJack;
+        this.headGrinch = defaults.headGrinch;
+        this.headHydra = defaults.headHydra;
+        this.headIronMan = defaults.headIronMan;
+        this.headCobra = defaults.headCobra;
+        this.headBunny = defaults.headBunny;
+        this.headPegasus = defaults.headPegasus;
+        this.headGingerbread = defaults.headGingerbread;
+        this.headRudolph = defaults.headRudolph;
+        this.headSanta = defaults.headSanta;
+        this.headHulk = defaults.headHulk;
+        this.headPenguin = defaults.headPenguin;
+        this.headThor = defaults.headThor;
+        this.headNutcracker = defaults.headNutcracker;
+        this.headElf = defaults.headElf;
+        this.easterEgg = defaults.easterEgg;
+
+        this.rwGoldenSpheres = defaults.rwGoldenSpheres;
 
         /// BetterSky
         this.betterSkyEnabled = defaults.betterSkyEnabled;
