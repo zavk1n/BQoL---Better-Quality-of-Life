@@ -47,6 +47,17 @@ public final class LiteApiManager {
             "better_interact_anti_signs",
             "better_interact_safe_harvest",
 
+            /// Better Tnt
+            "better_tnt",
+            "better_tnt_timer",
+            "better_tnt_alert",
+            "better_tnt_alert_show_xyz",
+
+            /// Better Holograms
+            "better_holograms",
+            "better_holograms_visible_armor_stand",
+            "better_holograms_anti_holograms",
+
             /// Better Spheres
             "better_spheres",
 
@@ -364,6 +375,21 @@ public final class LiteApiManager {
         if (isFeatureBlocked("better_interact_safe_harvest")) config.setBetterInteractSafeHarvest(false);
 
         BetterInteract.refreshBlockedStatus();
+
+        /// Better Tnt
+        if (isFeatureBlocked("better_tnt")) config.setBetterTntEnabled(false);
+        if (isFeatureBlocked("better_tnt_timer")) config.setBetterTntTimer(false);
+        if (isFeatureBlocked("better_tnt_alert")) config.setBetterTntAlert(false);
+        if (isFeatureBlocked("better_tnt_alert_show_xyz")) config.setBetterTntAlertShowXYZ(false);
+
+        BetterTnt.refreshBlockedStatus();
+
+        /// Better Holograms
+        if (isFeatureBlocked("better_holograms")) config.setBetterTntEnabled(false);
+        if (isFeatureBlocked("better_holograms_visible_armor_stand")) config.setBetterTntTimer(false);
+        if (isFeatureBlocked("better_holograms_anti_holograms")) config.setBetterTntEnabled(false);
+
+        BetterHolograms.refreshBlockedStatus();
 
         /// Better Spheres
         if (isFeatureBlocked("better_spheres")) config.setBetterSpheresEnabled(false);

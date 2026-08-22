@@ -7,6 +7,11 @@
     "FOGNoFog",
     "FOGRenderNightVision",
     "HEALTHRenderIndicator",
+    "HOLOGRAMSArmorStandRenderer",
+    "HOLOGRAMSArmorStandName",
+    "HOLOGRAMSArmorStandRendererVisibility",
+    "HOLOGRAMSArmorStandRenderLayer",
+    "HOLOGRAMSArmorStandAlpha",
     "NORENDERFireworks",
     "NORENDERPlayers",
     "NORENDERHand",
@@ -37,7 +42,10 @@
     "SPRINTDisableShiftStops",
     "SPRINTDisableShiftStop",
     "SKYColor",
-    "SKYTime"
+    "SKYTime",
+    "TNTEntityRegisterer",
+    "TNTInGameHud",
+    "TNTEntityRenderer"
   ],
   "client": [],
   "injectors": {

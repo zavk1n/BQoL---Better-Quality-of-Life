@@ -30,12 +30,11 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         playersToggleBtn, playersModeBtn,
         handToggleBtn, handModeBtn;
 
+    private ButtonWidget saveButton;
+
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, BUTTON_GAP = 10, SPACING = 45;
-    private static final int SCROLL_SPEED = 18, CLIP_TOP = 42, CLIP_BOTTOM = 55;
 
     private boolean changed = false;
-
-    private int scrollOffset = 0, maxScroll = 0;
 
     /// Конструктор
     public NoRenderConfigScreen(Screen parent) {
@@ -50,10 +49,11 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         }
 
         super.init();
+        resetScroll();
         rebuildUI();
     }
 
-    /// Ядро создания экрана
+    /// Ядро
     private void rebuildUI() {
         clearChildren();
 
@@ -71,318 +71,205 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         playersToggleBtn = playersModeBtn = null;
         handToggleBtn = handModeBtn = null;
 
+        saveButton = null;
+
         int rightX = width / 2 + 50;
         int modeX = rightX + BUTTON_WIDTH + BUTTON_GAP;
-        int y = 60 - scrollOffset;
+
+        int contentY = 60;
 
         if (!LiteApiManager.isFeatureBlocked("no_render_totem_overlay")) {
-            totemOverlayToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderTotemOverlayEnabled,
-                config::setNoRenderTotemOverlay
-            );
-
-            totemOverlayModeBtn = createModeButton(
-                modeX,
-                y,
+            totemOverlayToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderTotemOverlayEnabled, config::setNoRenderTotemOverlay);
+            totemOverlayModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderTotemOverlayEnabled,
                 config::setNoRenderTotemOverlay,
                 config::getNoRenderTotemOverlay,
                 config::setNoRenderTotemOverlay,
                 true
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_fire_overlay")) {
-            fireOverlayToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderFireOverlayEnabled,
-                config::setNoRenderFireOverlayEnabled
-            );
-
-            fireOverlayModeBtn = createModeButton(
-                modeX,
-                y,
+            fireOverlayToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderFireOverlayEnabled, config::setNoRenderFireOverlayEnabled);
+            fireOverlayModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderFireOverlayEnabled,
                 config::setNoRenderFireOverlayEnabled,
                 config::getNoRenderFireOverlay,
                 config::setNoRenderFireOverlay,
                 true
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_totem_particles")) {
-            totemParticlesToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderTotemParticlesEnabled,
-                config::setNoRenderTotemParticlesEnabled
-            );
-
-            totemParticlesModeBtn = createModeButton(
-                modeX,
-                y,
+            totemParticlesToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderTotemParticlesEnabled, config::setNoRenderTotemParticlesEnabled);
+            totemParticlesModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderTotemParticlesEnabled,
                 config::setNoRenderTotemParticlesEnabled,
                 config::getNoRenderTotemParticles,
                 config::setNoRenderTotemParticles,
                 true
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_potion_particles")) {
-            potionParticlesToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderPotionParticlesEnabled,
-                config::setNoRenderPotionParticlesEnabled
-            );
-
-            potionParticlesModeBtn = createModeButton(
-                modeX,
-                y,
+            potionParticlesToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderPotionParticlesEnabled, config::setNoRenderPotionParticlesEnabled);
+            potionParticlesModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderPotionParticlesEnabled,
                 config::setNoRenderPotionParticlesEnabled,
                 config::getNoRenderPotionParticles,
                 config::setNoRenderPotionParticles,
                 true
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_explosion")) {
-            explosionToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderExplosionEnabled,
-                config::setNoRenderExplosionEnabled
-            );
-
-            explosionModeBtn = createModeButton(
-                modeX,
-                y,
+            explosionToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderExplosionEnabled, config::setNoRenderExplosionEnabled);
+            explosionModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderExplosionEnabled,
                 config::setNoRenderExplosionEnabled,
                 config::getNoRenderExplosion,
                 config::setNoRenderExplosion,
                 false
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_smoke")) {
-            smokeToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderSmokeEnabled,
-                config::setNoRenderSmokeEnabled
-            );
-
-            smokeModeBtn = createModeButton(
-                modeX,
-                y,
+            smokeToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderSmokeEnabled, config::setNoRenderSmokeEnabled);
+            smokeModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderSmokeEnabled,
                 config::setNoRenderSmokeEnabled,
                 config::getNoRenderSmoke,
                 config::setNoRenderSmoke,
                 false
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_bubbles")) {
-            bubblesToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderBubblesEnabled,
-                config::setNoRenderBubblesEnabled
-            );
-
-            bubblesModeBtn = createModeButton(
-                modeX,
-                y,
+            bubblesToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderBubblesEnabled, config::setNoRenderBubblesEnabled);
+            bubblesModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderBubblesEnabled,
                 config::setNoRenderBubblesEnabled,
                 config::getNoRenderBubbles,
                 config::setNoRenderBubbles,
                 false
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_weather")) {
-            weatherToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderWeatherEnabled,
-                config::setNoRenderWeatherEnabled
-            );
-
-            weatherModeBtn = createModeButton(
-                modeX,
-                y,
+            weatherToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderWeatherEnabled, config::setNoRenderWeatherEnabled);
+            weatherModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderWeatherEnabled,
                 config::setNoRenderWeatherEnabled,
                 config::getNoRenderWeather,
                 config::setNoRenderWeather,
                 false
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_arrows")) {
-            arrowsToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderArrowsEnabled,
-                config::setNoRenderArrowsEnabled
-            );
-
-            arrowsModeBtn = createModeButton(
-                modeX,
-                y,
+            arrowsToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderArrowsEnabled, config::setNoRenderArrowsEnabled);
+            arrowsModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderArrowsEnabled,
                 config::setNoRenderArrowsEnabled,
                 config::getNoRenderArrows,
                 config::setNoRenderArrows,
                 false
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_fireworks")) {
-            fireworksToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderFireworksEnabled,
-                config::setNoRenderFireworksEnabled
-            );
-
-            fireworksModeBtn = createModeButton(
-                modeX,
-                y,
+            fireworksToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderFireworksEnabled, config::setNoRenderFireworksEnabled);
+            fireworksModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderFireworksEnabled,
                 config::setNoRenderFireworksEnabled,
                 config::getNoRenderFireworks,
                 config::setNoRenderFireworks,
                 false
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_names")) {
-            namesToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderNamesEnabled,
-                config::setNoRenderNamesEnabled
-            );
-
-            namesModeBtn = createModeButton(
-                modeX,
-                y,
+            namesToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderNamesEnabled, config::setNoRenderNamesEnabled);
+            namesModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderNamesEnabled,
                 config::setNoRenderNamesEnabled,
                 config::getNoRenderNames,
                 config::setNoRenderNames,
                 false
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_hand")) {
-            handToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderHandEnabled,
-                config::setNoRenderHandEnabled
-            );
-
-            handModeBtn = createModeButton(
-                modeX,
-                y,
+            handToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderHandEnabled, config::setNoRenderHandEnabled);
+            handModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderHandEnabled,
                 config::setNoRenderHandEnabled,
                 config::getNoRenderHand,
                 config::setNoRenderHand,
                 false
             );
-
-            y += SPACING;
+            contentY += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_players")) {
-            playersToggleBtn = createToggleButton(
-                rightX,
-                y,
-                config::isNoRenderPlayersEnabled,
-                config::setNoRenderPlayersEnabled
-            );
-
-            playersModeBtn = createModeButton(
-                modeX,
-                y,
+            playersToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderPlayersEnabled, config::setNoRenderPlayersEnabled);
+            playersModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderPlayersEnabled,
                 config::setNoRenderPlayersEnabled,
                 config::getNoRenderPlayers,
                 config::setNoRenderPlayers,
                 false
             );
+            contentY += SPACING;
         }
 
-        addDrawableChild(
-            ButtonWidget.builder(
-                    Text.literal("Save & Back"),
-                    button -> close()
-                )
-                .dimensions(width / 2 - 50, height - 40, 100, 25)
-                .build()
-        );
+        int contentBottom = contentY + 70;
 
-        maxScroll = Math.max(0, y - (height - 100));
+        setMaxScroll(Math.max(0F, contentBottom - getContentBottom()));
+
+        saveButton = ButtonWidget.builder(Text.literal("Save & Back"),
+                button -> close())
+            .dimensions(width / 2 - 50, height - 40, 100, 25)
+            .build();
+
+        addDrawableChild(saveButton);
 
         updateAllButtons();
         updateScroll();
     }
 
+    /// Создание элементов
     private ButtonWidget createToggleButton(int x, int y, Supplier<Boolean> enabledGetter, Consumer<Boolean> enabledSetter) {
-        ButtonWidget button = ButtonWidget.builder(
-                Text.literal(""),
+        ButtonWidget button = ButtonWidget.builder(Text.literal(""),
                 b -> {
                     enabledSetter.accept(!enabledGetter.get());
-
                     changed = true;
                     updateAllButtons();
                     save();
-                })
+                }
+            )
             .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
             .build();
 
         addDrawableChild(button);
+
         return button;
     }
 
     private ButtonWidget createModeButton(int x, int y, Supplier<Boolean> enabledGetter, Consumer<Boolean> enabledSetter, Supplier<RenderMode> getter, Consumer<RenderMode> setter, boolean allowSmall) {
-        ButtonWidget button = ButtonWidget.builder(
-                Text.literal(""),
+        ButtonWidget button = ButtonWidget.builder(Text.literal(""),
                 b -> {
-
                     RenderMode current = getter.get();
                     RenderMode next;
 
@@ -401,19 +288,21 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                     }
 
                     setter.accept(next);
-
                     changed = true;
+
                     updateAllButtons();
                     save();
-                })
+                }
+            )
             .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
             .build();
 
         addDrawableChild(button);
+
         return button;
     }
 
-    /// Обновление состояния кнопок
+    /// Обновление элементов
     private void updateAllButtons() {
         if (totemOverlayToggleBtn != null) {
             updateToggleButton(totemOverlayToggleBtn, config.isNoRenderTotemOverlayEnabled());
@@ -426,8 +315,8 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         }
 
         if (totemParticlesToggleBtn != null) {
-            updateToggleButton(totemParticlesToggleBtn, config.isNoRenderTotemParticlesEnabled());
-            updateModeButton(totemParticlesModeBtn, config.getNoRenderTotemParticles());
+            updateToggleButton(totemParticlesToggleBtn, config.isNoRenderTotemParticlesEnabled());updateModeButton(totemParticlesModeBtn, config.getNoRenderTotemParticles()
+            );
         }
 
         if (potionParticlesToggleBtn != null) {
@@ -482,19 +371,18 @@ public class NoRenderConfigScreen extends MainConfigScreen {
     }
 
     private void updateToggleButton(ButtonWidget button, boolean enabled) {
-        button.setMessage(
-            Text.literal(enabled ? "Enabled" : "Disabled")
-                .styled(style ->
-                    style.withColor(
-                        enabled
-                            ? ACCENT_COLOR
-                            : 0xFFFFFFFF
-                    )
-                )
+        button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
+            .styled(style ->
+                style.withColor(enabled ? ACCENT_COLOR : 0xFFFFFFFF)
+            )
         );
     }
 
     private void updateModeButton(ButtonWidget button, RenderMode mode) {
+        if (button == null) {
+            return;
+        }
+
         int color = switch (mode) {
             case FULL -> 0xFFFFFFFF;
             case SMALL -> ACCENT_COLOR;
@@ -507,253 +395,341 @@ public class NoRenderConfigScreen extends MainConfigScreen {
             case NO_RENDER -> "No Render";
         };
 
-        button.setMessage(
-            Text.literal(text)
-                .styled(style -> style.withColor(color))
+        button.setMessage(Text.literal(text)
+            .styled(style -> style.withColor(color))
         );
     }
 
-    /// Создание названий и описаний
+    private void updateButtonPosition(ButtonWidget toggleButton, ButtonWidget modeButton, int y) {
+        if (toggleButton != null) {
+            toggleButton.setY(y - 3);
+        }
+
+        if (modeButton != null) {
+            modeButton.setY(y - 3);
+        }
+    }
+
+    /// Скролл
+    @Override
+    protected void updateScroll() {
+        super.updateScroll();
+
+        updateButtonPositions();
+    }
+
+    private void updateButtonPositions() {
+        int y = 60 - Math.round(scrollOffset);
+
+        if (totemOverlayToggleBtn != null) {
+            updateButtonPosition(totemOverlayToggleBtn, totemOverlayModeBtn, y);
+            y += SPACING;
+        }
+
+        if (fireOverlayToggleBtn != null) {
+            updateButtonPosition(fireOverlayToggleBtn, fireOverlayModeBtn, y);
+            y += SPACING;
+        }
+
+        if (totemParticlesToggleBtn != null) {
+            updateButtonPosition(totemParticlesToggleBtn, totemParticlesModeBtn, y);
+            y += SPACING;
+        }
+
+        if (potionParticlesToggleBtn != null) {
+            updateButtonPosition(potionParticlesToggleBtn, potionParticlesModeBtn, y);
+            y += SPACING;
+        }
+
+        if (explosionToggleBtn != null) {
+            updateButtonPosition(explosionToggleBtn, explosionModeBtn, y);
+            y += SPACING;
+        }
+
+        if (smokeToggleBtn != null) {
+            updateButtonPosition(smokeToggleBtn, smokeModeBtn, y);
+            y += SPACING;
+        }
+
+        if (bubblesToggleBtn != null) {
+            updateButtonPosition(bubblesToggleBtn, bubblesModeBtn, y);
+            y += SPACING;
+        }
+
+        if (weatherToggleBtn != null) {
+            updateButtonPosition(weatherToggleBtn, weatherModeBtn, y);
+            y += SPACING;
+        }
+
+        if (arrowsToggleBtn != null) {
+            updateButtonPosition(arrowsToggleBtn, arrowsModeBtn, y);
+            y += SPACING;
+        }
+
+        if (fireworksToggleBtn != null) {
+            updateButtonPosition(fireworksToggleBtn, fireworksModeBtn, y);
+            y += SPACING;
+        }
+
+        if (namesToggleBtn != null) {
+            updateButtonPosition(namesToggleBtn, namesModeBtn, y);
+            y += SPACING;
+        }
+
+        if (handToggleBtn != null) {
+            updateButtonPosition(handToggleBtn, handModeBtn, y);
+            y += SPACING;
+        }
+
+        if (playersToggleBtn != null) {
+            updateButtonPosition(playersToggleBtn, playersModeBtn, y);
+        }
+    }
+
+    /// Рендер
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        updateButtonPositions();
+        updateButtonInteraction();
+
+        setFeatureButtonsVisible(false);
+
         super.render(context, mouseX, mouseY, delta);
 
+        updateButtonPositions();
+        updateButtonInteraction();
+
+        setFeatureButtonsVisible(true);
+
+        context.enableScissor(0, getContentTop(), width, getContentBottom());
+
+        renderAllFeatureButtons(context, mouseX, mouseY, delta);
+        renderLabels(context, mouseX, mouseY);
+
+        context.disableScissor();
+
+        if (saveButton != null) {
+            saveButton.render(context, mouseX, mouseY, delta);
+        }
+    }
+
+    private void renderAllFeatureButtons(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderButton(context, totemOverlayToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, totemOverlayModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, fireOverlayToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, fireOverlayModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, totemParticlesToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, totemParticlesModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, potionParticlesToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, potionParticlesModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, explosionToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, explosionModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, smokeToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, smokeModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, bubblesToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, bubblesModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, weatherToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, weatherModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, arrowsToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, arrowsModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, fireworksToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, fireworksModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, namesToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, namesModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, handToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, handModeBtn, mouseX, mouseY, delta);
+
+        renderButton(context, playersToggleBtn, mouseX, mouseY, delta);
+        renderButton(context, playersModeBtn, mouseX, mouseY, delta);
+    }
+
+    private void renderButton(DrawContext context, ButtonWidget button, int mouseX, int mouseY, float delta) {
+        if (button == null) {
+            return;
+        }
+
+        button.render(context, mouseX, mouseY, delta);
+    }
+
+    private void renderLabels(DrawContext context, int mouseX, int mouseY) {
         int leftX = width / 4;
-        int y = 60 - scrollOffset;
+        int y = 60 - Math.round(scrollOffset);
 
         if (!LiteApiManager.isFeatureBlocked("no_render_totem_overlay")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Totem Overlay",
-                "Hide or reduce the totem overlay.");
+                "Hide or reduce the totem overlay."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_fire_overlay")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Fire Overlay",
-                "Hide or reduce the fire overlay.");
+                "Hide or reduce the fire overlay."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_totem_particles")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Totem Particles",
-                "Hide or reduce the totem particles.");
+                "Hide or reduce the totem particles."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_potion_particles")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Potion Particles",
-                "Hide or reduce the potion particles.");
+                "Hide or reduce the potion particles."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_explosion")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Explosion",
-                "Hide explosion.");
+                "Hide explosion."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_smoke")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Smoke",
-                "Hide smoke.");
+                "Hide smoke."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_bubbles")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Bubbles",
-                "Hide bubbles particles.");
+                "Hide bubbles particles."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_weather")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Weather",
-                "Hide rain, snow and water splashes.");
+                "Hide rain, snow and water splashes."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_arrows")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Arrows",
-                "Hide arrows on players.");
+                "Hide arrows on players."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_fireworks")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Fireworks",
-                "Hide fireworks particles.");
+                "Hide fireworks particles."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_names")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Names",
-                "Hide players names.");
+                "Hide players names."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_hand")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Hand",
-                "Hide client player's hand.");
+                "Hide client player's hand."
+            );
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("no_render_players")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Players",
-                "Hide players.");
+                "Hide players."
+            );
         }
     }
 
     private void renderLabel(DrawContext context, int x, int y, int mouseX, int mouseY, String title, String desc) {
-        int top = y;
-        int bottom = y + 12 + textRenderer.fontHeight;
+        int descBottom = y + 12 + textRenderer.fontHeight;
 
-        if (bottom <= CLIP_TOP || top >= height - CLIP_BOTTOM) {
+        if (descBottom <= getContentTop() || y >= getContentBottom()) {
             return;
         }
 
         int titleWidth = textRenderer.getWidth(title);
 
         boolean hovered = mouseX >= x &&
-                mouseX <= x + titleWidth &&
-                mouseY >= y &&
-                mouseY <= y + textRenderer.fontHeight;
+            mouseX <= x + titleWidth &&
+            mouseY >= y &&
+            mouseY <= y + textRenderer.fontHeight;
 
         context.drawText(textRenderer, Text.literal(title), x, y, hovered ? ACCENT_COLOR : 0xFFFFFFFF, false);
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }
 
-    /// Скролл
-    private void updateScroll() {
-        int y = 60 - scrollOffset;
+    private void setFeatureButtonsVisible(boolean visible) {
+        setButtonVisible(totemOverlayToggleBtn, visible);
+        setButtonVisible(totemOverlayModeBtn, visible);
 
-        if (totemOverlayToggleBtn != null) {
-            totemOverlayToggleBtn.setY(y - 3);
-            totemOverlayModeBtn.setY(y - 3);
-            setVisible(totemOverlayToggleBtn, totemOverlayToggleBtn.getY());
-            setVisible(totemOverlayModeBtn, totemOverlayModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(fireOverlayToggleBtn, visible);
+        setButtonVisible(fireOverlayModeBtn, visible);
 
-        if (fireOverlayToggleBtn != null) {
-            fireOverlayToggleBtn.setY(y - 3);
-            fireOverlayModeBtn.setY(y - 3);
-            setVisible(fireOverlayToggleBtn, fireOverlayToggleBtn.getY());
-            setVisible(fireOverlayModeBtn, fireOverlayModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(totemParticlesToggleBtn, visible);
+        setButtonVisible(totemParticlesModeBtn, visible);
 
-        if (totemParticlesToggleBtn != null) {
-            totemParticlesToggleBtn.setY(y - 3);
-            totemParticlesModeBtn.setY(y - 3);
-            setVisible(totemParticlesToggleBtn, totemParticlesToggleBtn.getY());
-            setVisible(totemParticlesModeBtn, totemParticlesModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(potionParticlesToggleBtn, visible);
+        setButtonVisible(potionParticlesModeBtn, visible);
 
-        if (potionParticlesToggleBtn != null) {
-            potionParticlesToggleBtn.setY(y - 3);
-            potionParticlesModeBtn.setY(y - 3);
-            setVisible(potionParticlesToggleBtn, potionParticlesToggleBtn.getY());
-            setVisible(potionParticlesModeBtn, potionParticlesModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(explosionToggleBtn, visible);
+        setButtonVisible(explosionModeBtn, visible);
 
-        if (explosionToggleBtn != null) {
-            explosionToggleBtn.setY(y - 3);
-            explosionModeBtn.setY(y - 3);
-            setVisible(explosionToggleBtn, explosionToggleBtn.getY());
-            setVisible(explosionModeBtn, explosionModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(smokeToggleBtn, visible);
+        setButtonVisible(smokeModeBtn, visible);
 
-        if (smokeToggleBtn != null) {
-            smokeToggleBtn.setY(y - 3);
-            smokeModeBtn.setY(y - 3);
-            setVisible(smokeToggleBtn, smokeToggleBtn.getY());
-            setVisible(smokeModeBtn, smokeModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(bubblesToggleBtn, visible);
+        setButtonVisible(bubblesModeBtn, visible);
 
-        if (bubblesToggleBtn != null) {
-            bubblesToggleBtn.setY(y - 3);
-            bubblesModeBtn.setY(y - 3);
-            setVisible(bubblesToggleBtn, bubblesToggleBtn.getY());
-            setVisible(bubblesModeBtn, bubblesModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(weatherToggleBtn, visible);
+        setButtonVisible(weatherModeBtn, visible);
 
-        if (weatherToggleBtn != null) {
-            weatherToggleBtn.setY(y - 3);
-            weatherModeBtn.setY(y - 3);
-            setVisible(weatherToggleBtn, weatherToggleBtn.getY());
-            setVisible(weatherModeBtn, weatherModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(arrowsToggleBtn, visible);
+        setButtonVisible(arrowsModeBtn, visible);
 
-        if (arrowsToggleBtn != null) {
-            arrowsToggleBtn.setY(y - 3);
-            arrowsModeBtn.setY(y - 3);
-            setVisible(arrowsToggleBtn, arrowsToggleBtn.getY());
-            setVisible(arrowsModeBtn, arrowsModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(fireworksToggleBtn, visible);
+        setButtonVisible(fireworksModeBtn, visible);
 
-        if (fireworksToggleBtn != null) {
-            fireworksToggleBtn.setY(y - 3);
-            fireworksModeBtn.setY(y - 3);
-            setVisible(fireworksToggleBtn, fireworksToggleBtn.getY());
-            setVisible(fireworksModeBtn, fireworksModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(namesToggleBtn, visible);
+        setButtonVisible(namesModeBtn, visible);
 
-        if (namesToggleBtn != null) {
-            namesToggleBtn.setY(y - 3);
-            namesModeBtn.setY(y - 3);
-            setVisible(namesToggleBtn, namesToggleBtn.getY());
-            setVisible(namesModeBtn, namesModeBtn.getY());
-            y += SPACING;
-        }
+        setButtonVisible(handToggleBtn, visible);
+        setButtonVisible(handModeBtn, visible);
 
-        if (handToggleBtn != null) {
-            handToggleBtn.setY(y - 3);
-            handModeBtn.setY(y - 3);
-            setVisible(handToggleBtn, handToggleBtn.getY());
-            setVisible(handModeBtn, handModeBtn.getY());
-            y += SPACING;
-        }
-
-        if (playersToggleBtn != null) {
-            playersToggleBtn.setY(y - 3);
-            playersModeBtn.setY(y - 3);
-            setVisible(playersToggleBtn, playersToggleBtn.getY());
-            setVisible(playersModeBtn, playersModeBtn.getY());
-        }
+        setButtonVisible(playersToggleBtn, visible);
+        setButtonVisible(playersModeBtn, visible);
     }
 
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        int oldOffset = scrollOffset;
-
-        scrollOffset -= (int) (amount * SCROLL_SPEED);
-        scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
-
-        if (oldOffset != scrollOffset) {
-            updateScroll();
-        }
-
-        return true;
-    }
-
-    private void setVisible(ButtonWidget button, int y) {
+    private void updateButtonInteraction(ButtonWidget button) {
         if (button == null) {
             return;
         }
@@ -761,13 +737,63 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         int top = button.getY();
         int bottom = top + button.getHeight();
 
-        boolean visible = bottom > CLIP_TOP && top < height - CLIP_BOTTOM;
+        boolean inside =
+            bottom > getContentTop() &&
+                top < getContentBottom();
 
-        button.visible = visible;
-        button.active = visible;
+        button.active = inside;
     }
 
-    /// Сохранение и закрытие
+    private void updateButtonInteraction() {
+        updateButtonInteraction(totemOverlayToggleBtn);
+        updateButtonInteraction(totemOverlayModeBtn);
+
+        updateButtonInteraction(fireOverlayToggleBtn);
+        updateButtonInteraction(fireOverlayModeBtn);
+
+        updateButtonInteraction(totemParticlesToggleBtn);
+        updateButtonInteraction(totemParticlesModeBtn);
+
+        updateButtonInteraction(potionParticlesToggleBtn);
+        updateButtonInteraction(potionParticlesModeBtn);
+
+        updateButtonInteraction(explosionToggleBtn);
+        updateButtonInteraction(explosionModeBtn);
+
+        updateButtonInteraction(smokeToggleBtn);
+        updateButtonInteraction(smokeModeBtn);
+
+        updateButtonInteraction(bubblesToggleBtn);
+        updateButtonInteraction(bubblesModeBtn);
+
+        updateButtonInteraction(weatherToggleBtn);
+        updateButtonInteraction(weatherModeBtn);
+
+        updateButtonInteraction(arrowsToggleBtn);
+        updateButtonInteraction(arrowsModeBtn);
+
+        updateButtonInteraction(fireworksToggleBtn);
+        updateButtonInteraction(fireworksModeBtn);
+
+        updateButtonInteraction(namesToggleBtn);
+        updateButtonInteraction(namesModeBtn);
+
+        updateButtonInteraction(handToggleBtn);
+        updateButtonInteraction(handModeBtn);
+
+        updateButtonInteraction(playersToggleBtn);
+        updateButtonInteraction(playersModeBtn);
+    }
+
+    private void setButtonVisible(ButtonWidget button, boolean visible) {
+        if (button == null) {
+            return;
+        }
+
+        button.visible = visible;
+    }
+
+    /// Сохранение
     private void save() {
         config.save();
 
@@ -777,6 +803,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         changed = false;
     }
 
+    /// Закрытие
     @Override
     public void close() {
         if (changed) {

@@ -95,8 +95,10 @@ public class BetterSprint {
     }
 
     public static BetterSprint getInstance() {
-        if (instance == null)
+        if (instance == null) {
             initialize();
+        }
+
         return instance;
     }
 
@@ -680,9 +682,9 @@ public class BetterSprint {
         int dimensionHash = client.world.getRegistryKey().hashCode();
 
         boolean samePosition = endConcreteState.lastX == playerX
-                && endConcreteState.lastY == playerY
-                && endConcreteState.lastZ == playerZ
-                && endConcreteState.dimensionHash == dimensionHash;
+            && endConcreteState.lastY == playerY
+            && endConcreteState.lastZ == playerZ
+            && endConcreteState.dimensionHash == dimensionHash;
 
         if (samePosition && currentTick - endConcreteState.lastCheckTick < 2) {
             return endConcreteState.blocked;
@@ -751,8 +753,8 @@ public class BetterSprint {
         MinecraftClient client = MinecraftClient.getInstance();
 
         if (instance == null
-                || client == null
-                || client.player == null) {
+            || client == null
+            || client.player == null) {
             return false;
         }
 

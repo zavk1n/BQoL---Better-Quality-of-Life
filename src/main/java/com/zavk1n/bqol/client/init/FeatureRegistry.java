@@ -23,6 +23,16 @@ public enum FeatureRegistry {
         () -> {},
         BetterInteract::refreshBlockedStatus
     ),
+    BETTER_TNT(
+        BetterTnt::initialize,
+        () -> {},
+        BetterTnt::refreshBlockedStatus
+    ),
+    BETTER_HOLOGRAMS(
+        BetterHolograms::initialize,
+        () -> {},
+        BetterHolograms::refreshBlockedStatus
+    ),
     BETTER_SPHERES(
         BetterSpheres::initialize,
         () -> {},

@@ -13,14 +13,10 @@ public class SKYColor {
 
     @Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
     private void bqol$skyColor(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
-        if (!BetterSky.isEnabled()) {
+        if (!BetterSky.isSkyColorEnabled()) {
             return;
         }
 
-        cir.setReturnValue(new Vec3d(
-            BetterSky.getRed(),
-            BetterSky.getGreen(),
-            BetterSky.getBlue()
-        ));
+        cir.setReturnValue(new Vec3d(BetterSky.getRed(), BetterSky.getGreen(), BetterSky.getBlue()));
     }
 }

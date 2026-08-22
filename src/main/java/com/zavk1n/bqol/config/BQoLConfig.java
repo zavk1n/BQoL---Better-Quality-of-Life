@@ -28,7 +28,6 @@ public class BQoLConfig {
 
     public boolean betterSprintDefaultMode = false;
     public boolean betterSprintPvPMode = false;
-    public boolean betterSprintTreeMode = false;
     public boolean betterSprintStairUp = false;
     public boolean betterSprintWaterSprint = false;
 
@@ -56,6 +55,13 @@ public class BQoLConfig {
     public boolean betterSoundsLavaWater = false;
     public boolean betterSoundsEnderPortal = false;
     public boolean betterSoundsAchievements = false;
+    public boolean betterSoundsSwim = false;
+    public boolean betterSoundsFall = false;
+    public boolean betterSoundsChargeCrossbow = false;
+    public boolean betterSoundsFireworks = false;
+    public boolean betterSoundsEnderman = false;
+    public boolean betterSoundsBlaze = false;
+    public boolean betterSoundsBee = false;
 
     public boolean betterSoundsFarm = false;
     public boolean betterSoundsMob = false;
@@ -65,8 +71,20 @@ public class BQoLConfig {
     public boolean betterInteractClickThrough = false;
     public boolean betterInteractAntiSigns = false;
     public boolean betterInteractAutoSigns = false;
-    private String betterInteractAutoSignsText = "";
+    public String betterInteractAutoSignsText = "";
     public boolean betterInteractSafeHarvest = false;
+
+    /// Better Tnt
+    public boolean betterTntEnabled = false;
+    public boolean betterTntTimer = false;
+    public boolean betterTntAlert = false;
+    public int betterTntAlertPosition = 0;
+    public boolean betterTntAlertShowXYZ = false;
+
+    /// Better Holograms
+    public boolean betterHologramsEnabled = false;
+    public boolean betterHologramsVisibleArmorStand = false;
+    public boolean betterHologramsAntiHolograms = false;
 
     /// Better Spheres
     public boolean betterSpheresEnabled = false;
@@ -137,11 +155,11 @@ public class BQoLConfig {
     public boolean rwGoldenSpheres = false;
 
     /// Better Sky
-    private boolean betterSkyEnabled = false;
+    public boolean betterSkyEnabled = false;
 
-    private boolean betterSkyColorEnabled = false;
-    private int betterSkyColor = 0xFFFFFF;
-    private long betterSkyTime = 6000;
+    public boolean betterSkyColorEnabled = false;
+    public int betterSkyColor = 0xFFFFFF;
+    public long betterSkyTime = 6000;
 
     /// Shulker Particles
     public boolean shulkerParticlesEnabled = false;
@@ -155,22 +173,22 @@ public class BQoLConfig {
     public int shulkerParticlesBreakingColor = 0xFFFFFF;
 
     /// Custom Fog
-    private boolean betterFogEnabled = false;
+    public boolean betterFogEnabled = false;
 
-    private boolean noFog = false;
+    public boolean noFog = false;
     public boolean nightVision = false;
 
     /// Custom Health
     public boolean customHealthEnabled = false;
 
     public int customHealthDuration = 5000;
-    private int customHealthLocation = 0;
+    public int customHealthPosition = 0;
     public boolean customHealthScaling = false;
-    private boolean customHealthHovering = false;
+    public boolean customHealthHovering = false;
     public boolean customHealthPvPMode = false;
-    private boolean customHealthDecimal = false;
-    private boolean customHealthGoldenHearts = false;
-    private boolean customHealthGoldenHeartsPlus = false;
+    public boolean customHealthDecimal = false;
+    public boolean customHealthGoldenHearts = false;
+    public boolean customHealthGoldenHeartsPlus = false;
 
     /// No Render
     public enum RenderMode {
@@ -261,11 +279,11 @@ public class BQoLConfig {
     }
 
     private void validateSettings() {
+        betterTntAlertPosition = Math.max(0, Math.min(4, betterTntAlertPosition));
         customHealthDuration = Math.max(3000, Math.min(30000, customHealthDuration));
-        customHealthLocation = Math.max(0, Math.min(3, customHealthLocation));
+        customHealthPosition = Math.max(0, Math.min(3, customHealthPosition));
 
         pvpTimerDuration = Math.max(5000, Math.min(60000, pvpTimerDuration));
-
 
         if (customHealthGoldenHeartsPlus && !customHealthGoldenHearts) {
             customHealthGoldenHeartsPlus = false;
@@ -275,31 +293,27 @@ public class BQoLConfig {
     /// BetterSprint
     public boolean isBetterSprintEnabled() { return betterSprintEnabled; }
     public void setBetterSprintEnabled(boolean enabled) {
-        this.betterSprintEnabled = enabled;
+        this.betterSprintEnabled = enabled; save();
     }
 
     public boolean isBetterSprintDefaultMode() { return betterSprintDefaultMode; }
     public void setBetterSprintDefaultMode(boolean enabled) {
         this.betterSprintDefaultMode = enabled;
-        if (enabled) { this.betterSprintTreeMode = false; this.betterSprintPvPMode = false; }
+        if (enabled) { this.betterSprintPvPMode = false; save(); }
     }
     public boolean isBetterSprintPvPMode() { return betterSprintPvPMode; }
     public void setBetterSprintPvPMode(boolean enabled) {
         this.betterSprintPvPMode = enabled;
-        if (enabled) { this.betterSprintDefaultMode = false; this.betterSprintTreeMode = false; }
+        if (enabled) { this.betterSprintDefaultMode = false; save(); }
     }
-    public boolean isBetterSprintTreeMode() { return betterSprintTreeMode; }
-    public void setBetterSprintTreeMode(boolean enabled) {
-        this.betterSprintTreeMode = enabled;
-        if (enabled) { this.betterSprintDefaultMode = false; this.betterSprintPvPMode = false; }
-    }
+
     public boolean isBetterSprintStairUp() { return betterSprintStairUp; }
     public void setBetterSprintStairUp(boolean enabled) {
-        this.betterSprintStairUp = enabled;
+        this.betterSprintStairUp = enabled; save();
     }
     public boolean isBetterSprintWaterSprint() { return betterSprintWaterSprint; }
     public void setBetterSprintWaterSprint(boolean enabled) {
-        this.betterSprintWaterSprint = enabled;
+        this.betterSprintWaterSprint = enabled; save();
     }
 
     /// Better Sounds
@@ -348,6 +362,20 @@ public class BQoLConfig {
     public void setBetterSoundsEnderPortal(boolean enabled) { this.betterSoundsEnderPortal = enabled; save(); }
     public boolean isBetterSoundsAchievements() { return betterSoundsAchievements; }
     public void setBetterSoundsAchievements(boolean enabled) { this.betterSoundsAchievements = enabled; save(); }
+    public boolean isBetterSoundsSwim() { return betterSoundsSwim; }
+    public void setBetterSoundsSwim(boolean enabled) { this.betterSoundsSwim = enabled; save(); }
+    public boolean isBetterSoundsFall() { return betterSoundsFall; }
+    public void setBetterSoundsFall(boolean enabled) { this.betterSoundsFall = enabled; save(); }
+    public boolean isBetterSoundsChargeCrossbow() { return betterSoundsChargeCrossbow; }
+    public void setBetterSoundsChargeCrossbow(boolean enabled) { this.betterSoundsChargeCrossbow = enabled; save(); }
+    public boolean isBetterSoundsFireworks() { return betterSoundsFireworks; }
+    public void setBetterSoundsFireworks(boolean enabled) { this.betterSoundsFireworks = enabled; save(); }
+    public boolean isBetterSoundsEnderman() { return betterSoundsEnderman; }
+    public void setBetterSoundsEnderman(boolean enabled) { this.betterSoundsEnderman = enabled; save(); }
+    public boolean isBetterSoundsBlaze() { return betterSoundsBlaze; }
+    public void setBetterSoundsBlaze(boolean enabled) { this.betterSoundsBlaze = enabled; save(); }
+    public boolean isBetterSoundsBee() { return betterSoundsBee; }
+    public void setBetterSoundsBee(boolean enabled) { this.betterSoundsBee = enabled; save(); }
 
     public boolean isBetterSoundsFarm() { return betterSoundsFarm; }
     public void setBetterSoundsFarm(boolean enabled) { this.betterSoundsFarm = enabled; save(); }
@@ -386,6 +414,42 @@ public class BQoLConfig {
     public boolean isBetterInteractSafeHarvest() { return betterInteractSafeHarvest; }
     public void setBetterInteractSafeHarvest(boolean enabled) {
         this.betterInteractSafeHarvest = enabled; save();
+    }
+
+    /// Better Tnt
+    public boolean isBetterTntEnabled() { return betterTntEnabled; }
+    public void setBetterTntEnabled(boolean enabled) {
+        this.betterTntEnabled = enabled; save();
+    }
+    public boolean isBetterTntTimer() { return betterTntTimer; }
+    public void setBetterTntTimer(boolean enabled) {
+        this.betterTntTimer = enabled; save();
+    }
+    public boolean isBetterTntAlert() { return betterTntAlert; }
+    public void setBetterTntAlert(boolean enabled) {
+        this.betterTntAlert = enabled; save();
+    }
+
+    public int getBetterTntAlertPosition() { return betterTntAlertPosition; }
+    public void setBetterTntAlertPosition(int loc) { this.betterTntAlertPosition = Math.max(0, Math.min(4, loc)); save(); }
+
+    public boolean isBetterTntAlertShowXYZ() { return betterTntAlertShowXYZ; }
+    public void setBetterTntAlertShowXYZ(boolean enabled) {
+        this.betterTntAlertShowXYZ = enabled; save();
+    }
+
+    /// Better Holograms
+    public boolean isBetterHologramsEnabled() { return betterHologramsEnabled; }
+    public void setBetterHologramsEnabled(boolean enabled) {
+        this.betterHologramsEnabled = enabled; save();
+    }
+    public boolean isBetterHologramsVisibleArmorStand() { return betterHologramsVisibleArmorStand; }
+    public void setBetterHologramsVisibleArmorStand(boolean enabled) {
+        this.betterHologramsVisibleArmorStand = enabled; save();
+    }
+    public boolean isBetterHologramsAntiHolograms() { return betterHologramsAntiHolograms; }
+    public void setBetterHologramsAntiHolograms(boolean enabled) {
+        this.betterHologramsAntiHolograms = enabled; save();
     }
 
     /// Better Spheres
@@ -551,8 +615,8 @@ public class BQoLConfig {
 
     public int getCustomHealthDuration() { return customHealthDuration; }
     public void setCustomHealthDuration(int duration) { this.customHealthDuration = Math.max(3000, Math.min(30000, duration)); save(); }
-    public int getCustomHealthLocation() { return customHealthLocation; }
-    public void setCustomHealthLocation(int loc) { this.customHealthLocation = Math.max(0, Math.min(3, loc)); save(); }
+    public int getCustomHealthPosition() { return customHealthPosition; }
+    public void setCustomHealthPosition(int loc) { this.customHealthPosition = Math.max(0, Math.min(3, loc)); save(); }
     public boolean isCustomHealthScaling() { return customHealthScaling; }
     public void setCustomHealthScaling(boolean scaling) { this.customHealthScaling = scaling; save(); }
     public boolean isCustomHealthHovering() { return customHealthHovering; }
@@ -794,7 +858,6 @@ public class BQoLConfig {
 
         this.betterSprintDefaultMode = defaults.betterSprintDefaultMode;
         this.betterSprintPvPMode = defaults.betterSprintPvPMode;
-        this.betterSprintTreeMode = defaults.betterSprintTreeMode;
         this.betterSprintStairUp = defaults.betterSprintStairUp;
         this.betterSprintWaterSprint = defaults.betterSprintWaterSprint;
 
@@ -822,6 +885,13 @@ public class BQoLConfig {
         this.betterSoundsLavaWater = defaults.betterSoundsLavaWater;
         this.betterSoundsEnderPortal = defaults.betterSoundsEnderPortal;
         this.betterSoundsAchievements = defaults.betterSoundsAchievements;
+        this.betterSoundsSwim = defaults.betterSoundsSwim;
+        this.betterSoundsFall = defaults.betterSoundsFall;
+        this.betterSoundsChargeCrossbow = defaults.betterSoundsChargeCrossbow;
+        this.betterSoundsFireworks = defaults.betterSoundsFireworks;
+        this.betterSoundsEnderman = defaults.betterSoundsEnderman;
+        this.betterSoundsBlaze = defaults.betterSoundsBlaze;
+        this.betterSoundsBee = defaults.betterSoundsBee;
 
         this.betterSoundsFarm = defaults.betterSoundsFarm;
         this.betterSoundsMob = defaults.betterSoundsMob;
@@ -833,6 +903,18 @@ public class BQoLConfig {
         this.betterInteractAntiSigns = defaults.betterInteractAntiSigns;
         this.betterInteractAutoSigns = defaults.betterInteractAutoSigns;
         this.betterInteractSafeHarvest = defaults.betterInteractSafeHarvest;
+
+        /// Better Tnt
+        this.betterTntEnabled = defaults.betterTntEnabled;
+        this.betterTntTimer = defaults.betterTntTimer;
+        this.betterTntAlert = defaults.betterTntAlert;
+        this.betterTntAlertPosition = defaults.betterTntAlertPosition;
+        this.betterTntAlertShowXYZ = defaults.betterTntAlertShowXYZ;
+
+        /// Better Holograms
+        this.betterHologramsEnabled = defaults.betterHologramsEnabled;
+        this.betterHologramsVisibleArmorStand = defaults.betterHologramsVisibleArmorStand;
+        this.betterHologramsAntiHolograms = defaults.betterHologramsAntiHolograms;
 
         /// Better Spheres
         this.betterSpheresEnabled = defaults.betterSpheresEnabled;
@@ -926,7 +1008,7 @@ public class BQoLConfig {
         this.customHealthEnabled = defaults.customHealthEnabled;
 
         this.customHealthDuration = defaults.customHealthDuration;
-        this.customHealthLocation = defaults.customHealthLocation;
+        this.customHealthPosition = defaults.customHealthPosition;
         this.customHealthScaling = defaults.customHealthScaling;
         this.customHealthHovering = defaults.customHealthHovering;
         this.customHealthPvPMode = defaults.customHealthPvPMode;

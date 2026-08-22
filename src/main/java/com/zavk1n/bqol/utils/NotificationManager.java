@@ -161,6 +161,14 @@ public final class NotificationManager {
         showFeatureNotification("Better Interact", enabled);
     }
 
+    public static void showBetterTntNotification(boolean enabled) {
+        showFeatureNotification("Better Tnt", enabled);
+    }
+
+    public static void showBetterHologramsNotification(boolean enabled) {
+        showFeatureNotification("Better Holograms", enabled);
+    }
+
     public static void showBetterSpheresNotification(boolean enabled) {
         showFeatureNotification("Better Spheres", enabled);
     }

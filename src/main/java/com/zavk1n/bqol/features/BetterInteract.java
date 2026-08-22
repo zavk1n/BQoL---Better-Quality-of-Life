@@ -19,7 +19,6 @@ public class BetterInteract {
     private final BQoLConfig config = BQoLConfig.getInstance();
 
     private final BlockedFeatures blocked = new BlockedFeatures();
-
     private static class BlockedFeatures {
         boolean main;
         boolean clickThrough;

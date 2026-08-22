@@ -18,13 +18,13 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
 
     /// Виджеты
     private SliderWidget durationSlider;
-    private ButtonWidget locationButton, hoveringBtn, scalingBtn, pvpModeBtn, decimalBtn, goldenHeartsBtn;
+    private ButtonWidget positionBtn, hoveringBtn, scalingBtn, pvpModeBtn, decimalBtn, goldenHeartsBtn;
     private ColorCheckbox goldenHeartsPlusCheck;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45, LABEL_WIDTH = 220;
     private boolean changed = false;
 
-    private static final String[] LOCATION_NAMES = {"Over", "Left", "Right", "Under"};
+    private static final String[] Position_NAMES = {"Over", "Left", "Right", "Under"};
 
     /// Конструктор
     public CustomHealthConfigScreen(Screen parent) {
@@ -47,7 +47,7 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
         clearChildren();
 
         durationSlider = null;
-        locationButton = null;
+        positionBtn = null;
         hoveringBtn = null;
         scalingBtn = null;
         pvpModeBtn = null;
@@ -79,22 +79,22 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
 
         addDrawableChild(durationSlider);
 
-        locationButton = ButtonWidget.builder(
-                Text.literal(LOCATION_NAMES[config.getCustomHealthLocation()])
+        positionBtn = ButtonWidget.builder(
+                Text.literal(Position_NAMES[config.getCustomHealthPosition()])
                     .styled(s -> s.withColor(ACCENT_COLOR)),
                 button -> {
-                    int location = (config.getCustomHealthLocation() + 1) % LOCATION_NAMES.length;
-                    config.setCustomHealthLocation(location);
+                    int location = (config.getCustomHealthPosition() + 1) % Position_NAMES.length;
+                    config.setCustomHealthPosition(location);
                     changed = true;
-                    locationButton.setMessage(
-                        Text.literal(LOCATION_NAMES[location])
+                    positionBtn.setMessage(
+                        Text.literal(Position_NAMES[location])
                             .styled(s -> s.withColor(ACCENT_COLOR))
                     );
                 })
             .dimensions(controlX, startY + SPACING, BUTTON_WIDTH, BUTTON_HEIGHT)
             .build();
 
-        addDrawableChild(locationButton);
+        addDrawableChild(positionBtn);
 
         if (!LiteApiManager.isFeatureBlocked("custom_health_hovering")) {
             hoveringBtn = createButton(
@@ -228,7 +228,7 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
         );
 
         renderLabel(context, labelX, startY + SPACING, mouseX, mouseY,
-            "Location", "Position of the indicator on the screen."
+            "Position", "Position of the indicator on the screen."
         );
 
         if (!LiteApiManager.isFeatureBlocked("custom_health_hovering"))

@@ -19,7 +19,7 @@ public class InteractConfigScreen extends MainConfigScreen{
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
 
-    // Конструктор
+    /// Конструктор
     public InteractConfigScreen(Screen parent) {
         super(Text.literal("Better Interact Settings"), parent);
     }

@@ -1,6 +1,7 @@
 package com.zavk1n.bqol.client.init;
 
 import com.zavk1n.bqol.BQoL;
+import com.zavk1n.bqol.features.BetterTnt;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 public final class TickManager {
@@ -21,6 +22,10 @@ public final class TickManager {
                     );
                 }
             }
+        });
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            BetterTnt.tickTracking();
         });
 
         BQoL.LOGGER.info("Registered all feature tick handlers");

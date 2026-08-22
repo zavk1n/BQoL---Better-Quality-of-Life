@@ -191,7 +191,8 @@ public class BetterSpheres {
         DEFAULT,
         EPIC,
         LEGENDARY,
-        MYTHIC
+        MYTHIC,
+        CUSTOM
     }
 
     private static final class SpherePalette {
@@ -1637,6 +1638,21 @@ public class BetterSpheres {
             return null;
         }
 
+        final List<String> CUSTOM_KEYWORDS = List.of(
+            "Цербера", "Флеша", "ARMORTALITY", "IMMORTALITY", "Eternity", "Stinger"
+        );
+
+        for (String keyword : CUSTOM_KEYWORDS) {
+            if (name.contains(keyword)) {
+                return new HWSphereInfo(
+                    SphereType.CUSTOM,
+                    0xFFFFFF,
+                    List.of(0xCCCCCC, 0xAAAAAA, 0x888888)
+                );
+            }
+        }
+
+        // Стандартные типы
         if (name.contains("Мифическая")) {
             return new HWSphereInfo(
                 SphereType.MYTHIC,
@@ -1909,7 +1925,8 @@ public class BetterSpheres {
         if (blocked.names
             || sphereInfo == null
             || sphereInfo.type() == SphereType.LEGENDARY
-            || sphereInfo.type() == SphereType.MYTHIC) {
+            || sphereInfo.type() == SphereType.MYTHIC
+            || sphereInfo.type() == SphereType.CUSTOM) {
             return;
         }
 

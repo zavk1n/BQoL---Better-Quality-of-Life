@@ -43,7 +43,14 @@ public class BetterSounds {
         ENDER_PORTAL(config -> config.isBetterSoundsEnderPortal()),
         ACHIEVEMENTS(config -> config.isBetterSoundsAchievements()),
         FARM(config -> config.isBetterSoundsFarm()),
-        MOB(config -> config.isBetterSoundsMob());
+        MOB(config -> config.isBetterSoundsMob()),
+        SWIM(config -> config.isBetterSoundsSwim()),
+        FALL(config -> config.isBetterSoundsFall()),
+        CHARGE_CROSSBOW(config -> config.isBetterSoundsChargeCrossbow()),
+        FIREWORKS(config -> config.isBetterSoundsFireworks()),
+        ENDERMAN(config -> config.isBetterSoundsEnderman()),
+        BLAZE(config -> config.isBetterSoundsBlaze()),
+        BEE(config -> config.isBetterSoundsBee());
 
         private final Predicate<BQoLConfig> enabledGetter;
         private Predicate<String> predicate;
@@ -160,6 +167,13 @@ public class BetterSounds {
         SoundCategory.MOB.setPredicate(this::isMobSound);
         SoundCategory.ENDER_PORTAL.setPredicate(this::isEnderPortalSound);
         SoundCategory.ACHIEVEMENTS.setPredicate(this::isAchievementSound);
+        SoundCategory.SWIM.setPredicate(this::isSwimSound);
+        SoundCategory.FALL.setPredicate(this::isFallSound);
+        SoundCategory.CHARGE_CROSSBOW.setPredicate(this::isChargeCrossbowSound);
+        SoundCategory.FIREWORKS.setPredicate(this::isFireworksSound);
+        SoundCategory.ENDERMAN.setPredicate(this::isEndermanSound);
+        SoundCategory.BLAZE.setPredicate(this::isBlazeSound);
+        SoundCategory.BEE.setPredicate(this::isBeeSound);
     }
 
     /// Фильтрация звуков
@@ -184,160 +198,163 @@ public class BetterSounds {
 
     /// Методы определения звуков
     private boolean isExplosionSound(String path) {
-        return path.contains("explosion") ||
-                path.contains("entity.generic.explode") ||
-                path.contains("entity.creeper.primed") ||
-                path.contains("entity.tnt.primed") ||
-                path.contains("tnt");
+        return path.contains("explosion")
+            || path.contains("entity.generic.explode")
+            || path.contains("entity.creeper.primed")
+            || path.contains("entity.tnt.primed")
+            || path.contains("block.note_block.imitate.creeper")
+            || path.contains("note.imitate.creeper")
+            || path.contains("tnt");
     }
 
     private boolean isEnderDragonSound(String path) {
-        return path.contains("entity.ender_dragon") ||
-                path.contains("entity.dragon") ||
-                path.contains("dragon");
+        return path.contains("entity.ender_dragon")
+            || path.contains("entity.dragon")
+            || path.contains("dragon");
     }
 
     private boolean isPistonSound(String path) {
-        return path.contains("block.piston") ||
-                path.contains("tile.piston");
+        return path.contains("block.piston")
+            || path.contains("tile.piston");
     }
 
     private boolean isIceSound(String path) {
-        return path.contains("block.glass") ||
-                path.contains("block.frosted_ice") ||
-                path.contains("entity.generic.freeze") ||
-                path.contains("entity.player.hurt_freeze") ||
-                path.contains("block.ice") ||
-                path.contains("block.frost") ||
-                path.contains("block.glass.break") ||
-                path.contains("block.glass.place") ||
-                path.contains("block.glass.step") ||
-                path.contains("block.glass.hit");
+        return path.contains("block.glass")
+            || path.contains("block.frosted_ice")
+            || path.contains("block.packed_ice")
+            || path.contains("entity.generic.freeze")
+            || path.contains("entity.player.hurt_freeze")
+            || path.contains("block.ice")
+            || path.contains("block.frost")
+            || path.contains("block.glass.break")
+            || path.contains("block.glass.place")
+            || path.contains("block.glass.step")
+            || path.contains("block.glass.hit");
     }
 
     private boolean isVillagerSound(String path) {
-        return path.contains("entity.villager") ||
-                path.contains("entity.wandering_trader") ||
-                path.contains("villager.trade");
+        return path.contains("entity.villager")
+            || path.contains("entity.wandering_trader")
+            || path.contains("villager.trade");
     }
 
     private boolean isMoodSound(String path) {
-        return path.contains("ambient.cave") ||
-                path.contains("ambient.nether") ||
-                path.contains("ambient.end") ||
-                path.contains("ambient.basalt_deltas") ||
-                path.contains("ambient.crimson_forest") ||
-                path.contains("ambient.soul_sand_valley") ||
-                path.contains("ambient.warped_forest") ||
-                path.contains("music.nether") ||
-                path.contains("music.end");
+        return path.contains("ambient.cave")
+            || path.contains("ambient.nether")
+            || path.contains("ambient.end")
+            || path.contains("ambient.basalt_deltas")
+            || path.contains("ambient.crimson_forest")
+            || path.contains("ambient.soul_sand_valley")
+            || path.contains("ambient.warped_forest")
+            || path.contains("music.nether")
+            || path.contains("music.end");
     }
 
     private boolean isThunderSound(String path) {
-        return path.contains("entity.lightning") ||
-                path.contains("entity.lightning_bolt") ||
-                path.contains("ambient.weather.thunder") ||
-                path.contains("lightning") ||
-                path.contains("thunder");
+        return path.contains("entity.lightning")
+            || path.contains("entity.lightning_bolt")
+            || path.contains("ambient.weather.thunder")
+            || path.contains("lightning")
+            || path.contains("thunder");
     }
 
     private boolean isFireSound(String path) {
-        return path.contains("block.fire") ||
-                path.contains("entity.generic.burn") ||
-                path.contains("entity.player.hurt_on_fire") ||
-                path.contains("item.firecharge") ||
-                path.contains("item.flintandsteel") ||
-                path.contains("fire.extinguish") ||
-                path.contains("block.fire.ambient");
+        return path.contains("block.fire")
+            || path.contains("entity.generic.burn")
+            || path.contains("entity.player.hurt_on_fire")
+            || path.contains("item.firecharge")
+            || path.contains("item.flintandsteel")
+            || path.contains("fire.extinguish")
+            || path.contains("block.fire.ambient");
     }
 
     private boolean isEatSound(String path) {
-        return path.contains("entity.generic.eat") ||
-                path.contains("entity.player.burp") ||
-                path.contains("eat") ||
-                (path.contains("item") && path.contains("consume"));
+        return path.contains("entity.generic.eat")
+            || path.contains("entity.player.burp")
+            || path.contains("eat")
+            || (path.contains("item") && path.contains("consume"));
     }
 
     private boolean isDrinkSound(String path) {
-        return path.contains("entity.generic.drink") ||
-                path.contains("drink") ||
-                (path.contains("item") && path.contains("drink"));
+        return path.contains("entity.generic.drink")
+            || path.contains("drink")
+            || (path.contains("item") && path.contains("drink"));
     }
 
     private boolean isHitSound(String path) {
-        return path.contains("entity.player.attack") ||
-                path.contains("entity.player.hurt") ||
-                path.contains("entity.generic.hurt") ||
-                path.contains("entity.generic.death") ||
-                path.contains("damage") ||
-                (path.contains("hit") && !path.contains("anvil"));
+        return path.contains("entity.player.attack")
+            || path.contains("entity.player.hurt")
+            || path.contains("entity.generic.hurt")
+            || path.contains("entity.generic.death")
+            || path.contains("damage")
+            || (path.contains("hit") && !path.contains("anvil"));
     }
 
     private boolean isStorageSound(String path) {
-        return path.contains("block.chest") ||
-                path.contains("block.shulker_box") ||
-                path.contains("block.barrel") ||
-                path.contains("block.ender_chest") ||
-                path.contains("block.trapped_chest") ||
-                path.contains("container") ||
-                path.contains("shulker");
+        return path.contains("block.chest")
+            || path.contains("block.shulker_box")
+            || path.contains("block.barrel")
+            || path.contains("block.ender_chest")
+            || path.contains("block.trapped_chest")
+            || path.contains("container")
+            || path.contains("shulker");
     }
 
     private boolean isGrassSound(String path) {
-        return (path.contains("block.grass") &&
-                (path.contains("break") || path.contains("place"))) ||
-                (path.contains("block.tall_grass") && (path.contains("break") || path.contains("place"))) ||
-                path.contains("block.vine") ||
-                path.contains("block.lily_pad") ||
-                path.contains("block.fern") ||
-                path.contains("block.leaves") ||
-                path.contains("block.sweet_berry_bush");
+        return (path.contains("block.grass") && (path.contains("break") || path.contains("place")))
+            || (path.contains("block.tall_grass") && (path.contains("break")
+            || path.contains("place")))
+            || path.contains("block.vine")
+            || path.contains("block.lily_pad")
+            || path.contains("block.fern")
+            || path.contains("block.leaves")
+            || path.contains("block.sweet_berry_bush");
     }
 
     private boolean isTotemSound(String path) {
-        return path.contains("item.totem.use") ||
-                path.contains("totem");
+        return path.contains("item.totem.use")
+            || path.contains("totem");
     }
 
     private boolean isAnvilSound(String path) {
-        return path.contains("block.anvil") ||
-                path.contains("anvil");
+        return path.contains("block.anvil")
+            || path.contains("anvil");
     }
 
     private boolean isXpSound(String path) {
-        return path.contains("entity.experience_orb") ||
-                path.contains("entity.player.levelup") ||
-                path.contains("xp") ||
-                path.contains("experience") ||
-                path.contains("block.glass") ||
-                path.contains("block.frosted_ice") ||
-                path.contains("block.glass.break") ||
-                path.contains("block.glass.place") ||
-                path.contains("block.glass.step") ||
-                path.contains("block.glass.hit") ||
-                path.contains("entity.experience_bottle") ||
-                path.contains("experience_bottle") ||
-                path.contains("bottle.break") ||
-                path.contains("entity.splash_potion.break") ||
-                path.contains("item.bottle");
+        return path.contains("entity.experience_orb")
+            || path.contains("entity.player.levelup")
+            || path.contains("xp")
+            || path.contains("experience")
+            || path.contains("block.glass")
+            || path.contains("block.frosted_ice")
+            || path.contains("block.glass.break")
+            || path.contains("block.glass.place")
+            || path.contains("block.glass.step")
+            || path.contains("block.glass.hit")
+            || path.contains("entity.experience_bottle")
+            || path.contains("experience_bottle")
+            || path.contains("bottle.break")
+            || path.contains("entity.splash_potion.break")
+            || path.contains("item.bottle");
     }
 
     private boolean isMiningSound(String path) {
-        return path.contains("block.stone") ||
-                path.contains("block.deepslate") ||
-                path.contains("block.andesite") ||
-                path.contains("block.diorite") ||
-                path.contains("block.granite") ||
-                path.contains("block.tuff") ||
-                path.contains("block.cobblestone") ||
-                path.contains("block.ore") ||
-                path.contains("block.netherrack") ||
-                path.contains("block.end_stone") ||
-                path.contains("block.basalt") ||
-                path.contains("block.blackstone") ||
-                path.contains("block.calcite") ||
-                path.contains("block.dripstone") ||
-                path.contains("block.pointed_dripstone");
+        return path.contains("block.stone")
+            || path.contains("block.deepslate")
+            || path.contains("block.andesite")
+            || path.contains("block.diorite")
+            || path.contains("block.granite")
+            || path.contains("block.tuff")
+            || path.contains("block.cobblestone")
+            || path.contains("block.ore")
+            || path.contains("block.netherrack")
+            || path.contains("block.end_stone")
+            || path.contains("block.basalt")
+            || path.contains("block.blackstone")
+            || path.contains("block.calcite")
+            || path.contains("block.dripstone")
+            || path.contains("block.pointed_dripstone");
     }
 
     private boolean isWoodSound(String path) {
@@ -377,26 +394,28 @@ public class BetterSounds {
     }
 
     private boolean isLavaWaterSound(String path) {
-        return path.contains("block.lava") ||
-                path.contains("block.water") ||
-                (path.contains("block.bubble_column") && (path.contains("lava") || path.contains("water"))) ||
-                (path.contains("block.fire") && path.contains("extinguish"));
+        return path.contains("block.lava")
+            || path.contains("block.water")
+            || (path.contains("block.bubble_column") && (path.contains("lava")
+            || path.contains("water")))
+            || (path.contains("block.fire") && path.contains("extinguish"));
     }
 
     private boolean isEnderPortalSound(String path) {
-        return path.contains("block.end_portal.spawn") ||
-            path.contains("block.end_portal_frame.fill") ||
-            path.contains("entity.enderman.portal") ||
-            path.contains("block.portal.trigger") ||
-            path.contains("item.ender_eye") ||
-            (path.contains("portal") && (path.contains("travel") || path.contains("trigger")));
+        return path.contains("block.end_portal.spawn")
+            || path.contains("block.end_portal_frame.fill")
+            || path.contains("entity.enderman.portal")
+            || path.contains("block.portal.trigger")
+            || path.contains("item.ender_eye")
+            || (path.contains("portal") && (path.contains("travel")
+            || path.contains("trigger")));
     }
 
     private boolean isAchievementSound(String path) {
-        return path.contains("ui.toast.challenge_complete") ||
-            path.contains("ui.toast.achievement") ||
-            path.contains("event.achievement") ||
-            path.contains("entity.player.levelup");
+        return path.contains("ui.toast.challenge_complete")
+            || path.contains("ui.toast.achievement")
+            || path.contains("event.achievement")
+            || path.contains("entity.player.levelup");
     }
 
     private boolean isFarmSound(String path) {
@@ -407,15 +426,21 @@ public class BetterSounds {
                 path.contains("block.dropper") ||
                 path.contains("block.note_block") ||
                 path.contains("block.cauldron") ||
+                path.contains("block.anvil") ||
+                path.contains("block.bell") ||
+                path.contains("block.lever") ||
+                path.contains("block.button") ||
+                path.contains("block.furnace") ||
+                path.contains("block.enchantment_table") ||
+                path.contains("block.grindstone") ||
+                path.contains("block.spawner") ||
                 path.contains("entity.minecart") ||
                 path.contains("entity.armor_stand") ||
-                path.contains("block.armor_stand") ||
                 path.contains("block.wooden_trapdoor") ||
                 path.contains("block.iron_trapdoor") ||
                 path.contains("block.fence_gate") ||
                 path.contains("block.pressure_plate") ||
                 path.contains("block.tripwire") ||
-                path.contains("block.grindstone") ||
                 path.contains("block.loom") ||
                 path.contains("block.scaffolding") ||
                 path.contains("block.smoker") ||
@@ -457,5 +482,37 @@ public class BetterSounds {
                 path.contains("entity.guardian") ||
                 path.contains("entity.elder_guardian");
     }
+
+    public boolean isSwimSound(String path) {
+        return path.contains("entity.player.swim");
+    }
+
+    public boolean isFallSound(String path) {
+        return path.contains("entity.player.small_fall")
+            || path.contains("entity.player.big_fall");
+    }
+
+    public boolean isChargeCrossbowSound(String path) {
+        return path.contains("item.crossbow.loading_start")
+            || path.contains("item.crossbow.loading_middle")
+            || path.contains("item.crossbow.loading_end");
+    }
+
+    public boolean isFireworksSound(String path) {
+        return path.contains("entity.firework_rocket");
+    }
+
+    public boolean isEndermanSound(String path) {
+        return path.contains("entity.enderman");
+    }
+
+    public boolean isBlazeSound(String path) {
+        return path.contains("entity.blaze");
+    }
+
+    public boolean isBeeSound(String path) {
+        return path.contains("entity.bee");
+    }
+
 }
 // v1.0

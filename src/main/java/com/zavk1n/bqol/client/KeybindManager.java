@@ -24,13 +24,15 @@ public final class KeybindManager {
 
     private static final String BETTER_SPRINT_TOGGLE = "01_better_sprint_toggle";
     private static final String BETTER_SOUNDS_TOGGLE = "02_better_sounds_toggle";
-    private static final String BETTER_INTERACT_TOGGLE = "04_better_interact_toggle";
-    private static final String BETTER_SPHERES_TOGGLE = "04_better_spheres_toggle";
-    private static final String BETTER_SKY_TOGGLE = "05_better_sky_toggle";
-    private static final String SHULKER_PARTICLES_TOGGLE = "06_shulker_particles_toggle";
-    private static final String CUSTOM_FOG_TOGGLE = "07_custom_fog_toggle";
-    private static final String CUSTOM_HEALTH_TOGGLE = "08_custom_health_toggle";
-    private static final String NO_RENDER_TOGGLE = "09_no_render_toggle";
+    private static final String BETTER_INTERACT_TOGGLE = "03_better_interact_toggle";
+    private static final String BETTER_TNT_TOGGLE = "04_better_interact_toggle";
+    private static final String BETTER_HOLOGRAMS_TOGGLE = "05_better_interact_toggle";
+    private static final String BETTER_SPHERES_TOGGLE = "06_better_spheres_toggle";
+    private static final String BETTER_SKY_TOGGLE = "07_better_sky_toggle";
+    private static final String SHULKER_PARTICLES_TOGGLE = "08_shulker_particles_toggle";
+    private static final String CUSTOM_FOG_TOGGLE = "09_custom_fog_toggle";
+    private static final String CUSTOM_HEALTH_TOGGLE = "10_custom_health_toggle";
+    private static final String NO_RENDER_TOGGLE = "11_no_render_toggle";
 
     private static final long SPRINT_TOGGLE_COOLDOWN = 200L;
     private static long lastSprintToggleTime;
@@ -45,6 +47,8 @@ public final class KeybindManager {
             BETTER_SPRINT_TOGGLE,
             BETTER_SOUNDS_TOGGLE,
             BETTER_INTERACT_TOGGLE,
+            BETTER_TNT_TOGGLE,
+            BETTER_HOLOGRAMS_TOGGLE,
             BETTER_SPHERES_TOGGLE,
             BETTER_SKY_TOGGLE,
             SHULKER_PARTICLES_TOGGLE,
@@ -162,6 +166,22 @@ public final class KeybindManager {
                     BetterInteract::setEnabled,
                     config::setBetterInteractEnabled,
                     NotificationManager::showBetterInteractNotification
+                );
+
+            case BETTER_TNT_TOGGLE ->
+                toggleFeature(
+                    !config.isBetterTntEnabled(),
+                    BetterTnt::setEnabled,
+                    config::setBetterTntEnabled,
+                    NotificationManager::showBetterTntNotification
+                );
+
+            case BETTER_HOLOGRAMS_TOGGLE ->
+                toggleFeature(
+                    !config.isBetterHologramsEnabled(),
+                    BetterHolograms::setEnabled,
+                    config::setBetterHologramsEnabled,
+                    NotificationManager::showBetterHologramsNotification
                 );
 
             case BETTER_SPHERES_TOGGLE ->

@@ -27,10 +27,8 @@ public class HEALTHRenderIndicator {
         ),
         require = 0
     )
-    private void onRenderLabel(LivingEntity entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci,
-                               @Local(argsOnly = true) LocalRef<Text> localText) {
-        if (!CustomHealth.isEnabled()
-            || !(entity instanceof PlayerEntity player)) {
+    private void onRenderLabel(LivingEntity entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci, @Local(argsOnly = true) LocalRef<Text> localText) {
+        if (!CustomHealth.isEnabled() || !(entity instanceof PlayerEntity player)) {
             return;
         }
 

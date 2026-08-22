@@ -313,7 +313,7 @@ public class CustomHealth {
     private void reloadFromConfigInternal() {
         durationTicks = Math.max(1, (int) (config.getCustomHealthDuration() / 50));
 
-        location = config.getCustomHealthLocation();
+        location = config.getCustomHealthPosition();
 
         refreshBlockedStatusInternal();
 
