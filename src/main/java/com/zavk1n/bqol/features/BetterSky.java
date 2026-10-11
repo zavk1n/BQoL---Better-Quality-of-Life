@@ -3,32 +3,18 @@ package com.zavk1n.bqol.features;
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
-import net.minecraft.client.MinecraftClient;
 
 public class BetterSky {
-
-    private MinecraftClient mc() {
-        if (client == null) {
-            client = MinecraftClient.getInstance();
-        }
-        return client;
-    }
-
     private BetterSky() {}
 
     private static BetterSky instance;
-    private MinecraftClient client;
     private final BQoLConfig config = BQoLConfig.getInstance();
 
-    /// Блокировки
     private final BlockedFeatures blocked = new BlockedFeatures();
-
     private static class BlockedFeatures {
         boolean main;
-        boolean color;
     }
 
-    /// Публичные статические методы
     public static void initialize() {
         if (instance == null) {
             instance = new BetterSky();
@@ -74,10 +60,8 @@ public class BetterSky {
         if (instance != null) instance.setSkyColorEnabledInternal(enabled);
     }
 
-    /// Внутренние динамические методы
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("better_sky");
-        blocked.color = LiteApiManager.isFeatureBlocked("better_sky_color");
     }
 
     private void reloadFromConfigInternal() {
@@ -95,14 +79,13 @@ public class BetterSky {
     }
 
     private boolean isSkyColorEnabledInternal() {
-        return isEnabledInternal() && config.isBetterSkyColorEnabled() && !blocked.color;
+        return isEnabledInternal() && config.isBetterSkyColorEnabled();
     }
 
     private void setSkyColorEnabledInternal(boolean enabled) {
         config.setBetterSkyColorEnabled(enabled);
     }
 
-    /// Работа с цветами
     public static int getSkyColor() {
         return getInstance().config.getBetterSkyColor();
     }
@@ -128,7 +111,6 @@ public class BetterSky {
         return (getSkyColor() & 0xFF) / 255.0f;
     }
 
-    /// Работа со временем
     public static long getTime() {
         return getInstance().config.getBetterSkyTime();
     }

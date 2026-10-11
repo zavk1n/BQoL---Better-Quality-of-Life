@@ -41,7 +41,6 @@ public final class NotificationManager {
         }
     }
 
-    /// Константы
     private static final int NOTIFICATION_DURATION_MS = 1800;
     private static final int FADE_DURATION_MS = 400;
     private static final int SLIDE_DURATION_MS = 400;
@@ -72,7 +71,6 @@ public final class NotificationManager {
         );
     }
 
-    /// Отображение
     public static void showNotification(String id, Text message) {
         long now = System.currentTimeMillis();
 
@@ -148,9 +146,12 @@ public final class NotificationManager {
         showNotification(featureName, message);
     }
 
-    /// Функции
     public static void showBetterSprintNotification(boolean enabled) {
         showFeatureNotification("Better Sprint", enabled);
+    }
+
+    public static void showBetterRCTNotification(boolean enabled) {
+        showFeatureNotification("Better RCT", enabled);
     }
 
     public static void showBetterSoundsNotification(boolean enabled) {
@@ -164,6 +165,8 @@ public final class NotificationManager {
     public static void showBetterTntNotification(boolean enabled) {
         showFeatureNotification("Better Tnt", enabled);
     }
+
+    public static void showBetterPrefixesNotification (boolean enabled) { showFeatureNotification("Better Prefixes", enabled);}
 
     public static void showBetterHologramsNotification(boolean enabled) {
         showFeatureNotification("Better Holograms", enabled);
@@ -181,8 +184,8 @@ public final class NotificationManager {
         showFeatureNotification("Shulker Particles", enabled);
     }
 
-    public static void showCustomFogNotification(boolean enabled) {
-        showFeatureNotification("Custom Fog", enabled);
+    public static void showBetterFogNotification(boolean enabled) {
+        showFeatureNotification("Better Fog", enabled);
     }
 
     public static void showCustomHealthNotification(boolean enabled) {
@@ -193,7 +196,10 @@ public final class NotificationManager {
         showFeatureNotification("No Render", enabled);
     }
 
-    /// Рендер
+    public static void showBetterMineNotification(boolean enabled) {
+        showFeatureNotification("Better Mine", enabled);
+    }
+
     private static void renderNotifications(DrawContext context) {
         if (activeNotifications.isEmpty()) {
             return;

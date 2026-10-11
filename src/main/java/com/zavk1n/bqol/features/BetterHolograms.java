@@ -3,24 +3,13 @@ package com.zavk1n.bqol.features;
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
+
 import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.entity.mob.ShulkerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 
 public class BetterHolograms {
-
-    private MinecraftClient mc() {
-        if (client == null) client = MinecraftClient.getInstance();
-        return client;
-    }
-
     private BetterHolograms() {}
 
     private static BetterHolograms instance;
-    private MinecraftClient client;
     private final BQoLConfig config = BQoLConfig.getInstance();
 
     private final BlockedFeatures blocked = new BlockedFeatures();
@@ -30,7 +19,6 @@ public class BetterHolograms {
         boolean antiHolograms;
     }
 
-    /// Публичные статические методы
     public static void initialize() {
         if (instance == null) {
             instance = new BetterHolograms();
@@ -109,41 +97,7 @@ public class BetterHolograms {
         config.setBetterHologramsAntiHolograms(enabled);
     }
 
-    /// Проверка голограммы
     public static boolean isHologram(ArmorStandEntity stand) {
         return stand.hasCustomName();
-    }
-
-    /// Проверка шалкера
-    public static boolean shouldHideBecauseOfShulker(Entity hologram) {
-        MinecraftClient client = MinecraftClient.getInstance();
-
-        if (client.world == null
-            || hologram == null
-            || hologram.isRemoved()
-            || isSpawn(client)) {
-            return false;
-        }
-
-        final double radius = 2.0D;
-
-        Box searchBox = new Box(
-            hologram.getX() - radius,
-            hologram.getY() - radius,
-            hologram.getZ() - radius,
-            hologram.getX() + radius,
-            hologram.getY() + radius,
-            hologram.getZ() + radius
-        );
-
-        return !client.world.getOtherEntities(hologram, searchBox, entity -> entity instanceof ShulkerEntity).isEmpty();
-    }
-
-    private static boolean isSpawn(MinecraftClient client) {
-        if (client.world == null) {
-            return false;
-        }
-
-        return client.world.getRegistryKey().getValue().toString().equals("minecraft:spawn_world");
     }
 }

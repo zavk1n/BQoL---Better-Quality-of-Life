@@ -4,6 +4,7 @@ import com.zavk1n.bqol.client.screen.MainConfigScreen;
 import com.zavk1n.bqol.client.screen.featurescreen.utils.ColorSlider;
 import com.zavk1n.bqol.features.ShulkerParticles;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
+
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -14,8 +15,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public class ShulkerParticlesConfigScreen extends MainConfigScreen {
-
-    /// Виджеты
     private ButtonWidget constantBtn, constantDependenceBtn, breakingBtn, breakingDependenceBtn, vanillaBreakingBtn;
     private ColorSlider constantColorSlider, breakingColorSlider;
     private TextFieldWidget constantHexField, breakingHexField;
@@ -29,7 +28,6 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
 
     private boolean changed = false;
 
-    /// Конструктор
     public ShulkerParticlesConfigScreen(Screen parent) {
         super(Text.literal("Shulker Particles Settings"), parent);
 
@@ -48,7 +46,6 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
 
@@ -81,10 +78,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         if (!constantBlocked) {
             int y = 60 + row * SPACING;
 
-            constantBtn = createButton(
-                controlX,
-                y,
-                config::isShulkerParticlesConstant,
+            constantBtn = createButton(controlX, y, config::isShulkerParticlesConstant,
                 value -> {
                     config.setShulkerParticlesConstant(value);
                     changed = true;
@@ -98,10 +92,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
             if (!constantDependenceBlocked) {
                 int depBtnX = constantDepLabelX + textRenderer.getWidth("Dependence") + 10 + DEPENDENCE_BUTTONS_OFFSET;
 
-                constantDependenceBtn = createButton(
-                    depBtnX,
-                    y,
-                    config::isShulkerParticlesConstantDependence,
+                constantDependenceBtn = createButton(depBtnX, y, config::isShulkerParticlesConstantDependence,
                     value -> {
                         config.setShulkerParticlesConstantDependence(value);
                         changed = true;
@@ -121,10 +112,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         if (!breakingBlocked) {
             int y = 60 + row * SPACING;
 
-            breakingBtn = createButton(
-                controlX,
-                y,
-                config::isShulkerParticlesBreaking,
+            breakingBtn = createButton(controlX, y, config::isShulkerParticlesBreaking,
                 value -> {
                     config.setShulkerParticlesBreaking(value);
                     changed = true;
@@ -138,10 +126,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
             if (!breakingDependenceBlocked) {
                 int depBtnX = breakingDepLabelX + textRenderer.getWidth("Dependence") + 10 + DEPENDENCE_BUTTONS_OFFSET;
 
-                breakingDependenceBtn = createButton(
-                    depBtnX,
-                    y,
-                    config::isShulkerParticlesBreakingDependence,
+                breakingDependenceBtn = createButton(depBtnX, y, config::isShulkerParticlesBreakingDependence,
                     value -> {
                         config.setShulkerParticlesBreakingDependence(value);
                         changed = true;
@@ -158,10 +143,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_vanilla_breaking")) {
             int y = 60 + row * SPACING;
 
-            vanillaBreakingBtn = createButton(
-                controlX,
-                y,
-                config::isShulkerParticlesVanillaBreaking,
+            vanillaBreakingBtn = createButton(controlX, y, config::isShulkerParticlesVanillaBreaking,
                 value -> {
                     config.setShulkerParticlesVanillaBreaking(value);
                     changed = true;
@@ -176,10 +158,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         if (!constantBlocked) {
             int y = 60 + row * SPACING;
 
-            constantColorSlider = createColorSlider(
-                sliderX,
-                y,
-                constantCurrentColor,
+            constantColorSlider = createColorSlider(sliderX, y, constantCurrentColor,
                 newColor -> {
                     constantCurrentColor = newColor;
                     config.setShulkerParticlesConstantColor(newColor);
@@ -192,11 +171,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
                 }
             );
 
-            constantHexField = createHexField(
-                sliderX + SLIDER_WIDTH + 5,
-                y,
-                constantCurrentColor,
-                hex -> {
+            constantHexField = createHexField(sliderX + SLIDER_WIDTH + 5, y, constantCurrentColor, hex -> {
                     int rgb = parseHex(hex);
 
                     if (rgb != -1) {
@@ -219,11 +194,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         if (!breakingBlocked) {
             int y = 60 + row * SPACING;
 
-            breakingColorSlider = createColorSlider(
-                sliderX,
-                y,
-                breakingCurrentColor,
-                newColor -> {
+            breakingColorSlider = createColorSlider(sliderX, y, breakingCurrentColor, newColor -> {
                     breakingCurrentColor = newColor;
                     config.setShulkerParticlesBreakingColor(newColor);
 
@@ -235,11 +206,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
                 }
             );
 
-            breakingHexField = createHexField(
-                sliderX + SLIDER_WIDTH + 5,
-                y,
-                breakingCurrentColor,
-                hex -> {
+            breakingHexField = createHexField(sliderX + SLIDER_WIDTH + 5, y, breakingCurrentColor, hex -> {
                     int rgb = parseHex(hex);
 
                     if (rgb != -1) {
@@ -269,7 +236,6 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         );
     }
 
-    /// Работа с кнопками
     private ButtonWidget createButton(int x, int y, BooleanSupplier getter, Consumer<Boolean> setter) {
         ButtonWidget btn = ButtonWidget.builder(
                 Text.literal(getter.getAsBoolean() ? "Enabled" : "Disabled"),
@@ -289,7 +255,6 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
             .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
     }
 
-    /// Работа со слайдерами
     private ColorSlider createColorSlider(int x, int y, int rgb, Consumer<Integer> onColorChange) {
         int hue = rgbToHue(rgb);
         ColorSlider slider = new ColorSlider(x, y, SLIDER_WIDTH, 20,
@@ -310,7 +275,6 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         }
     }
 
-    /// Работа с полем цвета
     private TextFieldWidget createHexField(int x, int y, int initialRgb, Consumer<String> onHexChange) {
         TextFieldWidget field = new TextFieldWidget(textRenderer, x, y, HEX_WIDTH, 20, Text.literal("#RRGGBB"));
         field.setText(String.format("#%06X", initialRgb));
@@ -331,7 +295,6 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         }
     }
 
-    /// Работа с цветами
     private int parseHex(String hex) {
         try {
             if (hex.startsWith("#")) {
@@ -409,13 +372,11 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         return (Math.round((r + m) * 255) << 16) | (Math.round((g + m) * 255) << 8) | Math.round((b + m) * 255);
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
         int leftX = width / 6;
-        int startY = 50;
         int row = 0;
 
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_constant")) {
@@ -423,9 +384,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
 
             renderLabel(context, leftX, y,
                 "Constant",
-                "Spawning particles around the shulker.",
-                mouseX,
-                mouseY
+                "Spawning particles around the shulker.", mouseX, mouseY
             );
 
             if (constantDepVisible) {
@@ -458,9 +417,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
 
             renderLabel(context, leftX, y,
                 "Breaking",
-                "Spawns particles during a shulker breaking.",
-                mouseX,
-                mouseY
+                "Spawns particles during a shulker breaking.", mouseX, mouseY
             );
 
             if (breakingDepVisible) {
@@ -491,9 +448,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_vanilla_breaking")) {
             renderLabel(context, leftX, 60 + row * SPACING,
                 "Vanilla Breaking",
-                "Remove vanilla break particles.",
-                mouseX,
-                mouseY
+                "Remove vanilla break particles.", mouseX, mouseY
             );
             row++;
         }
@@ -502,9 +457,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_constant")) {
             renderLabel(context, leftX, 60 + row * SPACING,
                 "Constant Color",
-                "Custom color when Dependence is Off.",
-                mouseX,
-                mouseY
+                "Custom color when Dependence is Off.", mouseX, mouseY
             );
             row++;
         }
@@ -512,9 +465,7 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         if (!LiteApiManager.isFeatureBlocked("shulker_particles_breaking")) {
             renderLabel(context, leftX, 60 + row * SPACING,
                 "Breaking Color",
-                "Custom color when Dependence is Off.",
-                mouseX,
-                mouseY
+                "Custom color when Dependence is Off.", mouseX, mouseY
             );
         }
 
@@ -565,7 +516,6 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
         ShulkerParticles.refreshBlockedStatus();
@@ -584,4 +534,3 @@ public class ShulkerParticlesConfigScreen extends MainConfigScreen {
         }
     }
 }
-// v1.0

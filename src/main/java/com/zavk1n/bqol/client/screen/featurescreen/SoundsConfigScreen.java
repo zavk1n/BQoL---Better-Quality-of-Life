@@ -1,9 +1,9 @@
 package com.zavk1n.bqol.client.screen.featurescreen;
 
 import com.zavk1n.bqol.client.screen.MainConfigScreen;
-import com.zavk1n.bqol.client.screen.featurescreen.SoundsConfigScreen2;
 import com.zavk1n.bqol.features.BetterSounds;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
+
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 public class SoundsConfigScreen extends MainConfigScreen {
     private List<SoundsModeEntry> column1 = new ArrayList<>(), column2 = new ArrayList<>(), column3 = new ArrayList<>();
 
-    /// Виджеты
     private ButtonWidget farmButton, mobButton;
     private ButtonWidget nextButton;
 
@@ -37,7 +36,6 @@ public class SoundsConfigScreen extends MainConfigScreen {
         }
     }
 
-    /// Конструктор
     public SoundsConfigScreen(Screen parent) {
         super(Text.literal("Better Sounds Settings"), parent);
     }
@@ -53,7 +51,6 @@ public class SoundsConfigScreen extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
 
@@ -123,56 +120,34 @@ public class SoundsConfigScreen extends MainConfigScreen {
         updateAllButtons();
     }
 
-    /// Работа с колоннами
     private void fillColumns() {
         column1.clear();
         column2.clear();
         column3.clear();
 
-        column1.add(new SoundsModeEntry("Explosion Mode", "Disables explosions sounds.",
-                config::isBetterSoundsExplosion, config::setBetterSoundsExplosion));
-        column1.add(new SoundsModeEntry("Ender-Dragon Mode", "Disables dragon sounds.",
-                config::isBetterSoundsEnderDragon, config::setBetterSoundsEnderDragon));
-        column1.add(new SoundsModeEntry("Villager Mode", "Disables villagers sounds.",
-                config::isBetterSoundsVillager, config::setBetterSoundsVillager));
-        column1.add(new SoundsModeEntry("Thunder Mode", "Disables lightnings & thunder sounds.",
-                config::isBetterSoundsThunder, config::setBetterSoundsThunder));
-        column1.add(new SoundsModeEntry("Mood Mode", "Disables cave/nether/end ambience.",
-                config::isBetterSoundsMood, config::setBetterSoundsMood));
-        column1.add(new SoundsModeEntry("Ice Mode", "Disables ice/glass/frost sounds.",
-                config::isBetterSoundsIce, config::setBetterSoundsIce));
-        column1.add(new SoundsModeEntry("Pistons Mode", "Disables pistons sounds.",
-                config::isBetterSoundsPiston, config::setBetterSoundsPiston));
+        column1.add(new SoundsModeEntry("Explosion Mode", "Disables explosions sounds.", config::isBetterSoundsExplosion, config::setBetterSoundsExplosion));
+        column1.add(new SoundsModeEntry("Ender-Dragon Mode", "Disables dragon sounds.", config::isBetterSoundsEnderDragon, config::setBetterSoundsEnderDragon));
+        column1.add(new SoundsModeEntry("Villager Mode", "Disables villagers sounds.", config::isBetterSoundsVillager, config::setBetterSoundsVillager));
+        column1.add(new SoundsModeEntry("Thunder Mode", "Disables lightnings & thunder sounds.", config::isBetterSoundsThunder, config::setBetterSoundsThunder));
+        column1.add(new SoundsModeEntry("Mood Mode", "Disables cave/nether/end ambience.", config::isBetterSoundsMood, config::setBetterSoundsMood));
+        column1.add(new SoundsModeEntry("Ice Mode", "Disables ice/glass/frost sounds.", config::isBetterSoundsIce, config::setBetterSoundsIce));
+        column1.add(new SoundsModeEntry("Pistons Mode", "Disables pistons sounds.", config::isBetterSoundsPiston, config::setBetterSoundsPiston));
 
-        column2.add(new SoundsModeEntry("Fire Mode", "Disables fire sounds.",
-                config::isBetterSoundsFire, config::setBetterSoundsFire));
-        column2.add(new SoundsModeEntry("Eat Mode", "Disables eating sounds.",
-                config::isBetterSoundsEat, config::setBetterSoundsEat));
-        column2.add(new SoundsModeEntry("Drink Mode", "Disables drinking sounds.",
-                config::isBetterSoundsDrink, config::setBetterSoundsDrink));
-        column2.add(new SoundsModeEntry("Hit Mode", "Disables attack & hurt sounds.",
-                config::isBetterSoundsHit, config::setBetterSoundsHit));
-        column2.add(new SoundsModeEntry("Storage Mode", "Disables storage sounds.",
-                config::isBetterSoundsStorage, config::setBetterSoundsStorage));
-        column2.add(new SoundsModeEntry("Grass Mode", "Disables grass & leaves sounds.",
-                config::isBetterSoundsGrass, config::setBetterSoundsGrass));
-        column2.add(new SoundsModeEntry("Totem Mode", "Disables totem sounds.",
-                config::isBetterSoundsTotem, config::setBetterSoundsTotem));
+        column2.add(new SoundsModeEntry("Fire Mode", "Disables fire sounds.", config::isBetterSoundsFire, config::setBetterSoundsFire));
+        column2.add(new SoundsModeEntry("Eat Mode", "Disables eating sounds.", config::isBetterSoundsEat, config::setBetterSoundsEat));
+        column2.add(new SoundsModeEntry("Drink Mode", "Disables drinking sounds.", config::isBetterSoundsDrink, config::setBetterSoundsDrink));
+        column2.add(new SoundsModeEntry("Hit Mode", "Disables attack & hurt sounds.", config::isBetterSoundsHit, config::setBetterSoundsHit));
+        column2.add(new SoundsModeEntry("Storage Mode", "Disables storage sounds.", config::isBetterSoundsStorage, config::setBetterSoundsStorage));
+        column2.add(new SoundsModeEntry("Grass Mode", "Disables grass & leaves sounds.", config::isBetterSoundsGrass, config::setBetterSoundsGrass));
+        column2.add(new SoundsModeEntry("Totem Mode", "Disables totem sounds.", config::isBetterSoundsTotem, config::setBetterSoundsTotem));
 
-        column3.add(new SoundsModeEntry("Anvil Mode", "Disables anvil sounds.",
-                config::isBetterSoundsAnvil, config::setBetterSoundsAnvil));
-        column3.add(new SoundsModeEntry("XP Mode", "Disables XP bottles sounds.",
-                config::isBetterSoundsXp, config::setBetterSoundsXp));
-        column3.add(new SoundsModeEntry("Mining Mode", "Disables mining stone/ores sounds.",
-                config::isBetterSoundsMining, config::setBetterSoundsMining));
-        column3.add(new SoundsModeEntry("Wood Mode", "Disables wood sounds.",
-                config::isBetterSoundsWood, config::setBetterSoundsWood));
-        column3.add(new SoundsModeEntry("Lava & Water Entry", "Disables lava & water entry sounds.",
-                config::isBetterSoundsLavaWater, config::setBetterSoundsLavaWater));
-        column3.add(new SoundsModeEntry("Ender-Portal Mode", "Disables end portal & eyes sounds.",
-                config::isBetterSoundsEnderPortal, config::setBetterSoundsEnderPortal));
-        column3.add(new SoundsModeEntry("Achievements Mode", "Disables achievement sounds.",
-                config::isBetterSoundsAchievements, config::setBetterSoundsAchievements));
+        column3.add(new SoundsModeEntry("Anvil Mode", "Disables anvil sounds.", config::isBetterSoundsAnvil, config::setBetterSoundsAnvil));
+        column3.add(new SoundsModeEntry("XP Mode", "Disables XP bottles sounds.", config::isBetterSoundsXp, config::setBetterSoundsXp));
+        column3.add(new SoundsModeEntry("Mining Mode", "Disables mining stone/ores sounds.", config::isBetterSoundsMining, config::setBetterSoundsMining));
+        column3.add(new SoundsModeEntry("Wood Mode", "Disables wood sounds.", config::isBetterSoundsWood, config::setBetterSoundsWood));
+        column3.add(new SoundsModeEntry("Lava & Water Entry", "Disables lava & water entry sounds.", config::isBetterSoundsLavaWater, config::setBetterSoundsLavaWater));
+        column3.add(new SoundsModeEntry("Ender-Portal Mode", "Disables end portal & eyes sounds.", config::isBetterSoundsEnderPortal, config::setBetterSoundsEnderPortal));
+        column3.add(new SoundsModeEntry("Achievements Mode", "Disables achievement sounds.", config::isBetterSoundsAchievements, config::setBetterSoundsAchievements));
     }
 
     private void createColumn(List<SoundsModeEntry> column, int columnX) {
@@ -211,7 +186,6 @@ public class SoundsConfigScreen extends MainConfigScreen {
         return btn;
     }
 
-    /// Обновление состояния кнопок
     private void updateButton(ButtonWidget button, boolean enabled) {
         button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
                 .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
@@ -245,7 +219,6 @@ public class SoundsConfigScreen extends MainConfigScreen {
         }
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -291,7 +264,6 @@ public class SoundsConfigScreen extends MainConfigScreen {
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
         BetterSounds.refreshBlockedStatus();
@@ -311,4 +283,3 @@ public class SoundsConfigScreen extends MainConfigScreen {
         }
     }
 }
-// v1.0

@@ -3,19 +3,11 @@ package com.zavk1n.bqol.features;
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
-import net.minecraft.client.MinecraftClient;
 
 public class BetterInteract {
-
-    private MinecraftClient mc() {
-        if (client == null) client = MinecraftClient.getInstance();
-        return client;
-    }
-
     private BetterInteract() {}
 
     private static BetterInteract instance;
-    private MinecraftClient client;
     private final BQoLConfig config = BQoLConfig.getInstance();
 
     private final BlockedFeatures blocked = new BlockedFeatures();
@@ -27,7 +19,6 @@ public class BetterInteract {
         boolean safeHarvest;
     }
 
-    /// Публичные статические методы
     public static void initialize() {
         if (instance == null) {
             instance = new BetterInteract();
@@ -144,4 +135,3 @@ public class BetterInteract {
         config.setBetterInteractSafeHarvest(enabled);
     }
 }
-// v1.0

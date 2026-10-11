@@ -12,10 +12,7 @@ import java.io.IOException;
 
 public class BQoLConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File config_file = new File(
-            FabricLoader.getInstance().getConfigDir().toFile(),
-            "bqol_config.json"
-    );
+    private static final File config_file = new File(FabricLoader.getInstance().getConfigDir().toFile(), "bqol_config.json");
 
     private static BQoLConfig instance;
 
@@ -30,6 +27,12 @@ public class BQoLConfig {
     public boolean betterSprintPvPMode = false;
     public boolean betterSprintStairUp = false;
     public boolean betterSprintWaterSprint = false;
+
+    /// Better RCT
+    public boolean betterRCTEnabled = false;
+
+    public boolean betterRCTHolyWorld = false;
+    public boolean betterRCTReallyWorld = false;
 
     /// Better Sounds
     public boolean betterSoundsEnabled = false;
@@ -68,6 +71,7 @@ public class BQoLConfig {
 
     /// Better Interact
     public boolean betterInteractEnabled = false;
+
     public boolean betterInteractClickThrough = false;
     public boolean betterInteractAntiSigns = false;
     public boolean betterInteractAutoSigns = false;
@@ -76,13 +80,43 @@ public class BQoLConfig {
 
     /// Better Tnt
     public boolean betterTntEnabled = false;
+
     public boolean betterTntTimer = false;
     public boolean betterTntAlert = false;
     public int betterTntAlertPosition = 0;
     public boolean betterTntAlertShowXYZ = false;
+    public boolean betterTntAlertShowBlocks = false;
+    public boolean betterTntExplosionArea = false;
+
+    /// Better Prefixes
+    public boolean betterPrefixesEnabled = false;
+
+    public boolean betterPrefixesNameProtect = false;
+    public boolean betterPrefixesDonate = false;
+    public boolean betterPrefixesTitle = false;
+
+    public boolean betterPrefixesNameColor = false;
+    public boolean betterPrefixesDonateColor = false;
+    public boolean betterPrefixesTitleColor = false;
+
+    public String betterPrefixesProtectedName = "";
+    public String betterPrefixesDonateText = "";
+    public String betterPrefixesTitleText = "";
+
+    public int betterPrefixesNameColorRgb = 0x000000;
+    public int betterPrefixesDonateColorRgb = 0x000000;
+    public int betterPrefixesTitleColorRgb = 0x000000;
+
+    public boolean betterPrefixesNameBold = false;
+    public boolean betterPrefixesDonateBold = false;
+    public boolean betterPrefixesTitleBold = false;
+
+    public boolean betterPrefixesStarEnabled = false;
+    public int betterPrefixesStarColorRgb = 0xFFFF00;
 
     /// Better Holograms
     public boolean betterHologramsEnabled = false;
+
     public boolean betterHologramsVisibleArmorStand = false;
     public boolean betterHologramsAntiHolograms = false;
 
@@ -149,10 +183,7 @@ public class BQoLConfig {
     public boolean headThor = false;
     public boolean headNutcracker = false;
     public boolean headElf = false;
-
     public boolean easterEgg = false;
-
-    public boolean rwGoldenSpheres = false;
 
     /// Better Sky
     public boolean betterSkyEnabled = false;
@@ -172,11 +203,16 @@ public class BQoLConfig {
     public int shulkerParticlesConstantColor = 0xFFFFFF;
     public int shulkerParticlesBreakingColor = 0xFFFFFF;
 
-    /// Custom Fog
+    /// Better Fog
     public boolean betterFogEnabled = false;
 
-    public boolean noFog = false;
-    public boolean nightVision = false;
+    public boolean betterFogColorEnabled;
+    public int betterFogColor = 0xFFFFFF;
+    public int betterFogDistance = 16;
+
+    public boolean betterFognoBlindness;
+    public boolean betterFognoFog = false;
+    public boolean betterFognightVision = false;
 
     /// Custom Health
     public boolean customHealthEnabled = false;
@@ -227,7 +263,12 @@ public class BQoLConfig {
     public RenderMode noRenderPlayers = RenderMode.FULL;
     public RenderMode noRenderHand = RenderMode.FULL;
 
-    /// Конструктор и методы
+    /// Better Mine
+    public boolean betterMineEnabled = false;
+
+    public boolean betterMineHolyWorldEnabled = false;
+    public boolean betterMineHolyWorldMineHelperEnabled = false;
+
     private BQoLConfig() {
         validateSettings();
     }
@@ -238,26 +279,26 @@ public class BQoLConfig {
     }
 
     public static BQoLConfig load() {
+        BQoLConfig config;
+
         if (config_file.exists()) {
             try (FileReader reader = new FileReader(config_file)) {
-
-                BQoLConfig config = GSON.fromJson(reader, BQoLConfig.class);
+                config = GSON.fromJson(reader, BQoLConfig.class);
 
                 if (config == null) {
                     config = new BQoLConfig();
                 } else {
                     config.validateSettings();
                 }
-
-                return config;
-
             } catch (Exception e) {
                 BQoL.LOGGER.error("Failed to load BQoL config", e);
+                config = new BQoLConfig();
             }
+        } else {
+            config = new BQoLConfig();
         }
 
-        BQoLConfig config = new BQoLConfig();
-        config.save();
+        instance = config;
         return config;
     }
 
@@ -278,43 +319,140 @@ public class BQoLConfig {
         }
     }
 
+
     private void validateSettings() {
         betterTntAlertPosition = Math.max(0, Math.min(4, betterTntAlertPosition));
+
         customHealthDuration = Math.max(3000, Math.min(30000, customHealthDuration));
         customHealthPosition = Math.max(0, Math.min(3, customHealthPosition));
 
         pvpTimerDuration = Math.max(5000, Math.min(60000, pvpTimerDuration));
 
+        betterFogDistance = Math.max(1, Math.min(32, betterFogDistance));
+
+        betterFogColor &= 0xFFFFFF;
+        betterSkyColor &= 0xFFFFFF;
+
+        betterPrefixesNameColorRgb &= 0xFFFFFF;
+        betterPrefixesDonateColorRgb &= 0xFFFFFF;
+        betterPrefixesTitleColorRgb &= 0xFFFFFF;
+        betterPrefixesStarColorRgb &= 0xFFFFFF;
+
+        shulkerParticlesConstantColor &= 0xFFFFFF;
+        shulkerParticlesBreakingColor &= 0xFFFFFF;
+
+        betterSkyTime = Math.max(1000L, Math.min(24000L, betterSkyTime));
+
+        if (betterInteractAutoSignsText == null) {
+            betterInteractAutoSignsText = "";
+        }
+
+        if (betterPrefixesProtectedName == null) {
+            betterPrefixesProtectedName = "";
+        }
+
+        if (betterPrefixesDonateText == null) {
+            betterPrefixesDonateText = "";
+        }
+
+        if (betterPrefixesTitleText == null) {
+            betterPrefixesTitleText = "";
+        }
+
+        if (noRenderTotemOverlay == null) {
+            noRenderTotemOverlay = RenderMode.FULL;
+        }
+
+        if (noRenderFireOverlay == null) {
+            noRenderFireOverlay = RenderMode.FULL;
+        }
+
+        if (noRenderTotemParticles == null) {
+            noRenderTotemParticles = RenderMode.FULL;
+        }
+
+        if (noRenderPotionParticles == null) {
+            noRenderPotionParticles = RenderMode.FULL;
+        }
+
+        if (noRenderExplosion == null) {
+            noRenderExplosion = RenderMode.FULL;
+        }
+
+        if (noRenderSmoke == null) {
+            noRenderSmoke = RenderMode.FULL;
+        }
+
+        if (noRenderBubbles == null) {
+            noRenderBubbles = RenderMode.FULL;
+        }
+
+        if (noRenderWeather == null) {
+            noRenderWeather = RenderMode.FULL;
+        }
+
+        if (noRenderArrows == null) {
+            noRenderArrows = RenderMode.FULL;
+        }
+
+        if (noRenderFireworks == null) {
+            noRenderFireworks = RenderMode.FULL;
+        }
+
+        if (noRenderNames == null) {
+            noRenderNames = RenderMode.FULL;
+        }
+
+        if (noRenderPlayers == null) {
+            noRenderPlayers = RenderMode.FULL;
+        }
+
+        if (noRenderHand == null) {
+            noRenderHand = RenderMode.FULL;
+        }
+
         if (customHealthGoldenHeartsPlus && !customHealthGoldenHearts) {
             customHealthGoldenHeartsPlus = false;
+        }
+
+        if (betterSprintDefaultMode && betterSprintPvPMode) {
+            betterSprintPvPMode = false;
         }
     }
 
     /// BetterSprint
     public boolean isBetterSprintEnabled() { return betterSprintEnabled; }
-    public void setBetterSprintEnabled(boolean enabled) {
-        this.betterSprintEnabled = enabled; save();
-    }
+    public void setBetterSprintEnabled(boolean enabled) { this.betterSprintEnabled = enabled; save(); }
 
     public boolean isBetterSprintDefaultMode() { return betterSprintDefaultMode; }
     public void setBetterSprintDefaultMode(boolean enabled) {
         this.betterSprintDefaultMode = enabled;
-        if (enabled) { this.betterSprintPvPMode = false; save(); }
+        if (enabled) {
+            this.betterSprintPvPMode = false;
+        }
+        save();
     }
     public boolean isBetterSprintPvPMode() { return betterSprintPvPMode; }
     public void setBetterSprintPvPMode(boolean enabled) {
         this.betterSprintPvPMode = enabled;
-        if (enabled) { this.betterSprintDefaultMode = false; save(); }
+        if (enabled) {
+            this.betterSprintDefaultMode = false;
+        }
+        save();
     }
-
     public boolean isBetterSprintStairUp() { return betterSprintStairUp; }
-    public void setBetterSprintStairUp(boolean enabled) {
-        this.betterSprintStairUp = enabled; save();
-    }
+    public void setBetterSprintStairUp(boolean enabled) { this.betterSprintStairUp = enabled; save(); }
     public boolean isBetterSprintWaterSprint() { return betterSprintWaterSprint; }
-    public void setBetterSprintWaterSprint(boolean enabled) {
-        this.betterSprintWaterSprint = enabled; save();
-    }
+    public void setBetterSprintWaterSprint(boolean enabled) { this.betterSprintWaterSprint = enabled; save(); }
+
+    /// Better RCT
+    public boolean isBetterRCTEnabled() { return betterRCTEnabled; }
+    public void setBetterRCTEnabled(boolean enabled) { this.betterRCTEnabled = enabled; save(); }
+
+    public boolean isBetterRCTHolyWorld() { return betterRCTHolyWorld; }
+    public void setBetterRCTHolyWorld(boolean enabled) { this.betterRCTHolyWorld = enabled; save(); }
+    public boolean isBetterRCTReallyWorld() { return betterRCTReallyWorld; }
+    public void setBetterRCTReallyWorld(boolean enabled) { this.betterRCTReallyWorld = enabled; save(); }
 
     /// Better Sounds
     public boolean isBetterSoundsEnabled() { return betterSoundsEnabled; }
@@ -384,73 +522,56 @@ public class BQoLConfig {
 
     /// Better Interact
     public boolean isBetterInteractEnabled() { return betterInteractEnabled; }
-    public void setBetterInteractEnabled(boolean enabled) {
-        this.betterInteractEnabled = enabled;
-    }
+    public void setBetterInteractEnabled(boolean enabled) { this.betterInteractEnabled = enabled; save(); }
 
     public boolean isBetterInteractClickThrough() { return betterInteractClickThrough; }
-    public void setBetterInteractClickThrough(boolean enabled) {
-        this.betterInteractClickThrough = enabled; save();
-    }
-
-    public boolean isBetterInteractAntiSigns() { return betterInteractAntiSigns; }
-    public void setBetterInteractAntiSigns(boolean enabled) {
-        this.betterInteractAntiSigns = enabled; save();
-    }
-
+    public void setBetterInteractClickThrough(boolean enabled) { this.betterInteractClickThrough = enabled; save(); }
     public boolean isBetterInteractAutoSigns() { return betterInteractAutoSigns; }
-    public void setBetterInteractAutoSigns(boolean enabled) {
-        this.betterInteractAutoSigns = enabled; save();
-    }
-
+    public void setBetterInteractAutoSigns(boolean enabled) { this.betterInteractAutoSigns = enabled; save(); }
     public String getBetterInteractAutoSignsText() {
         return betterInteractAutoSignsText;
     }
-
-    public void setBetterInteractAutoSignsText(String text) {
-        betterInteractAutoSignsText = text == null ? "" : text;
-    }
-
+    public void setBetterInteractAutoSignsText(String text) { this.betterInteractAutoSignsText = text == null ? "" : text; save(); }
+    public boolean isBetterInteractAntiSigns() { return betterInteractAntiSigns; }
+    public void setBetterInteractAntiSigns(boolean enabled) { this.betterInteractAntiSigns = enabled; save(); }
     public boolean isBetterInteractSafeHarvest() { return betterInteractSafeHarvest; }
-    public void setBetterInteractSafeHarvest(boolean enabled) {
-        this.betterInteractSafeHarvest = enabled; save();
-    }
+    public void setBetterInteractSafeHarvest(boolean enabled) { this.betterInteractSafeHarvest = enabled; save(); }
 
     /// Better Tnt
     public boolean isBetterTntEnabled() { return betterTntEnabled; }
-    public void setBetterTntEnabled(boolean enabled) {
-        this.betterTntEnabled = enabled; save();
-    }
-    public boolean isBetterTntTimer() { return betterTntTimer; }
-    public void setBetterTntTimer(boolean enabled) {
-        this.betterTntTimer = enabled; save();
-    }
-    public boolean isBetterTntAlert() { return betterTntAlert; }
-    public void setBetterTntAlert(boolean enabled) {
-        this.betterTntAlert = enabled; save();
-    }
+    public void setBetterTntEnabled(boolean enabled) { this.betterTntEnabled = enabled; save(); }
 
+    public boolean isBetterTntTimer() { return betterTntTimer; }
+    public void setBetterTntTimer(boolean enabled) { this.betterTntTimer = enabled; save(); }
+    public boolean isBetterTntAlert() { return betterTntAlert; }
+    public void setBetterTntAlert(boolean enabled) { this.betterTntAlert = enabled; save(); }
     public int getBetterTntAlertPosition() { return betterTntAlertPosition; }
     public void setBetterTntAlertPosition(int loc) { this.betterTntAlertPosition = Math.max(0, Math.min(4, loc)); save(); }
-
     public boolean isBetterTntAlertShowXYZ() { return betterTntAlertShowXYZ; }
-    public void setBetterTntAlertShowXYZ(boolean enabled) {
-        this.betterTntAlertShowXYZ = enabled; save();
-    }
+    public void setBetterTntAlertShowXYZ(boolean enabled) { this.betterTntAlertShowXYZ = enabled; save(); }
+    public boolean isBetterTntAlertShowBlocks() { return betterTntAlertShowBlocks; }
+    public void setBetterTntAlertShowBlocks(boolean enabled) { this.betterTntAlertShowBlocks = enabled; save(); }
+    public boolean isBetterTntExplosionArea() { return betterTntExplosionArea; }
+    public void setBetterTntExplosionArea(boolean enabled) { this.betterTntExplosionArea = enabled; save(); }
+
+    /// BetterPrefixes
+    public boolean isBetterPrefixesEnabled() { return betterPrefixesEnabled; }
+    public void setBetterPrefixesEnabled(boolean enabled) { this.betterPrefixesEnabled = enabled; save(); }
+
+    public boolean isBetterPrefixesNameProtect() { return betterPrefixesNameProtect; }
+    public void setBetterPrefixesNameProtect(boolean enabled) { this.betterPrefixesNameProtect = enabled; save(); }
+    public boolean isBetterPrefixesDonate() { return betterPrefixesDonate; }
+    public void setBetterPrefixesDonate(boolean enabled) { this.betterPrefixesDonate = enabled; save(); }
+    public boolean isBetterPrefixesTitle() { return betterPrefixesTitle; }
+    public void setBetterPrefixesTitle(boolean enabled) { this.betterPrefixesTitle = enabled; save(); }
 
     /// Better Holograms
     public boolean isBetterHologramsEnabled() { return betterHologramsEnabled; }
-    public void setBetterHologramsEnabled(boolean enabled) {
-        this.betterHologramsEnabled = enabled; save();
-    }
+    public void setBetterHologramsEnabled(boolean enabled) { this.betterHologramsEnabled = enabled; save(); }
     public boolean isBetterHologramsVisibleArmorStand() { return betterHologramsVisibleArmorStand; }
-    public void setBetterHologramsVisibleArmorStand(boolean enabled) {
-        this.betterHologramsVisibleArmorStand = enabled; save();
-    }
+    public void setBetterHologramsVisibleArmorStand(boolean enabled) { this.betterHologramsVisibleArmorStand = enabled; save(); }
     public boolean isBetterHologramsAntiHolograms() { return betterHologramsAntiHolograms; }
-    public void setBetterHologramsAntiHolograms(boolean enabled) {
-        this.betterHologramsAntiHolograms = enabled; save();
-    }
+    public void setBetterHologramsAntiHolograms(boolean enabled) { this.betterHologramsAntiHolograms = enabled; save(); }
 
     /// Better Spheres
     public boolean isBetterSpheresEnabled() { return betterSpheresEnabled; }
@@ -572,14 +693,14 @@ public class BQoLConfig {
 
     /// Better Sky
     public boolean isBetterSkyEnabled() { return betterSkyEnabled; }
-    public void setBetterSkyEnabled(boolean betterSkyEnabled) { this.betterSkyEnabled = betterSkyEnabled; }
+    public void setBetterSkyEnabled(boolean enabled) { this.betterSkyEnabled = enabled; save(); }
 
     public boolean isBetterSkyColorEnabled() { return betterSkyColorEnabled; }
     public void setBetterSkyColorEnabled(boolean enabled) { this.betterSkyColorEnabled = enabled; save(); }
     public int getBetterSkyColor() { return betterSkyColor; }
-    public void setBetterSkyColor(int betterSkyColor) { this.betterSkyColor = betterSkyColor; }
+    public void setBetterSkyColor(int color) { this.betterSkyColor = color & 0xFFFFFF; save(); }
     public long getBetterSkyTime() { return betterSkyTime; }
-    public void setBetterSkyTime(long betterSkyTime) { this.betterSkyTime = betterSkyTime; }
+    public void setBetterSkyTime(long time) { this.betterSkyTime = Math.max(1000L, Math.min(24000L, time)); save(); }
 
     /// Shulker Paricles
     public boolean isShulkerParticlesEnabled() { return shulkerParticlesEnabled; }
@@ -604,10 +725,19 @@ public class BQoLConfig {
     public boolean isBetterFogEnabled() { return betterFogEnabled; }
     public void setBetterFogEnabled(boolean enabled) { this.betterFogEnabled = enabled; save(); }
 
-    public boolean isNoFog() { return noFog; }
-    public void setNoFog(boolean enabled) { this.noFog = enabled; save(); }
-    public boolean isNightVision() { return nightVision; }
-    public void setNightVision(boolean enabled) { this.nightVision = enabled; save(); }
+    public boolean isBetterFogColorEnabled() { return betterFogColorEnabled; }
+    public void setBetterFogColorEnabled(boolean enabled) { this.betterFogColorEnabled = enabled; save(); }
+    public int getBetterFogColor() { return betterFogColor; }
+    public void setBetterFogColor(int rgb) { this.betterFogColor = rgb & 0xFFFFFF; save(); }
+    public int getBetterFogDistance() { return betterFogDistance; }
+    public void setBetterFogDistance(int chunks) { this.betterFogDistance = Math.max(1, Math.min(32, chunks)); save(); }
+
+    public boolean isBetterFogNoFog() { return betterFognoFog; }
+    public void setBetterFogNoFog(boolean enabled) { this.betterFognoFog = enabled; save(); }
+    public boolean isBetterFogNightVision() { return betterFognightVision; }
+    public void setBetterFogNightVision(boolean enabled) { this.betterFognightVision = enabled; save(); }
+    public boolean isBetterFogNoBlindness() { return betterFognoBlindness; }
+    public void setBetterFogNoBlindness(boolean enabled) { this.betterFognoBlindness = enabled; save(); }
 
     /// Custom Health
     public boolean isCustomHealthEnabled() { return customHealthEnabled; }
@@ -635,198 +765,66 @@ public class BQoLConfig {
     public void setNoRenderEnabled(boolean enabled) { this.noRenderEnabled = enabled; save(); }
 
     public boolean isNoRenderTotemOverlayEnabled() { return noRenderTotemOverlayEnabled; }
-    public void setNoRenderTotemOverlay(boolean enabled) {
-        this.noRenderTotemOverlayEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderTotemOverlay() {
-        return noRenderTotemOverlay;
-    }
-    public void setNoRenderTotemOverlay(RenderMode mode) {
-        this.noRenderTotemOverlay = mode;
-        save();
-    }
-    public boolean isNoRenderFireOverlayEnabled() {
-        return noRenderFireOverlayEnabled;
-    }
-    public void setNoRenderFireOverlayEnabled(boolean enabled) {
-        this.noRenderFireOverlayEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderFireOverlay() {
-        return noRenderFireOverlay;
-    }
-    public void setNoRenderFireOverlay(RenderMode mode) {
-        this.noRenderFireOverlay = mode;
-        save();
-    }
+    public void setNoRenderTotemOverlay(boolean enabled) { this.noRenderTotemOverlayEnabled = enabled; save(); }
+    public RenderMode getNoRenderTotemOverlay() { return noRenderTotemOverlay; }
+    public void setNoRenderTotemOverlay(RenderMode mode) { this.noRenderTotemOverlay = mode; save(); }
+    public boolean isNoRenderFireOverlayEnabled() { return noRenderFireOverlayEnabled; }
+    public void setNoRenderFireOverlayEnabled(boolean enabled) { this.noRenderFireOverlayEnabled = enabled; save(); }
+    public RenderMode getNoRenderFireOverlay() { return noRenderFireOverlay; }
+    public void setNoRenderFireOverlay(RenderMode mode) { this.noRenderFireOverlay = mode; save(); }
+    public boolean isNoRenderTotemParticlesEnabled() { return noRenderTotemParticlesEnabled; }
+    public void setNoRenderTotemParticlesEnabled(boolean enabled) { this.noRenderTotemParticlesEnabled = enabled; save(); }
+    public RenderMode getNoRenderTotemParticles() { return noRenderTotemParticles; }
+    public void setNoRenderTotemParticles(RenderMode mode) { this.noRenderTotemParticles = mode; save(); }
+    public boolean isNoRenderPotionParticlesEnabled() { return noRenderPotionParticlesEnabled; }
+    public void setNoRenderPotionParticlesEnabled(boolean enabled) { this.noRenderPotionParticlesEnabled = enabled; save(); }
+    public RenderMode getNoRenderPotionParticles() { return noRenderPotionParticles; }
+    public void setNoRenderPotionParticles(RenderMode mode) { this.noRenderPotionParticles = mode; save(); }
+    public boolean isNoRenderExplosionEnabled() { return noRenderExplosionEnabled; }
+    public void setNoRenderExplosionEnabled(boolean enabled) { this.noRenderExplosionEnabled = enabled; save(); }
+    public RenderMode getNoRenderExplosion() { return noRenderExplosion; }
+    public void setNoRenderExplosion(RenderMode mode) { this.noRenderExplosion = mode; save(); }
+    public boolean isNoRenderSmokeEnabled() { return noRenderSmokeEnabled; }
+    public void setNoRenderSmokeEnabled(boolean enabled) { this.noRenderSmokeEnabled = enabled; save(); }
+    public RenderMode getNoRenderSmoke() { return noRenderSmoke; }
+    public void setNoRenderSmoke(RenderMode mode) { this.noRenderSmoke = mode; save(); }
+    public boolean isNoRenderBubblesEnabled() { return noRenderBubblesEnabled; }
+    public void setNoRenderBubblesEnabled(boolean enabled) { this.noRenderBubblesEnabled = enabled; save(); }
+    public RenderMode getNoRenderBubbles() { return noRenderBubbles; }
+    public void setNoRenderBubbles(RenderMode mode) { this.noRenderBubbles = mode; save(); }
+    public boolean isNoRenderWeatherEnabled() { return noRenderWeatherEnabled; }
+    public void setNoRenderWeatherEnabled(boolean enabled) { noRenderWeatherEnabled = enabled; save(); }
+    public RenderMode getNoRenderWeather() { return noRenderWeather; }
+    public void setNoRenderWeather(RenderMode mode) { noRenderWeather = mode; save(); }
+    public boolean isNoRenderArrowsEnabled() { return noRenderArrowsEnabled; }
+    public void setNoRenderArrowsEnabled(boolean enabled) { noRenderArrowsEnabled = enabled; save(); }
+    public RenderMode getNoRenderArrows() { return noRenderArrows; }
+    public void setNoRenderArrows(RenderMode mode) { noRenderArrows = mode; save(); }
+    public boolean isNoRenderFireworksEnabled() { return noRenderFireworksEnabled; }
+    public void setNoRenderFireworksEnabled(boolean enabled) { this.noRenderFireworksEnabled = enabled; save(); }
+    public RenderMode getNoRenderFireworks() { return noRenderFireworks; }
+    public void setNoRenderFireworks(RenderMode mode) { this.noRenderFireworks = mode; save(); }
+    public boolean isNoRenderNamesEnabled() { return noRenderNamesEnabled; }
+    public void setNoRenderNamesEnabled(boolean enabled) { this.noRenderNamesEnabled = enabled; save(); }
+    public RenderMode getNoRenderNames() { return noRenderNames; }
+    public void setNoRenderNames(RenderMode mode) { this.noRenderNames = mode; save(); }
+    public boolean isNoRenderPlayersEnabled() { return noRenderPlayersEnabled; }
+    public void setNoRenderPlayersEnabled(boolean enabled) { this.noRenderPlayersEnabled = enabled; save(); }
+    public RenderMode getNoRenderPlayers() { return noRenderPlayers; }
+    public void setNoRenderPlayers(RenderMode mode) { this.noRenderPlayers = mode; save(); }
+    public boolean isNoRenderHandEnabled() { return noRenderHandEnabled; }
+    public void setNoRenderHandEnabled(boolean enabled) { this.noRenderHandEnabled = enabled; save(); }
+    public RenderMode getNoRenderHand() { return noRenderHand; }
+    public void setNoRenderHand(RenderMode mode) { this.noRenderHand = mode; save(); }
 
-    public boolean isNoRenderTotemParticlesEnabled() {
-        return noRenderTotemParticlesEnabled;
-    }
-    public void setNoRenderTotemParticlesEnabled(boolean enabled) {
-        this.noRenderTotemParticlesEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderTotemParticles() {
-        return noRenderTotemParticles;
-    }
-    public void setNoRenderTotemParticles(RenderMode mode) {
-        this.noRenderTotemParticles = mode;
-        save();
-    }
+    /// Better Mine
+    public boolean isBetterMineEnabled() { return betterMineEnabled; }
+    public void setBetterMineEnabled(boolean enabled) { this.betterMineEnabled = enabled; save(); }
 
-    public boolean isNoRenderPotionParticlesEnabled() {
-        return noRenderPotionParticlesEnabled;
-    }
-    public void setNoRenderPotionParticlesEnabled(boolean enabled) {
-        this.noRenderPotionParticlesEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderPotionParticles() {
-        return noRenderPotionParticles;
-    }
-    public void setNoRenderPotionParticles(RenderMode mode) {
-        this.noRenderPotionParticles = mode;
-        save();
-    }
-
-    public boolean isNoRenderExplosionEnabled() {
-        return noRenderExplosionEnabled;
-    }
-    public void setNoRenderExplosionEnabled(boolean enabled) {
-        this.noRenderExplosionEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderExplosion() {
-        return noRenderExplosion;
-    }
-    public void setNoRenderExplosion(RenderMode mode) {
-        this.noRenderExplosion = mode;
-        save();
-    }
-
-    public boolean isNoRenderSmokeEnabled() {
-        return noRenderSmokeEnabled;
-    }
-    public void setNoRenderSmokeEnabled(boolean enabled) {
-        this.noRenderSmokeEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderSmoke() {
-        return noRenderSmoke;
-    }
-    public void setNoRenderSmoke(RenderMode mode) {
-        this.noRenderSmoke = mode;
-        save();
-    }
-
-    public boolean isNoRenderBubblesEnabled() {
-        return noRenderBubblesEnabled;
-    }
-    public void setNoRenderBubblesEnabled(boolean enabled) {
-        this.noRenderBubblesEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderBubbles() {
-        return noRenderBubbles;
-    }
-    public void setNoRenderBubbles(RenderMode mode) {
-        this.noRenderBubbles = mode;
-        save();
-    }
-
-    public boolean isNoRenderWeatherEnabled() {
-        return noRenderWeatherEnabled;
-    }
-    public void setNoRenderWeatherEnabled(boolean enabled) {
-        noRenderWeatherEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderWeather() {
-        return noRenderWeather;
-    }
-    public void setNoRenderWeather(RenderMode mode) {
-        noRenderWeather = mode;
-        save();
-    }
-
-    public boolean isNoRenderArrowsEnabled() {
-        return noRenderArrowsEnabled;
-    }
-    public void setNoRenderArrowsEnabled(boolean enabled) {
-        noRenderArrowsEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderArrows() {
-        return noRenderArrows;
-    }
-    public void setNoRenderArrows(RenderMode mode) {
-        noRenderArrows = mode;
-        save();
-    }
-
-    public boolean isNoRenderFireworksEnabled() {
-        return noRenderFireworksEnabled;
-    }
-    public void setNoRenderFireworksEnabled(boolean enabled) {
-        this.noRenderFireworksEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderFireworks() {
-        return noRenderFireworks;
-    }
-    public void setNoRenderFireworks(RenderMode mode) {
-        this.noRenderFireworks = mode;
-        save();
-    }
-
-    public boolean isNoRenderNamesEnabled() {
-        return noRenderNamesEnabled;
-    }
-    public void setNoRenderNamesEnabled(boolean enabled) {
-        this.noRenderNamesEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderNames() {
-        return noRenderNames;
-    }
-    public void setNoRenderNames(RenderMode mode) {
-        this.noRenderNames = mode;
-        save();
-    }
-
-    public boolean isNoRenderPlayersEnabled() {
-        return noRenderPlayersEnabled;
-    }
-    public void setNoRenderPlayersEnabled(boolean enabled) {
-        this.noRenderPlayersEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderPlayers() {
-        return noRenderPlayers;
-    }
-    public void setNoRenderPlayers(RenderMode mode) {
-        this.noRenderPlayers = mode;
-        save();
-    }
-
-    public boolean isNoRenderHandEnabled() {
-        return noRenderHandEnabled;
-    }
-    public void setNoRenderHandEnabled(boolean enabled) {
-        this.noRenderHandEnabled = enabled;
-        save();
-    }
-    public RenderMode getNoRenderHand() {
-        return noRenderHand;
-    }
-    public void setNoRenderHand(RenderMode mode) {
-        this.noRenderHand = mode;
-        save();
-    }
-
-    public boolean isDebugMode() { return debug; }
+    public boolean isBetterMineHolyWorldEnabled() { return betterMineHolyWorldEnabled; }
+    public void setBetterMineHolyWorldEnabled(boolean enabled) { this.betterMineHolyWorldEnabled = enabled; save(); }
+    public boolean isHolyWorldMineHelperEnabled() { return betterMineHolyWorldMineHelperEnabled; }
+    public void setHolyWorldMineHelperEnabled(boolean enabled) { this.betterMineHolyWorldMineHelperEnabled = enabled; save(); }
 
     public int getPvpTimerDuration() { return pvpTimerDuration; }
     public void setPvpTimerDuration(int duration) { this.pvpTimerDuration = Math.max(5000, Math.min(60000, duration)); save(); }
@@ -860,6 +858,12 @@ public class BQoLConfig {
         this.betterSprintPvPMode = defaults.betterSprintPvPMode;
         this.betterSprintStairUp = defaults.betterSprintStairUp;
         this.betterSprintWaterSprint = defaults.betterSprintWaterSprint;
+
+        /// BetterRCT
+        this.betterRCTEnabled = defaults.betterRCTEnabled;
+
+        this.betterRCTHolyWorld = defaults.betterRCTHolyWorld;
+        this.betterRCTReallyWorld = defaults.betterRCTReallyWorld;
 
         /// Better Sounds
         this.betterSoundsEnabled = defaults.betterSoundsEnabled;
@@ -902,6 +906,7 @@ public class BQoLConfig {
         this.betterInteractClickThrough = defaults.betterInteractClickThrough;
         this.betterInteractAntiSigns = defaults.betterInteractAntiSigns;
         this.betterInteractAutoSigns = defaults.betterInteractAutoSigns;
+        this.betterInteractAutoSignsText = defaults.betterInteractAutoSignsText;
         this.betterInteractSafeHarvest = defaults.betterInteractSafeHarvest;
 
         /// Better Tnt
@@ -910,6 +915,33 @@ public class BQoLConfig {
         this.betterTntAlert = defaults.betterTntAlert;
         this.betterTntAlertPosition = defaults.betterTntAlertPosition;
         this.betterTntAlertShowXYZ = defaults.betterTntAlertShowXYZ;
+        this.betterTntAlertShowBlocks = defaults.betterTntAlertShowBlocks;
+        this.betterTntExplosionArea = defaults.betterTntExplosionArea;
+
+        /// Better Prefixes
+        this.betterPrefixesEnabled = defaults.betterPrefixesEnabled;
+        this.betterPrefixesNameProtect = defaults.betterPrefixesNameProtect;
+        this.betterPrefixesDonate = defaults.betterPrefixesDonate;
+        this.betterPrefixesTitle = defaults.betterPrefixesTitle;
+
+        this.betterPrefixesProtectedName = defaults.betterPrefixesProtectedName;
+        this.betterPrefixesDonateText = defaults.betterPrefixesDonateText;
+        this.betterPrefixesTitleText = defaults.betterPrefixesTitleText;
+
+        this.betterPrefixesNameColorRgb = defaults.betterPrefixesNameColorRgb;
+        this.betterPrefixesDonateColorRgb = defaults.betterPrefixesDonateColorRgb;
+        this.betterPrefixesTitleColorRgb = defaults.betterPrefixesTitleColorRgb;
+
+        this.betterPrefixesNameColor = defaults.betterPrefixesNameColor;
+        this.betterPrefixesDonateColor = defaults.betterPrefixesDonateColor;
+        this.betterPrefixesTitleColor = defaults.betterPrefixesTitleColor;
+
+        this.betterPrefixesNameBold = defaults.betterPrefixesNameBold;
+        this.betterPrefixesDonateBold = defaults.betterPrefixesDonateBold;
+        this.betterPrefixesTitleBold = defaults.betterPrefixesTitleBold;
+
+        this.betterPrefixesStarEnabled = defaults.betterPrefixesStarEnabled;
+        this.betterPrefixesStarColorRgb = defaults.betterPrefixesStarColorRgb;
 
         /// Better Holograms
         this.betterHologramsEnabled = defaults.betterHologramsEnabled;
@@ -920,6 +952,8 @@ public class BQoLConfig {
         this.betterSpheresEnabled = defaults.betterSpheresEnabled;
 
         // HolyWorld
+        this.holyWorldSpheresEnabled = defaults.holyWorldSpheresEnabled;
+
         this.sphereCerberus = defaults.sphereCerberus;
         this.sphereFlash = defaults.sphereFlash;
         this.sphereImmortality = defaults.sphereImmortality;
@@ -931,7 +965,6 @@ public class BQoLConfig {
         this.holyWorldSphereLegendary = defaults.holyWorldSphereLegendary;
         this.holyWorldSphereEpic = defaults.holyWorldSphereEpic;
         this.holyWorldSphereDefault = defaults.holyWorldSphereDefault;
-        this.holyWorldSpheresEnabled = defaults.holyWorldSpheresEnabled;
 
         this.holyWorldSphereSpeed = defaults.holyWorldSphereSpeed;
         this.holyWorldSphereMiner = defaults.holyWorldSphereMiner;
@@ -940,6 +973,8 @@ public class BQoLConfig {
         this.hwGoldenSpheres = defaults.hwGoldenSpheres;
 
         // ReallyWorld
+        this.reallyWorldSpheresEnabled = defaults.reallyWorldSpheresEnabled;
+
         this.sphereAir = defaults.sphereAir;
         this.sphereFire = defaults.sphereFire;
         this.sphereShine = defaults.sphereShine;
@@ -978,8 +1013,6 @@ public class BQoLConfig {
         this.headElf = defaults.headElf;
         this.easterEgg = defaults.easterEgg;
 
-        this.rwGoldenSpheres = defaults.rwGoldenSpheres;
-
         /// BetterSky
         this.betterSkyEnabled = defaults.betterSkyEnabled;
 
@@ -998,11 +1031,14 @@ public class BQoLConfig {
         this.shulkerParticlesConstantColor = defaults.shulkerParticlesConstantColor;
         this.shulkerParticlesBreakingColor = defaults.shulkerParticlesBreakingColor;
 
-        /// Custom Fog
+        /// Better Fog
         this.betterFogEnabled = defaults.betterFogEnabled;
-
-        this.noFog = defaults.noFog;
-        this.nightVision = defaults.nightVision;
+        this.betterFogColorEnabled = defaults.betterFogColorEnabled;
+        this.betterFogColor = defaults.betterFogColor;
+        this.betterFogDistance = defaults.betterFogDistance;
+        this.betterFognightVision = defaults.betterFognightVision;
+        this.betterFognoFog = defaults.betterFognoFog;
+        this.betterFognoBlindness = defaults.betterFognoBlindness;
 
         /// Custom Health
         this.customHealthEnabled = defaults.customHealthEnabled;
@@ -1045,6 +1081,12 @@ public class BQoLConfig {
         this.noRenderNames = defaults.noRenderNames;
         this.noRenderPlayers = defaults.noRenderPlayers;
         this.noRenderHand = defaults.noRenderHand;
+
+        /// Better Mine
+        this.betterMineEnabled = defaults.betterMineEnabled;
+
+        this.betterMineHolyWorldEnabled = defaults.betterMineHolyWorldEnabled;
+        this.betterMineHolyWorldMineHelperEnabled = defaults.betterMineHolyWorldMineHelperEnabled;
 
         validateSettings();
         save();

@@ -17,7 +17,6 @@ import net.minecraft.util.math.BlockPos;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class BetterSprint {
-
     private MinecraftClient mc() {
         if (client == null) client = MinecraftClient.getInstance();
         return client;
@@ -29,25 +28,7 @@ public class BetterSprint {
     private MinecraftClient client;
     private final BQoLConfig config = BQoLConfig.getInstance();
 
-    private interface DelayCalculator {
-        long calc(long currentMs);
-    }
-
-    /// Состояния в классах
-    private final ModesState defaultState = new ModesState();
-    private final ModesState pvpState = new ModesState();
-
-    private static class ModesState {
-        boolean sprint;
-        boolean active;
-
-        long delayUntilMs;
-        long lastStoppedMs = -1000;
-    }
-
-    /// Блокировки
     private final BlockedFeatures blocked = new BlockedFeatures();
-
     private static class BlockedFeatures {
         boolean main;
         boolean defaultMode;
@@ -56,35 +37,41 @@ public class BetterSprint {
         boolean waterSprint;
     }
 
-    private final WaterSprintState waterSprintState = new WaterSprintState();
+    private interface DelayCalculator {
+        long calc(long currentMs);
+    }
 
+    private final ModesState defaultState = new ModesState();
+    private final ModesState pvpState = new ModesState();
+    private static class ModesState {
+        boolean sprint;
+        boolean active;
+        long delayUntilMs;
+        long lastStoppedMs = -1000;
+    }
+
+    private final WaterSprintState waterSprintState = new WaterSprintState();
     private static class WaterSprintState {
         boolean active;
         boolean sprint;
-
         long shiftIgnoreUntilTick;
     }
 
     private final EndConcreteState endConcreteState = new EndConcreteState();
-
     private static class EndConcreteState {
         boolean blocked;
         long lastCheckTick = -1;
-
         int lastX;
         int lastY;
         int lastZ;
-
         int dimensionHash;
     }
 
-    /// Остальные состояния
-    private PlayerEntity pendingTarget; // Для PvP таймера
-    private long pvpExpireTick = 0; // Для PvP таймера
-    private long pendingAttackTick; // Для PvP таймера
-    private boolean wasEnabledLastTick = false; // Для сброса
+    private PlayerEntity pendingTarget;
+    private long pvpExpireTick = 0;
+    private long pendingAttackTick;
+    private boolean wasEnabledLastTick = false;
 
-    /// Публичные статические методы
     public static void initialize() {
         if (instance == null) {
             instance = new BetterSprint();
@@ -150,7 +137,6 @@ public class BetterSprint {
         if (instance != null) instance.updateInternal();
     }
 
-    /// Внутренние динамические методы
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("better_sprint");
         blocked.defaultMode = LiteApiManager.isFeatureBlocked("better_sprint_default");
@@ -384,7 +370,6 @@ public class BetterSprint {
         }
     }
 
-    /// Единый хелпер для режимов
     private void updateMode(ModesState state, boolean enabled, boolean canUse, boolean instantAllowed, int instantChance, long currentMs, DelayCalculator delayCalc) {
         if (!enabled || !canUse) {
             if (state.active) {
@@ -421,7 +406,6 @@ public class BetterSprint {
         state.sprint = true;
     }
 
-    /// Обновление самих режимов
     private void updateInternalDefault(long currentMs, boolean moving, boolean hasFood, boolean inWaterOrLava) {
         updateMode(
             defaultState,
@@ -498,7 +482,6 @@ public class BetterSprint {
         }
     }
 
-    /// Расчет задержек для режимов
     private long calculateDefaultDelayMs(long currentMs) {
         int roll = ThreadLocalRandom.current().nextInt(100);
 
@@ -600,7 +583,6 @@ public class BetterSprint {
         return ThreadLocalRandom.current().nextInt(min, max + 1);
     }
 
-    /// Дополнительные проверки и методы для режимов
     private static boolean isMoving(ClientPlayerEntity player) {
         if (player == null || player.input == null) {
             return false;
@@ -643,7 +625,6 @@ public class BetterSprint {
         return ThreadLocalRandom.current().nextInt(100) < chancePercent;
     }
 
-    /// Дополнительные методы для Stair Up
     public static boolean isStairUpActive() {
         return instance != null
             && instance.isEnabledInternal()
@@ -660,7 +641,6 @@ public class BetterSprint {
         }
     }
 
-    /// Дополнительные методы для Water Sprint
     private boolean isWaterSprintEndConcreteNearby(ClientPlayerEntity player) {
         MinecraftClient client = mc();
 
@@ -761,7 +741,6 @@ public class BetterSprint {
         return instance.waterSprintState.active && client.player.age < instance.waterSprintState.shiftIgnoreUntilTick;
     }
 
-    /// Метод для определения сервера
     public static boolean isRestrictedServer() {
         MinecraftClient client = MinecraftClient.getInstance();
 
@@ -774,7 +753,6 @@ public class BetterSprint {
         return address.contains("holyworld") || address.contains("funtime");
     }
 
-    /// Утилиты сброса состояния
     private void resetAllMovementStates() {
         defaultState.delayUntilMs = 0;
         pvpState.delayUntilMs = 0;
@@ -814,4 +792,3 @@ public class BetterSprint {
         resetAllMovementStates();
     }
 }
-// v1.0

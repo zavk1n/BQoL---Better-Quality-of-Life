@@ -1,6 +1,6 @@
 package com.zavk1n.bqol.client.screen.featurescreen.utils;
 
-import  net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
@@ -36,4 +36,3 @@ public class ColorCheckbox extends ButtonWidget {
         }
     }
 }
-// v1.0

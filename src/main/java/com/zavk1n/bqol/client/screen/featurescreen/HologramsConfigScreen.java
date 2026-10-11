@@ -1,7 +1,6 @@
 package com.zavk1n.bqol.client.screen.featurescreen;
 
 import com.zavk1n.bqol.features.BetterHolograms;
-import com.zavk1n.bqol.features.BetterTnt;
 import com.zavk1n.bqol.client.screen.MainConfigScreen;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
@@ -11,14 +10,11 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
 public class HologramsConfigScreen extends MainConfigScreen{
-
-    /// Виджеты
     private ButtonWidget visibleArmorStandBtn, antiHologramsBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
 
-    /// Конструктор
     public HologramsConfigScreen(Screen parent) {
         super(Text.literal("Better Holograms Settings"), parent);
     }
@@ -34,7 +30,6 @@ public class HologramsConfigScreen extends MainConfigScreen{
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
 
@@ -89,7 +84,6 @@ public class HologramsConfigScreen extends MainConfigScreen{
         updateAllButtons();
     }
 
-    /// Обновление состояния кнопок
     private void updateAllButtons() {
         if (visibleArmorStandBtn != null) {
             updateButton(visibleArmorStandBtn, config.isBetterHologramsVisibleArmorStand());
@@ -105,7 +99,6 @@ public class HologramsConfigScreen extends MainConfigScreen{
             .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -143,7 +136,6 @@ public class HologramsConfigScreen extends MainConfigScreen{
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
         BetterHolograms.refreshBlockedStatus();
@@ -162,4 +154,3 @@ public class HologramsConfigScreen extends MainConfigScreen{
         }
     }
 }
-// v1.0

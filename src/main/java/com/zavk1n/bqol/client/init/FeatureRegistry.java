@@ -1,10 +1,10 @@
 package com.zavk1n.bqol.client.init;
 
 import com.zavk1n.bqol.features.*;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-/// Реестр всех фич
 @Environment(EnvType.CLIENT)
 public enum FeatureRegistry {
 
@@ -12,6 +12,11 @@ public enum FeatureRegistry {
         BetterSprint::initialize,
         BetterSprint::update,
         BetterSprint::refreshBlockedStatus
+    ),
+    BETTER_RCT(
+        BetterRCT::initialize,
+        () -> {},
+        BetterRCT::refreshBlockedStatus
     ),
     BETTER_SOUNDS(
         BetterSounds::initialize,
@@ -27,6 +32,11 @@ public enum FeatureRegistry {
         BetterTnt::initialize,
         () -> {},
         BetterTnt::refreshBlockedStatus
+    ),
+    BETTER_PREFIXES (
+        BetterPrefixes::initialize,
+        () -> {},
+        BetterPrefixes::refreshBlockedStatus
     ),
     BETTER_HOLOGRAMS(
         BetterHolograms::initialize,
@@ -62,6 +72,11 @@ public enum FeatureRegistry {
         NoRender::initialize,
         () -> {},
         NoRender::refreshBlockedStatus
+    ),
+    BETTER_MINE(
+        BetterMine::initialize,
+        () -> {},
+        BetterMine::refreshBlockedStatus
     );
 
     private static final FeatureRegistry[] VALUES = values();
@@ -102,4 +117,3 @@ public enum FeatureRegistry {
         }
     }
 }
-// v1.0

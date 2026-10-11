@@ -29,4 +29,3 @@ public abstract class Response {
         return message;
     }
 }
-// v1.0

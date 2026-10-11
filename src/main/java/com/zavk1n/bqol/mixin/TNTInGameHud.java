@@ -1,10 +1,12 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterTnt;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.text.Text;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,31 +41,26 @@ public class TNTInGameHud {
 
         switch (BetterTnt.getAlertPosition()) {
             case 0 -> {
-                // Верх-центр
                 x = (screenWidth - textWidth) / 2;
                 y = margin;
             }
 
             case 1 -> {
-                // Право-верх
                 x = screenWidth - textWidth - margin;
                 y = margin;
             }
 
             case 2 -> {
-                // Право-низ
                 x = screenWidth - textWidth - margin;
                 y = screenHeight - panelHeight - margin;
             }
 
             case 3 -> {
-                // Лево-верх
                 x = margin;
                 y = margin;
             }
 
             case 4 -> {
-                // Лево-низ
                 x = margin;
                 y = screenHeight - panelHeight - margin;
             }
@@ -136,7 +133,7 @@ public class TNTInGameHud {
         for (int i = 0; i < visibleCount; i++) {
             BetterTnt.AlertInfo alert = bqol$lastAlerts.get(i);
 
-            String text = alert.getText();
+            String text = alert.getText(mc.player.getPos());
 
             boolean lastLine = i == visibleCount - 1;
             boolean hasMore = bqol$lastAlerts.size() > 5;
@@ -203,7 +200,7 @@ public class TNTInGameHud {
         );
 
         return mc.world.getEntitiesByClass(net.minecraft.entity.TntEntity.class, searchBox, entity -> entity != null
-                    && entity.isAlive()
-                    && entity.getFuse() >= 0).size();
+            && entity.isAlive()
+            && entity.getFuse() >= 0).size();
     }
 }

@@ -12,8 +12,6 @@ import net.minecraft.text.Text;
 import java.util.function.BooleanSupplier;
 
 public class SprintConfigScreen extends MainConfigScreen {
-
-    /// Виджеты
     private ButtonWidget defaultModeBtn, pvpModeBtn, stairupBtn, watersprintBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
@@ -24,7 +22,6 @@ public class SprintConfigScreen extends MainConfigScreen {
         PVP,
     }
 
-    /// Конструктор
     public SprintConfigScreen(Screen parent) {
         super(Text.literal("Better Sprint Settings"), parent);
     }
@@ -40,7 +37,6 @@ public class SprintConfigScreen extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
 
@@ -53,26 +49,20 @@ public class SprintConfigScreen extends MainConfigScreen {
         int y = 60;
 
         if (!LiteApiManager.isFeatureBlocked("better_sprint_default")) {
-            defaultModeBtn = createExclusiveButton(
-                rightX,
-                y,
+            defaultModeBtn = createExclusiveButton(rightX, y,
                 "Default Mode",
                 config::isBetterSprintDefaultMode,
                 SprintMode.DEFAULT
             );
-
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("better_sprint_pvp")) {
-            pvpModeBtn = createExclusiveButton(
-                rightX,
-                y,
+            pvpModeBtn = createExclusiveButton(rightX, y,
                 "PvP Mode",
                 config::isBetterSprintPvPMode,
                 SprintMode.PVP
             );
-
             y += SPACING;
         }
 
@@ -126,7 +116,7 @@ public class SprintConfigScreen extends MainConfigScreen {
                 Text.literal(isActive.getAsBoolean() ? "Enabled" : "Disabled"),
                 button -> {
                     if (isActive.getAsBoolean()) {
-                        disableAllModes();
+                        disableExclusiveMode();
                     } else {
                         enableExclusiveMode(mode);
                     }
@@ -143,9 +133,8 @@ public class SprintConfigScreen extends MainConfigScreen {
         return btn;
     }
 
-    /// Работа с режимами
     private void enableExclusiveMode(SprintMode mode) {
-        disableAllModes();
+        disableExclusiveMode();
 
         switch (mode) {
             case DEFAULT -> config.setBetterSprintDefaultMode(true);
@@ -153,12 +142,11 @@ public class SprintConfigScreen extends MainConfigScreen {
         }
     }
 
-    private void disableAllModes() {
+    private void disableExclusiveMode() {
         config.setBetterSprintDefaultMode(false);
         config.setBetterSprintPvPMode(false);
     }
 
-    /// Обновление состояния кнопок
     private void updateAllButtons() {
         if (defaultModeBtn != null) {
             updateButton(defaultModeBtn, config.isBetterSprintDefaultMode());
@@ -182,7 +170,6 @@ public class SprintConfigScreen extends MainConfigScreen {
             .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -236,7 +223,6 @@ public class SprintConfigScreen extends MainConfigScreen {
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
         BetterSprint.refreshBlockedStatus();
@@ -256,4 +242,3 @@ public class SprintConfigScreen extends MainConfigScreen {
         }
     }
 }
-// v1.0

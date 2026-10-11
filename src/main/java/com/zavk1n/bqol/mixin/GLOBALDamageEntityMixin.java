@@ -2,7 +2,9 @@ package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterSprint;
 import com.zavk1n.bqol.features.CustomHealth;
+
 import net.minecraft.client.network.ClientPlayerEntity;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;

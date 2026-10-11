@@ -1,8 +1,10 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterHolograms;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ArmorStandEntity;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,8 +18,8 @@ public class HOLOGRAMSArmorStandRendererVisibility {
         Entity entity = (Entity) (Object) this;
 
         if (!BetterHolograms.isVisibleArmorStandEnabled()
-                || !(entity instanceof ArmorStandEntity armorStand)
-                || !BetterHolograms.isHologram(armorStand)) {
+            || !(entity instanceof ArmorStandEntity armorStand)
+            || !BetterHolograms.isHologram(armorStand)) {
             return;
         }
 

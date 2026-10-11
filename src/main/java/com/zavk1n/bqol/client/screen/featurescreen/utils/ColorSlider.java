@@ -29,4 +29,3 @@ public class ColorSlider extends SliderWidget {
         updateMessage();
     }
 }
-// v1.0

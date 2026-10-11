@@ -26,4 +26,3 @@ public final class FeatureCheckerSerializer implements JsonSerializer<CheckFeatu
         return root;
     }
 }
-// v1.0

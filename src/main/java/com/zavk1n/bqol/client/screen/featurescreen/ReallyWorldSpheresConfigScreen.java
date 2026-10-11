@@ -16,8 +16,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
-
-    /// Записи сфер
     private final List<SphereToggleEntry> sphereEntries = new ArrayList<>();
 
     private static class SphereToggleEntry {
@@ -41,7 +39,6 @@ public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
     }
 
     private static class SphereEntry {
-
         final String displayName;
         final BooleanSupplier enabledGetter;
         final Consumer<Boolean> enabledSetter;
@@ -67,7 +64,6 @@ public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
 
     private boolean changed = false;
 
-    /// Конструктор
     public ReallyWorldSpheresConfigScreen(Screen parent) {
         super(Text.literal("ReallyWorld Spheres Settings"), parent);
     }
@@ -86,7 +82,6 @@ public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро
     private void rebuildUI() {
         clearChildren();
 
@@ -98,7 +93,6 @@ public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
         updateSphereElements();
     }
 
-    /// Создание элементов
     private void createSphereGrid() {
         int gridWidth = COLUMNS * COL_SPACING;
         int startX = (width - gridWidth) / 2;
@@ -195,7 +189,6 @@ public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
         );
     }
 
-    /// Обнолвление элементов
     @Override
     protected void updateScroll() {
         super.updateScroll();
@@ -243,7 +236,6 @@ public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
         }
     }
 
-    /// Рендер
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         for (SphereToggleEntry entry : sphereEntries) {
@@ -277,16 +269,13 @@ public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
         return gridRight + 10;
     }
 
-    /// Сохранение
     private void save() {
         config.save();
-
         BetterSpheres.refreshBlockedStatus();
 
         changed = false;
     }
 
-    /// Закрытие
     @Override
     public void close() {
         if (changed) {

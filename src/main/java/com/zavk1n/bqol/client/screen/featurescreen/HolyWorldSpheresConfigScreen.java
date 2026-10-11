@@ -15,8 +15,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
-
-    /// Записи
     private final List<SphereToggleEntry> sphereEntries = new ArrayList<>();
 
     private static class SphereToggleEntry {
@@ -45,16 +43,11 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         "*Sphere of Speed — Speed III"
     };
 
-    /// Виджеты
     private ButtonWidget goldenSpheresBtn;
-
-    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, COLUMNS = 3,
-        COL_SPACING = 130, ROW_SPACING = 48, LABEL_WIDTH = 180,
-        CONTROL_SPACING = 45, BUTTON_OFFSET = 70;
+    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, COLUMNS = 3, COL_SPACING = 130, ROW_SPACING = 48, LABEL_WIDTH = 180, BUTTON_OFFSET = 70;
 
     private boolean changed = false;
 
-    /// Конструктор
     public HolyWorldSpheresConfigScreen(Screen parent) {
         super(Text.literal("HolyWorld Spheres Settings"), parent);
     }
@@ -70,9 +63,9 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
+
         sphereEntries.clear();
 
         goldenSpheresBtn = null;
@@ -128,23 +121,14 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
                 entry.enabledGetter.getAsBoolean(),
                 button -> {
                     boolean enabled = !entry.enabledGetter.getAsBoolean();
-
                     entry.enabledSetter.accept(enabled);
                     ((ColorCheckbox) button).setChecked(enabled);
-
                     changed = true;
                 });
 
             checkbox.setColor(ACCENT_COLOR);
 
-            sphereEntries.add(
-                new SphereToggleEntry(
-                    entry.displayName,
-                    labelX,
-                    y,
-                    checkbox
-                )
-            );
+            sphereEntries.add(new SphereToggleEntry(entry.displayName, labelX, y, checkbox));
 
             addDrawableChild(checkbox);
 
@@ -176,12 +160,7 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         int controlsStartY = afterGridY + 10;
 
         if (!LiteApiManager.isFeatureBlocked("better_spheres_holyworld_golden")) {
-            goldenSpheresBtn  = createButton(
-                controlsX + LABEL_WIDTH + BUTTON_OFFSET,
-                controlsStartY,
-                config::isHWGoldenSpheres,
-                config::setHWGoldenSpheres
-            );
+            goldenSpheresBtn  = createButton(controlsX + LABEL_WIDTH + BUTTON_OFFSET, controlsStartY, config::isHWGoldenSpheres, config::setHWGoldenSpheres);
         }
     }
 
@@ -190,12 +169,9 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
                 Text.literal(""),
                 btn -> {
                     boolean enabled = !getter.getAsBoolean();
-
                     setter.accept(enabled);
                     changed = true;
-
                     updateButton(btn, enabled);
-
                     save();
                 })
             .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -209,18 +185,12 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
     }
 
     private void createFooter() {
-        addDrawableChild(
-            ButtonWidget.builder(
-                    Text.literal("Save & Back"),
-                    button -> close()
-                )
+        addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
                 .dimensions(width / 2 - 50, height - 40, 100, 25)
                 .build()
         );
     }
 
-
-    /// Обновление состояния кнопок
     private void updateButton(ButtonWidget btn, boolean enabled) {
         btn.setMessage(Text.literal(enabled ? "Enabled" : "Disabled").styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
     }
@@ -233,7 +203,6 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         updateButton(goldenSpheresBtn, config.isHWGoldenSpheres());
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -314,7 +283,6 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         context.drawTextWithShadow(textRenderer, Text.literal(description), x, y + 12, 0xFF888888);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
         BetterSpheres.refreshBlockedStatus();
@@ -333,4 +301,3 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         }
     }
 }
-// v1.0

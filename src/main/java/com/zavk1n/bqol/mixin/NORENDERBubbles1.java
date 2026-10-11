@@ -1,9 +1,11 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.config.BQoLConfig;
+
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,4 +30,3 @@ public class NORENDERBubbles1 {
         }
     }
 }
-// v1.0

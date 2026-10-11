@@ -1,6 +1,7 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterInteract;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -15,6 +16,7 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -80,7 +82,6 @@ public abstract class INTERACTClickThrough {
         }
     }
 
-    /// Ищет следующий блок, но разрешает выбрать только контейнеры.
     private static BlockHitResult bqol$findNextContainer(Entity cameraEntity, Vec3d firstHit, float tickDelta) {
         MinecraftClient client = MinecraftClient.getInstance();
 
@@ -148,7 +149,6 @@ public abstract class INTERACTClickThrough {
         return null;
     }
 
-    /// Только контейнеры, которые разрешено открывать
     private static boolean bqol$isContainer(BlockState state) {
         Block block = state.getBlock();
 
@@ -162,7 +162,6 @@ public abstract class INTERACTClickThrough {
         return block instanceof ShulkerBoxBlock;
     }
 
-    /// Блоки, через которые разрешено пройти лучу.
     private static boolean bqol$isPassThroughBlock(BlockState state) {
         return state.isOf(Blocks.OAK_SIGN)
             || state.isOf(Blocks.OAK_WALL_SIGN)
@@ -203,4 +202,3 @@ public abstract class INTERACTClickThrough {
             || state.isOf(Blocks.LARGE_FERN);
     }
 }
-// v1.0

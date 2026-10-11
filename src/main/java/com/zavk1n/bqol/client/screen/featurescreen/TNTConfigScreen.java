@@ -9,16 +9,21 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
-public class TNTConfigScreen extends MainConfigScreen{
+import java.util.function.BooleanSupplier;
 
-    /// Виджеты
-    private ButtonWidget timerBtn, alertBtn, positionBtn, showXYZBtn;
+public class TNTConfigScreen extends MainConfigScreen{
+    private ButtonWidget timerBtn, alertBtn, positionBtn, showXYZBtn, blocksBtn, explosionAreaBtn;
+
+    private enum AlertMode {
+        SHOW_XYZ,
+        BLOCKS
+    }
 
     private static final String[] Position_NAMES = {"Center-Over", "Right-Over", "Right-Down", "Left-Over", "Left-Down"};
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
+
     private boolean changed = false;
 
-    /// Конструктор
     public TNTConfigScreen(Screen parent) {
         super(Text.literal("Better Tnt Settings"), parent);
     }
@@ -34,7 +39,6 @@ public class TNTConfigScreen extends MainConfigScreen{
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
 
@@ -42,11 +46,13 @@ public class TNTConfigScreen extends MainConfigScreen{
         alertBtn = null;
         positionBtn = null;
         showXYZBtn = null;
+        blocksBtn = null;
+        explosionAreaBtn = null;
 
         int rightX = width / 2 + 50;
         int y = 60;
 
-        if (!LiteApiManager.isFeatureBlocked("better_tnt_timer")) {
+        if (!LiteApiManager.isFeatureBlocked("better_tnt_timer_tnt")) {
             timerBtn = ButtonWidget.builder(
                     Text.literal(config.isBetterTntTimer() ? "Enabled" : "Disabled"),
                     button -> {
@@ -80,43 +86,50 @@ public class TNTConfigScreen extends MainConfigScreen{
             y += SPACING;
         }
 
-        if (!LiteApiManager.isFeatureBlocked("better_tnt_show_xyz")) {
-            showXYZBtn = ButtonWidget.builder(
-                    Text.literal(config.isBetterTntAlertShowXYZ() ? "Enabled" : "Disabled"),
-                    button -> {
-                        boolean state = !config.isBetterTntAlertShowXYZ();
-                        config.setBetterTntAlertShowXYZ(state);
-                        changed = true;
-                        updateButton(showXYZBtn, state);
-                        save();
-                    })
-                .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
-                .build();
-
-            addDrawableChild(showXYZBtn);
+        if (!LiteApiManager.isFeatureBlocked("better_tnt_alert_show_xyz")) {
+            showXYZBtn = createExclusiveAlertModeButton(rightX, y, config::isBetterTntAlertShowXYZ, AlertMode.SHOW_XYZ);
+            y += SPACING;
         }
 
-        positionBtn = ButtonWidget.builder(
-                Text.literal(Position_NAMES[config.getBetterTntAlertPosition()])
-                    .styled(s -> s.withColor(ACCENT_COLOR)),
-                button -> {
+        if (!LiteApiManager.isFeatureBlocked("better_tnt_alert_show_blocks")) {
+            blocksBtn = createExclusiveAlertModeButton(rightX, y, config::isBetterTntAlertShowBlocks, AlertMode.BLOCKS);
+            y += SPACING;
+        }
+
+        positionBtn = ButtonWidget.builder(Text.literal(Position_NAMES[config.getBetterTntAlertPosition()])
+                .styled(s -> s.withColor(ACCENT_COLOR)), button -> {
                     int location = (config.getBetterTntAlertPosition() + 1) % Position_NAMES.length;
                     config.setBetterTntAlertPosition(location);
                     changed = true;
-                    positionBtn.setMessage(
-                        Text.literal(Position_NAMES[location])
-                            .styled(s -> s.withColor(ACCENT_COLOR))
+                    positionBtn.setMessage(Text.literal(Position_NAMES[location])
+                        .styled(s -> s.withColor(ACCENT_COLOR))
                     );
+                    save();
                 })
-            .dimensions(rightX, y - 3 + SPACING, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
             .build();
-        addDrawableChild(positionBtn);
 
-        addDrawableChild(
-            ButtonWidget.builder(
-                    Text.literal("Save & Back"),
-                    button -> close()
+        addDrawableChild(positionBtn);
+        y += SPACING;
+
+        if (!LiteApiManager.isFeatureBlocked("better_tnt_explosion_area")) {
+            explosionAreaBtn = ButtonWidget.builder(
+                    Text.literal(config.isBetterTntExplosionArea() ? "Enabled" : "Disabled"),
+                    button -> {
+                        boolean state = !config.isBetterTntExplosionArea();
+                        config.setBetterTntExplosionArea(state);
+                        changed = true;
+                        updateButton(explosionAreaBtn, state);
+                        save();
+                    }
                 )
+                .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+                .build();
+
+            addDrawableChild(explosionAreaBtn);
+        }
+
+        addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
                 .dimensions(width / 2 - 50, height - 40, 100, 25)
                 .build()
         );
@@ -124,7 +137,42 @@ public class TNTConfigScreen extends MainConfigScreen{
         updateAllButtons();
     }
 
-    /// Обновление состояния кнопок
+    private ButtonWidget createExclusiveAlertModeButton(int x, int y, BooleanSupplier isActive, AlertMode mode) {
+        ButtonWidget btn = ButtonWidget.builder(
+                Text.literal(isActive.getAsBoolean() ? "Enabled" : "Disabled"),
+                button -> {
+                    if (isActive.getAsBoolean()) {
+                        disableExclusiveMode();
+                    } else {
+                        enableExclusiveMode(mode);
+                    }
+                    changed = true;
+                    updateAllButtons();
+                    save();
+                }
+            )
+            .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .build();
+
+        addDrawableChild(btn);
+
+        return btn;
+    }
+
+    private void enableExclusiveMode(AlertMode mode) {
+        disableExclusiveMode();
+
+        switch (mode) {
+            case SHOW_XYZ -> config.setBetterTntAlertShowXYZ(true);
+            case BLOCKS -> config.setBetterTntAlertShowBlocks(true);
+        }
+    }
+
+    private void disableExclusiveMode() {
+        config.setBetterTntAlertShowXYZ(false);
+        config.setBetterTntAlertShowBlocks(false);
+    }
+
     private void updateAllButtons() {
         if (timerBtn != null) {
             updateButton(timerBtn, config.isBetterTntTimer());
@@ -137,6 +185,14 @@ public class TNTConfigScreen extends MainConfigScreen{
         if (showXYZBtn != null) {
             updateButton(showXYZBtn, config.isBetterTntAlertShowXYZ());
         }
+
+        if (blocksBtn != null) {
+            updateButton(blocksBtn, config.isBetterTntAlertShowBlocks());
+        }
+
+        if (explosionAreaBtn != null) {
+            updateButton(explosionAreaBtn, config.isBetterTntExplosionArea());
+        }
     }
 
     private void updateButton(ButtonWidget btn, boolean enabled) {
@@ -144,7 +200,6 @@ public class TNTConfigScreen extends MainConfigScreen{
             .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -168,7 +223,7 @@ public class TNTConfigScreen extends MainConfigScreen{
             y += SPACING;
         }
 
-        if (!LiteApiManager.isFeatureBlocked("better_tnt_show_xyz")) {
+        if (!LiteApiManager.isFeatureBlocked("better_tnt_alert_show_xyz")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Show XYZ",
                 "Alert panel displays XYZ of TNT."
@@ -176,9 +231,25 @@ public class TNTConfigScreen extends MainConfigScreen{
             y += SPACING;
         }
 
+        if (!LiteApiManager.isFeatureBlocked("better_tnt_alert_show_blocks")) {
+            renderLabel(context, leftX, y, mouseX, mouseY,
+                "Show Blocks",
+                "Alert panel displays blocks to TNT."
+            );
+            y += SPACING;
+        }
+
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Position", "Position of the alert panel on the screen."
         );
+        y += SPACING;
+
+        if (!LiteApiManager.isFeatureBlocked("better_tnt_explosion_area")) {
+            renderLabel(context, leftX, y, mouseX, mouseY,
+                "Explosion Area",
+                "Shows area of blocks that will be blown up."
+            );
+        }
     }
 
     private void renderLabel(DrawContext context, int x, int y, int mouseX, int mouseY, String title, String desc) {
@@ -195,7 +266,6 @@ public class TNTConfigScreen extends MainConfigScreen{
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
         BetterTnt.refreshBlockedStatus();
@@ -214,4 +284,3 @@ public class TNTConfigScreen extends MainConfigScreen{
         }
     }
 }
-// v1.0

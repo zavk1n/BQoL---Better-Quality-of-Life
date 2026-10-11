@@ -1,10 +1,12 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.config.BQoLConfig;
+
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,8 +23,7 @@ public class NORENDERExplosion {
             return;
         }
 
-        if (parameters.getType() == ParticleTypes.EXPLOSION
-                || parameters.getType() == ParticleTypes.EXPLOSION_EMITTER) {
+        if (parameters.getType() == ParticleTypes.EXPLOSION || parameters.getType() == ParticleTypes.EXPLOSION_EMITTER) {
             cir.setReturnValue(null);
         }
     }

@@ -1,11 +1,13 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterSprint;
+
 import net.minecraft.block.*;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -100,7 +102,6 @@ public class SPRINTStairUpJumpBlock {
         return isStepBlock(world.getBlockState(target));
     }
 
-    /// Список блоков "ступенек"
     private boolean isStepBlock(BlockState state) {
         Block block = state.getBlock();
 
@@ -114,8 +115,7 @@ public class SPRINTStairUpJumpBlock {
 
         if (block instanceof TrapdoorBlock) {
             return !state.get(TrapdoorBlock.OPEN) && !state.get(TrapdoorBlock.WATERLOGGED)
-                    && state.get(TrapdoorBlock.HALF)
-                    == net.minecraft.block.enums.BlockHalf.BOTTOM;
+                    && state.get(TrapdoorBlock.HALF) == net.minecraft.block.enums.BlockHalf.BOTTOM;
         }
 
         if (block instanceof SnowBlock) {
@@ -127,4 +127,3 @@ public class SPRINTStairUpJumpBlock {
         return block instanceof CakeBlock;
     }
 }
-// v1.0

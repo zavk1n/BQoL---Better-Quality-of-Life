@@ -1,12 +1,14 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterInteract;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CropBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -45,7 +47,6 @@ public class INTERACTSafeHarvest {
         }
     }
 
-    /// Проверка культуры
     private static boolean bqol$isImmatureCrop(BlockState state) {
         if (!(state.getBlock() instanceof CropBlock crop)) {
             return false;
@@ -54,4 +55,3 @@ public class INTERACTSafeHarvest {
         return !crop.isMature(state);
     }
 }
-// v1.0

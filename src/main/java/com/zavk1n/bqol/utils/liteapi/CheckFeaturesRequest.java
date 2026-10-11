@@ -34,4 +34,3 @@ public final class CheckFeaturesRequest extends Request {
         return features;
     }
 }
-// v1.0

@@ -4,96 +4,114 @@ import com.zavk1n.bqol.client.screen.BQoLConfigScreen;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.features.*;
 import com.zavk1n.bqol.utils.NotificationManager;
+
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+
 import org.lwjgl.glfw.GLFW;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public final class KeybindManager {
+
     private static final String menu = "menu";
     private static final String CATEGORY = "category.bqol.keybinds";
 
-    /// Константы
     private static final Map<String, KeyBinding> keybindings = new LinkedHashMap<>();
+
     private static final BQoLConfig config = BQoLConfig.getInstance();
 
-    private static final String BETTER_SPRINT_TOGGLE = "01_better_sprint_toggle";
-    private static final String BETTER_SOUNDS_TOGGLE = "02_better_sounds_toggle";
-    private static final String BETTER_INTERACT_TOGGLE = "03_better_interact_toggle";
-    private static final String BETTER_TNT_TOGGLE = "04_better_interact_toggle";
-    private static final String BETTER_HOLOGRAMS_TOGGLE = "05_better_interact_toggle";
-    private static final String BETTER_SPHERES_TOGGLE = "06_better_spheres_toggle";
-    private static final String BETTER_SKY_TOGGLE = "07_better_sky_toggle";
-    private static final String SHULKER_PARTICLES_TOGGLE = "08_shulker_particles_toggle";
-    private static final String CUSTOM_FOG_TOGGLE = "09_custom_fog_toggle";
-    private static final String CUSTOM_HEALTH_TOGGLE = "10_custom_health_toggle";
-    private static final String NO_RENDER_TOGGLE = "11_no_render_toggle";
+    private static final String BETTER_SPRINT_TOGGLE = "1_better_sprint_toggle";
+    private static final String BETTER_RCT_TOGGLE = "2_better_rct_toggle";
+    private static final String BETTER_SOUNDS_TOGGLE = "3_better_sounds_toggle";
+    private static final String BETTER_INTERACT_TOGGLE = "4_better_interact_toggle";
+    private static final String BETTER_TNT_TOGGLE = "5_better_tnt_toggle";
+    private static final String BETTER_PREFIXES_TOGGLE = "6_better_tnt_toggle";
+    private static final String BETTER_HOLOGRAMS_TOGGLE = "7_better_holograms_toggle";
+    private static final String BETTER_SPHERES_TOGGLE = "8_better_spheres_toggle";
+    private static final String BETTER_SKY_TOGGLE = "9_better_sky_toggle";
+    private static final String SHULKER_PARTICLES_TOGGLE = "10_shulker_particles_toggle";
+    private static final String BETTER_FOG_TOGGLE = "11_better_fog_toggle";
+    private static final String CUSTOM_HEALTH_TOGGLE = "12_custom_health_toggle";
+    private static final String NO_RENDER_TOGGLE = "13_no_render_toggle";
+    private static final String BETTER_MINE_TOGGLE = "14_better_mine_toggle";
 
-    private static final long SPRINT_TOGGLE_COOLDOWN = 200L;
-    private static long lastSprintToggleTime;
+    private static final long TOGGLE_COOLDOWN = 200L;
 
-    private KeybindManager() { }
+    private static long toggleTime;
+    private static String listeningFeature = null;
 
-    /// Публичные статические методы
+    private static final Set<Integer> ignoredPressedKeys = new HashSet<>();
+    private static final Set<Integer> previousPressedKeys = new HashSet<>();
+
+    private KeybindManager() {}
+
     public static void initialize() {
         registerKeybinding(menu, GLFW.GLFW_KEY_RIGHT_SHIFT);
 
         String[] toggles = {
             BETTER_SPRINT_TOGGLE,
+            BETTER_RCT_TOGGLE,
             BETTER_SOUNDS_TOGGLE,
             BETTER_INTERACT_TOGGLE,
             BETTER_TNT_TOGGLE,
+            BETTER_PREFIXES_TOGGLE,
             BETTER_HOLOGRAMS_TOGGLE,
             BETTER_SPHERES_TOGGLE,
             BETTER_SKY_TOGGLE,
             SHULKER_PARTICLES_TOGGLE,
-            CUSTOM_FOG_TOGGLE,
+            BETTER_FOG_TOGGLE,
             CUSTOM_HEALTH_TOGGLE,
-            NO_RENDER_TOGGLE
+            NO_RENDER_TOGGLE,
+            BETTER_MINE_TOGGLE
         };
 
         for (String toggle : toggles) {
             registerKeybinding(toggle, InputUtil.UNKNOWN_KEY.getCode());
         }
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (!isWindowFocused(client) || isDangerousCombo(client)) {
-                return;
-            }
+        ClientTickEvents.END_CLIENT_TICK.register(
+            client -> {
+                if (listeningFeature != null) {
+                    handleKeybindListening(client);
+                    return;
+                }
 
-            for (Map.Entry<String, KeyBinding> entry : keybindings.entrySet()) {
-                if (entry.getValue().wasPressed()) {
-                    handleKeyPress(entry.getKey(), client);
+                if (!isWindowFocused(client) || isDangerousCombo(client)) {
+                    return;
+                }
+
+                for (Map.Entry<String, KeyBinding> entry : keybindings.entrySet()) {
+                    if (entry.getValue().wasPressed()) {
+                        handleKeyPress(entry.getKey(), client);
+                    }
                 }
             }
-        });
+        );
     }
 
-    /// Регистрация биндов
     private static void registerKeybinding(String name, int defaultKey) {
-        KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(
-            new KeyBinding(
-                "key.bqol." + name,
-                InputUtil.Type.KEYSYM,
-                defaultKey,
-                CATEGORY
-            )
-        );
+        KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(name, InputUtil.Type.KEYSYM, defaultKey, CATEGORY));
 
         keybindings.put(name, keyBinding);
     }
 
     private static boolean isWindowFocused(MinecraftClient client) {
-        return client.isWindowFocused();
+        return client != null && client.isWindowFocused();
     }
 
-    /// Игнор системных сочетаний клавиш
     private static boolean isDangerousCombo(MinecraftClient client) {
+        if (client == null || client.getWindow() == null) {
+            return false;
+        }
+
         long window = client.getWindow().getHandle();
 
         boolean ctrl = InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_LEFT_CONTROL)
@@ -103,7 +121,7 @@ public final class KeybindManager {
             || InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_RIGHT_ALT);
 
         boolean shift = InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_LEFT_SHIFT)
-            || InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_RIGHT_SHIFT);
+                || InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_RIGHT_SHIFT);
 
         boolean win = InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_LEFT_SUPER)
             || InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_RIGHT_SUPER);
@@ -113,24 +131,13 @@ public final class KeybindManager {
         boolean delete = InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_DELETE);
         boolean s = InputUtil.isKeyPressed(window, GLFW.GLFW_KEY_S);
 
-        return
-            // Ctrl + Alt + Delete
-            (ctrl && alt && delete)
-
-                // Ctrl + Shift + Esc
+        return (ctrl && alt && delete)
                 || (ctrl && shift && esc)
-
-                // Alt + Tab
                 || (alt && tab)
-
-                // Shift + Tab
                 || (shift && tab)
-
-                // Win + Shift + S
                 || (win && shift && s);
     }
 
-    /// Отслеживание нажатий
     private static void handleKeyPress(String keyName, MinecraftClient client) {
         long currentTime = System.currentTimeMillis();
 
@@ -138,11 +145,11 @@ public final class KeybindManager {
             case menu -> openConfigScreen(client);
 
             case BETTER_SPRINT_TOGGLE -> {
-                if (currentTime - lastSprintToggleTime < SPRINT_TOGGLE_COOLDOWN) {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
                     return;
                 }
 
-                lastSprintToggleTime = currentTime;
+                toggleTime = currentTime;
 
                 toggleFeature(
                     !config.isBetterSprintEnabled(),
@@ -152,99 +159,213 @@ public final class KeybindManager {
                 );
             }
 
-            case BETTER_SOUNDS_TOGGLE ->
+            case BETTER_RCT_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
+                toggleFeature(
+                    !config.isBetterRCTEnabled(),
+                    BetterRCT::setEnabled,
+                    config::setBetterRCTEnabled,
+                    NotificationManager::showBetterRCTNotification
+                );
+            }
+
+            case BETTER_SOUNDS_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isBetterSoundsEnabled(),
                     BetterSounds::setEnabled,
                     config::setBetterSoundsEnabled,
                     NotificationManager::showBetterSoundsNotification
                 );
+            }
 
-            case BETTER_INTERACT_TOGGLE ->
+            case BETTER_INTERACT_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isBetterInteractEnabled(),
                     BetterInteract::setEnabled,
                     config::setBetterInteractEnabled,
                     NotificationManager::showBetterInteractNotification
                 );
+            }
 
-            case BETTER_TNT_TOGGLE ->
+            case BETTER_TNT_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isBetterTntEnabled(),
                     BetterTnt::setEnabled,
                     config::setBetterTntEnabled,
                     NotificationManager::showBetterTntNotification
                 );
+            }
 
-            case BETTER_HOLOGRAMS_TOGGLE ->
+            case BETTER_PREFIXES_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
+                toggleFeature(
+                    !config.isBetterPrefixesEnabled(),
+                    BetterPrefixes::setEnabled,
+                    config::setBetterPrefixesEnabled,
+                    NotificationManager::showBetterPrefixesNotification
+                );
+            }
+
+            case BETTER_HOLOGRAMS_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isBetterHologramsEnabled(),
                     BetterHolograms::setEnabled,
                     config::setBetterHologramsEnabled,
                     NotificationManager::showBetterHologramsNotification
                 );
+            }
 
-            case BETTER_SPHERES_TOGGLE ->
+            case BETTER_SPHERES_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isBetterSpheresEnabled(),
                     BetterSpheres::setEnabled,
                     config::setBetterSpheresEnabled,
                     NotificationManager::showBetterSpheresNotification
                 );
+            }
 
-            case BETTER_SKY_TOGGLE ->
+            case BETTER_SKY_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isBetterSkyEnabled(),
                     BetterSky::setEnabled,
                     config::setBetterSkyEnabled,
                     NotificationManager::showBetterSkyNotification
                 );
+            }
 
-            case SHULKER_PARTICLES_TOGGLE ->
+            case SHULKER_PARTICLES_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isShulkerParticlesEnabled(),
                     ShulkerParticles::setEnabled,
                     config::setShulkerParticlesEnabled,
                     NotificationManager::showShulkerParticlesNotification
                 );
+            }
 
-            case CUSTOM_FOG_TOGGLE ->
+            case BETTER_FOG_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isBetterFogEnabled(),
                     BetterFog::setEnabled,
                     config::setBetterFogEnabled,
-                    NotificationManager::showCustomFogNotification
+                    NotificationManager::showBetterFogNotification
                 );
+            }
 
-            case CUSTOM_HEALTH_TOGGLE ->
+            case CUSTOM_HEALTH_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isCustomHealthEnabled(),
                     enabled -> {
                         CustomHealth.setEnabled(enabled);
-
                         if (!enabled) {
                             CustomHealth.resetDisplay();
                         }
                     },
+
                     config::setCustomHealthEnabled,
                     NotificationManager::showCustomHealthNotification
                 );
+            }
 
-            case NO_RENDER_TOGGLE ->
+            case NO_RENDER_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
                 toggleFeature(
                     !config.isNoRenderEnabled(),
                     NoRender::setEnabled,
                     config::setNoRenderEnabled,
                     NotificationManager::showNoRenderNotification
                 );
+            }
+
+            case BETTER_MINE_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
+                toggleFeature(
+                    !config.isBetterMineEnabled(),
+                    BetterMine::setEnabled,
+                    config::setBetterMineEnabled,
+                    NotificationManager::showBetterMineNotification
+                );
+            }
         }
     }
 
     private static void toggleFeature(boolean enabled,
         java.util.function.Consumer<Boolean> featureSetter,
         java.util.function.Consumer<Boolean> configSetter,
-        java.util.function.Consumer<Boolean> notification
-    ) {
+        java.util.function.Consumer<Boolean> notification) {
         featureSetter.accept(enabled);
 
         configSetter.accept(enabled);
@@ -255,11 +376,166 @@ public final class KeybindManager {
     }
 
     private static void openConfigScreen(MinecraftClient client) {
-        if (client.player == null || client.world == null) {
+        if (client == null
+            || client.player == null
+            || client.world == null) {
             return;
         }
 
         client.setScreen(new BQoLConfigScreen(client.currentScreen));
+    }
+
+    public static KeyBinding getFeatureKeyBinding(String featureId) {
+        return switch (featureId) {
+
+            case "better_sprint" -> keybindings.get(BETTER_SPRINT_TOGGLE);
+            case "better_rct" -> keybindings.get(BETTER_RCT_TOGGLE);
+            case "better_sounds" -> keybindings.get(BETTER_SOUNDS_TOGGLE);
+            case "better_interact" -> keybindings.get(BETTER_INTERACT_TOGGLE);
+            case "better_tnt" -> keybindings.get(BETTER_TNT_TOGGLE);
+            case "better_prefixes" -> keybindings.get(BETTER_PREFIXES_TOGGLE);
+            case "better_holograms" -> keybindings.get(BETTER_HOLOGRAMS_TOGGLE);
+            case "better_spheres" -> keybindings.get(BETTER_SPHERES_TOGGLE);
+            case "better_sky" -> keybindings.get(BETTER_SKY_TOGGLE);
+            case "shulker_particles" -> keybindings.get(SHULKER_PARTICLES_TOGGLE);
+            case "better_fog" -> keybindings.get(BETTER_FOG_TOGGLE);
+            case "custom_health" -> keybindings.get(CUSTOM_HEALTH_TOGGLE);
+            case "no_render" -> keybindings.get(NO_RENDER_TOGGLE);
+            case "better_mine" -> keybindings.get(BETTER_MINE_TOGGLE);
+
+            default -> null;
+        };
+    }
+
+    public static void startKeybindListening(String featureId) {
+        if (getFeatureKeyBinding(featureId) == null) {
+            return;
+        }
+
+        listeningFeature = featureId;
+
+        ignoredPressedKeys.clear();
+        previousPressedKeys.clear();
+
+        MinecraftClient client =
+            MinecraftClient.getInstance();
+
+        if (client == null || client.getWindow() == null) {
+            return;
+        }
+
+        long window = client.getWindow().getHandle();
+
+        for (int key = GLFW.GLFW_KEY_SPACE; key <= GLFW.GLFW_KEY_LAST; key++) {
+            if (GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS) {
+                ignoredPressedKeys.add(key);
+                previousPressedKeys.add(key);
+            }
+        }
+    }
+
+    public static boolean isKeybindListening(String featureId) {
+        return featureId != null && featureId.equals(listeningFeature);
+    }
+
+    public static boolean isKeybindListening() {
+        return listeningFeature != null;
+    }
+
+    public static void stopKeybindListening() {
+        listeningFeature = null;
+
+        ignoredPressedKeys.clear();
+        previousPressedKeys.clear();
+    }
+
+    private static void handleKeybindListening(MinecraftClient client) {
+        if (listeningFeature == null) {
+            return;
+        }
+
+        if (client == null
+            || client.getWindow() == null
+            || !client.isWindowFocused()) {
+            return;
+        }
+
+        long window = client.getWindow().getHandle();
+
+        Set<Integer> currentlyPressed = new HashSet<>();
+
+        for (int key = GLFW.GLFW_KEY_SPACE; key <= GLFW.GLFW_KEY_LAST; key++) {
+            if (GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS) {
+                currentlyPressed.add(key);
+            }
+        }
+
+        if (currentlyPressed.contains(GLFW.GLFW_KEY_ESCAPE)
+            && !previousPressedKeys.contains(GLFW.GLFW_KEY_ESCAPE)) {
+
+            KeyBinding keyBinding = getFeatureKeyBinding(listeningFeature);
+
+            if (keyBinding != null) {
+                keyBinding.setBoundKey(InputUtil.UNKNOWN_KEY);
+                KeyBinding.updateKeysByCode();
+
+                MinecraftClient.getInstance().options.write();
+            }
+
+            stopKeybindListening();
+            return;
+        }
+
+        for (int key : currentlyPressed) {
+            if (ignoredPressedKeys.contains(key)) {
+                continue;
+            }
+
+            if (!previousPressedKeys.contains(key)) {
+                assignKeybind(listeningFeature, key);
+
+                stopKeybindListening();
+                return;
+            }
+        }
+
+        previousPressedKeys.clear();
+        previousPressedKeys.addAll(currentlyPressed);
+    }
+
+    private static void assignKeybind(String featureId, int glfwKey) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        KeyBinding keyBinding = getFeatureKeyBinding(featureId);
+
+        if (keyBinding == null) {
+            return;
+        }
+
+        InputUtil.Key newKey = InputUtil.fromKeyCode(glfwKey, 0);
+
+        String newTranslationKey = newKey.getTranslationKey();
+
+        for (Map.Entry<String, KeyBinding> entry : keybindings.entrySet()) {
+            String otherFeature = entry.getKey();
+            KeyBinding otherKeyBinding = entry.getValue();
+
+            if (otherFeature.equals(featureId)) {
+                continue;
+            }
+
+            String otherTranslationKey = otherKeyBinding.getBoundKeyTranslationKey();
+
+            if (otherTranslationKey.equals(newTranslationKey)) {
+                otherKeyBinding.setBoundKey(InputUtil.UNKNOWN_KEY);
+            }
+        }
+
+        keyBinding.setBoundKey(newKey);
+        KeyBinding.updateKeysByCode();
+
+        if (client != null) {
+            client.options.write();
+        }
     }
 
     public static KeyBinding getKeyBinding(String name) {

@@ -1,11 +1,13 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterSprint;
+
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.option.ControlsOptionsScreen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,8 +25,6 @@ public class SPRINTStairUpHideVanillaButton {
         ControlsOptionsScreen screen = (ControlsOptionsScreen) (Object) this;
 
         for (Element element : screen.children()) {
-
-            /// Проверка типа элемента
             if (!(element instanceof ClickableWidget widget)) {
                 continue;
             }
@@ -35,7 +35,6 @@ public class SPRINTStairUpHideVanillaButton {
                 continue;
             }
 
-            /// Проверка кнопки
             if (message.getContent() instanceof TranslatableTextContent content && "options.autoJump".equals(content.getKey())) {
                 widget.visible = false;
                 widget.active = false;
@@ -44,4 +43,3 @@ public class SPRINTStairUpHideVanillaButton {
         }
     }
 }
-// v1.0

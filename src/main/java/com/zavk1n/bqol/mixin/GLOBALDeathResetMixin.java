@@ -1,10 +1,12 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.CustomHealth;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,5 +30,3 @@ public class GLOBALDeathResetMixin {
         }
     }
 }
-
-// v1.0

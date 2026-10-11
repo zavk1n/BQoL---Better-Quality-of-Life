@@ -3,6 +3,7 @@ package com.zavk1n.bqol.features;
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.block.entity.BlockEntity;
@@ -14,12 +15,12 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
+
 import org.joml.Vector3f;
 
 import java.util.*;
 
 public class ShulkerParticles {
-
     private static MinecraftClient mc() {
         if (client == null) client = MinecraftClient.getInstance();
         return client;
@@ -30,12 +31,21 @@ public class ShulkerParticles {
     private static ShulkerParticles instance;
     private static MinecraftClient client;
     private final BQoLConfig config = BQoLConfig.getInstance();
+
+    private static final BlockedFeatures blocked = new BlockedFeatures();
+    private static class BlockedFeatures {
+        boolean main;
+        boolean constant;
+        boolean breaking;
+        boolean vanillaBreaking;
+        boolean constantDependence;
+        boolean breakingDependence;
+    }
+
     private static final Random random = new Random();
 
-    /// Кэш
     private final Map<Vector3f, DustParticleEffect> EFFECT_CACHE = new HashMap<>();
 
-    /// Таблица цветовой палитры
     private static final EnumMap<DyeColor, Vector3f> PARTICLE_COLORS = new EnumMap<>(DyeColor.class);
 
     static {
@@ -57,23 +67,9 @@ public class ShulkerParticles {
         PARTICLE_COLORS.put(DyeColor.BLACK, rgb(0x1D1D21));
     }
 
-    /// Блокировки
-    private static final BlockedFeatures blocked = new BlockedFeatures();
-
-    private static class BlockedFeatures {
-        boolean main;
-        boolean constant;
-        boolean breaking;
-        boolean vanillaBreaking;
-        boolean constantDependence;
-        boolean breakingDependence;
-    }
-
-    /// Остальные состояния
     private static final Vector3f DEFAULT_DYE_COLOR = rgb(0xB363BA);
     private static int tickCounter = 0;
 
-    /// Публичные статические методы
     public static void initialize() {
         if (instance == null) {
             instance = new ShulkerParticles();
@@ -116,7 +112,6 @@ public class ShulkerParticles {
         return instance != null && instance.canSpawnBreakingParticlesInternal();
     }
 
-    /// Внутренние динамические методы
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("shulker_particles");
         blocked.constant = LiteApiManager.isFeatureBlocked("shulker_particles_constant");
@@ -138,23 +133,22 @@ public class ShulkerParticles {
 
     private boolean shouldCancelVanillaBreakingInternal() {
         return isEnabledInternal()
-                && config.isShulkerParticlesVanillaBreaking()
-                && !blocked.vanillaBreaking;
+            && config.isShulkerParticlesVanillaBreaking()
+            && !blocked.vanillaBreaking;
     }
 
     private boolean canSpawnConstantParticlesInternal() {
         return isEnabledInternal()
-                && config.isShulkerParticlesConstant()
-                && !blocked.constant;
+            && config.isShulkerParticlesConstant()
+            && !blocked.constant;
     }
 
     private boolean canSpawnBreakingParticlesInternal() {
         return isEnabledInternal()
-                && config.isShulkerParticlesBreaking()
-                && !blocked.breaking;
+            && config.isShulkerParticlesBreaking()
+            && !blocked.breaking;
     }
 
-    /// Основная логика
     public static void onTick() {
         if (instance == null || !isEnabled() || !canSpawnConstantParticles()) {
             return;
@@ -179,7 +173,6 @@ public class ShulkerParticles {
         instance.scanChunks(client, client.world, defaultColor, useDependence);
     }
 
-    /// Сканирование чанков
     private void scanChunks(MinecraftClient client, ClientWorld world, Vector3f defaultColor, boolean useDependence) {
         if (client.player == null || !client.gameRenderer.getCamera().isReady()) {
             return;
@@ -215,24 +208,14 @@ public class ShulkerParticles {
                         continue;
                     }
 
-                    Vector3f color = resolveConstantColor(
-                            state,
-                            defaultColor,
-                            useDependence
-                    );
+                    Vector3f color = resolveConstantColor(state, defaultColor, useDependence);
 
-                    spawnConstantParticles(
-                            world,
-                            pos,
-                            color,
-                            multiplier
-                    );
+                    spawnConstantParticles(world, pos, color, multiplier);
                 }
             }
         }
     }
 
-    /// Получение цветов
     private Vector3f resolveConstantColor(BlockState state, Vector3f defaultColor, boolean useDependence) {
         if (!useDependence || !(state.getBlock() instanceof ShulkerBoxBlock box)) {
             return defaultColor;
@@ -251,7 +234,6 @@ public class ShulkerParticles {
         return dyeColorToVector(box.getColor());
     }
 
-    /// Спавн частиц
     private void spawnConstantParticles(ClientWorld world, BlockPos pos, Vector3f color, float multiplier) {
         MinecraftClient client = mc();
 
@@ -300,18 +282,17 @@ public class ShulkerParticles {
 
         for (int i = 0; i < count; i++) {
             world.addParticle(
-                    effect,
-                    center.x + (random.nextDouble() - 0.5) * 1.5,
-                    center.y + (random.nextDouble() - 0.5) * 1.5 + 0.5,
-                    center.z + (random.nextDouble() - 0.5) * 1.5,
-                    (random.nextDouble() - 0.5) * 0.2,
-                    random.nextDouble() * 0.3,
-                    (random.nextDouble() - 0.5) * 0.2
+                effect,
+                center.x + (random.nextDouble() - 0.5) * 1.5,
+                center.y + (random.nextDouble() - 0.5) * 1.5 + 0.5,
+                center.z + (random.nextDouble() - 0.5) * 1.5,
+                (random.nextDouble() - 0.5) * 0.2,
+                random.nextDouble() * 0.3,
+                (random.nextDouble() - 0.5) * 0.2
             );
         }
     }
 
-    /// Событийный метод для миксина
     public void onShulkerBroken(BlockPos pos, BlockState state) {
         if (!canSpawnBreakingParticles()) {
             return;
@@ -323,14 +304,9 @@ public class ShulkerParticles {
             return;
         }
 
-        spawnBreakingParticles(
-                world,
-                Vec3d.ofCenter(pos),
-                resolveBreakingColor(state)
-        );
+        spawnBreakingParticles(world, Vec3d.ofCenter(pos), resolveBreakingColor(state));
     }
 
-    /// Получение информации шалкеров
     private List<BlockPos> getShulkers(WorldChunk chunk) {
         List<BlockPos> result = new ArrayList<>();
 
@@ -344,13 +320,9 @@ public class ShulkerParticles {
     }
 
     private DustParticleEffect getEffect(Vector3f color) {
-        return EFFECT_CACHE.computeIfAbsent(
-                color,
-                c -> new DustParticleEffect(new Vector3f(c), 1.2F)
-        );
+        return EFFECT_CACHE.computeIfAbsent(color, c -> new DustParticleEffect(new Vector3f(c), 1.2F));
     }
 
-    /// Множитель для производительности
     private float getParticleMultiplier(int shulkerCount) {
         if (shulkerCount > 100) {
             return 1F / 1.75F;
@@ -371,12 +343,11 @@ public class ShulkerParticles {
         return 1F;
     }
 
-    /// Методы для преобразования цветов
     private static Vector3f rgb(int rgb) {
         return new Vector3f(
-                ((rgb >> 16) & 255) / 255F,
-                ((rgb >> 8) & 255) / 255F,
-                (rgb & 255) / 255F
+            ((rgb >> 16) & 255) / 255F,
+            ((rgb >> 8) & 255) / 255F,
+            (rgb & 255) / 255F
         );
     }
 
@@ -388,4 +359,3 @@ public class ShulkerParticles {
         return PARTICLE_COLORS.getOrDefault(color, DEFAULT_DYE_COLOR);
     }
 }
-// v1.0

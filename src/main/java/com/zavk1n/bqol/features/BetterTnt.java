@@ -3,6 +3,7 @@ package com.zavk1n.bqol.features;
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.network.ServerInfo;
@@ -16,7 +17,6 @@ import net.minecraft.util.math.Vec3d;
 import java.util.*;
 
 public class BetterTnt {
-
     private MinecraftClient mc() {
         if (client == null) client = MinecraftClient.getInstance();
         return client;
@@ -27,6 +27,16 @@ public class BetterTnt {
     private static BetterTnt instance;
     private MinecraftClient client;
     private final BQoLConfig config = BQoLConfig.getInstance();
+
+    private final BlockedFeatures blocked = new BlockedFeatures();
+    private static class BlockedFeatures {
+        boolean main;
+        boolean timer;
+        boolean alert;
+        boolean showXYZ;
+        boolean showBlocks;
+        boolean explosionArea;
+    }
 
     public enum TntType {
         NORMAL,
@@ -83,14 +93,24 @@ public class BetterTnt {
             return String.format(Locale.ROOT, "%.2f", seconds);
         }
 
-        public String getText() {
+        public String getText(Vec3d playerPos) {
             String text = "Время до взрыва " + getAlertTypeName(type) + " - " + getFuseText();
 
-            if (BetterTnt.isAlertShowXYZ()) {
+            if (BetterTnt.isAlertShowXYZEnabled()) {
                 text += " (X = " + x + ", Y = " + y + ", Z = " + z + ")";
+            } else if (BetterTnt.isAlertShowBlocksEnabled()) {
+                text += String.format(Locale.ROOT, " (в %.1f блоках)", getDistanceBlocks(playerPos));
             }
 
             return text;
+        }
+
+        public double getDistanceBlocks(Vec3d playerPos) {
+            double dx = (x + 0.5D) - playerPos.x;
+            double dy = (y + 0.5D) - playerPos.y;
+            double dz = (z + 0.5D) - playerPos.z;
+
+            return Math.sqrt(dx * dx + dy * dy + dz * dz);
         }
     }
 
@@ -104,7 +124,6 @@ public class BetterTnt {
         private int z;
 
         private boolean wasDetected;
-        private boolean exploding;
         private int lastServerFuse;
         private long lastSyncNanos;
         private long endTimeNanos;
@@ -135,21 +154,9 @@ public class BetterTnt {
         }
     }
 
-    /// Блокировки
-    private final BlockedFeatures blocked = new BlockedFeatures();
-
-    private static class BlockedFeatures {
-        boolean main;
-        boolean timer;
-        boolean alert;
-        boolean showXYZ;
-    }
-
-    /// Мапы
     private final Map<UUID, TntType> tntTypes = new HashMap<>();
     private final Map<UUID, TrackedTnt> trackedAlerts = new HashMap<>();
 
-    /// Публичные статические методы
     public static void initialize() {
         if (instance == null) {
             instance = new BetterTnt();
@@ -183,7 +190,9 @@ public class BetterTnt {
     }
 
     public static void setTimerEnabled(boolean enabled) {
-        if (instance != null) instance.setTimerEnabledInternal(enabled);
+        if (instance != null) {
+            instance.setTimerEnabledInternal(enabled);
+        }
     }
 
     public static boolean isAlertEnabled() {
@@ -191,7 +200,9 @@ public class BetterTnt {
     }
 
     public static void setAlertEnabled(boolean enabled) {
-        if (instance != null) instance.setAlertEnabledInternal(enabled);
+        if (instance != null) {
+            instance.setAlertEnabledInternal(enabled);
+        }
     }
 
     public static int getAlertPosition() {
@@ -202,22 +213,43 @@ public class BetterTnt {
         return instance.config.getBetterTntAlertPosition();
     }
 
-    public static boolean isAlertShowXYZ() {
-        return instance != null && instance.config.isBetterTntAlertShowXYZ();
+    public static boolean isAlertShowXYZEnabled() {
+        return instance != null && instance.isAlertShowXYZEnabledInternal();
     }
 
-    public static void setAlertShowXYZ(boolean enabled) {
+    public static void setAlertShowXYZEnabled(boolean enabled) {
         if (instance != null) {
-            instance.config.setBetterTntAlertShowXYZ(enabled);
+            instance.setAlertShowXYZEnabledInternal(enabled);
         }
     }
 
-    /// Внутренние динамические методы
+    public static boolean isAlertShowBlocksEnabled() {
+        return instance != null && instance.isAlertShowBlocksEnabledInternal();
+    }
+
+    public static void setAlertShowBlocksEnabled(boolean enabled) {
+        if (instance != null) {
+            instance.setAlertShowBlocksEnabledInternal(enabled);
+        }
+    }
+
+    public static boolean isExplosionAreaEnabled() {
+        return instance != null && instance.isExplosionAreaEnabledInternal();
+    }
+
+    public static void setExplosionAreaEnabled(boolean enabled) {
+        if (instance != null) {
+            instance.setExplosionAreaEnabledInternal(enabled);
+        }
+    }
+
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("better_tnt");
-        blocked.timer = LiteApiManager.isFeatureBlocked("better_tnt_timer");
+        blocked.timer = LiteApiManager.isFeatureBlocked("better_tnt_timer_tnt");
         blocked.alert = LiteApiManager.isFeatureBlocked("better_tnt_alert");
-        blocked.showXYZ = LiteApiManager.isFeatureBlocked("better_tnt_show_xyz");
+        blocked.showXYZ = LiteApiManager.isFeatureBlocked("better_tnt_alert_show_xyz");
+        blocked.showBlocks = LiteApiManager.isFeatureBlocked("better_tnt_alert_show_blocks");
+        blocked.explosionArea = LiteApiManager.isFeatureBlocked("better_tnt_explosion_area");
     }
 
     private boolean isEnabledInternal() {
@@ -251,7 +283,36 @@ public class BetterTnt {
         config.setBetterTntAlert(enabled);
     }
 
-    /// Каждый тик
+    private boolean isAlertShowXYZEnabledInternal() {
+        return config.isBetterTntAlertShowXYZ()
+            && !blocked.showXYZ
+            && isEnabledInternal();
+    }
+
+    private void setAlertShowXYZEnabledInternal(boolean enabled) {
+        config.setBetterTntAlertShowXYZ(enabled);
+    }
+
+    private boolean isAlertShowBlocksEnabledInternal() {
+        return config.isBetterTntAlertShowBlocks()
+            && !blocked.showBlocks
+            && isEnabledInternal();
+    }
+
+    private void setAlertShowBlocksEnabledInternal(boolean enabled) {
+        config.setBetterTntAlertShowBlocks(enabled);
+    }
+
+    private boolean isExplosionAreaEnabledInternal() {
+        return config.isBetterTntExplosionArea()
+            && !blocked.explosionArea
+            && isEnabledInternal();
+    }
+
+    private void setExplosionAreaEnabledInternal(boolean enabled) {
+        config.setBetterTntExplosionArea(enabled);
+    }
+
     public static void tickTracking() {
         if (!isEnabled()) {
             return;
@@ -288,7 +349,6 @@ public class BetterTnt {
         self.trackedAlerts.entrySet().removeIf(entry -> entry.getValue().getSeconds() <= 0.0D);
     }
 
-    /// Регистрация ТнТ
     public static void registerTnt(TntEntity entity) {
         if (entity == null) {
             return;
@@ -315,7 +375,6 @@ public class BetterTnt {
         return detectedType;
     }
 
-    /// Получение информации о Тнт
     private static TntType detectTypeFromText(String name) {
         if (name == null) {
             return TntType.NORMAL;
@@ -360,7 +419,6 @@ public class BetterTnt {
         return TntType.NORMAL;
     }
 
-    /// Таймер
     public static double getFuseSeconds(TntEntity tnt, float tickDelta) {
         if (tnt == null) {
             return 0.0D;
@@ -381,15 +439,6 @@ public class BetterTnt {
         }
 
         return tracked.getSeconds();
-    }
-
-    public static String getFuseText(TntEntity tnt, float tickDelta) {
-        return String.format(Locale.ROOT, "%.2f", getFuseSeconds(tnt, tickDelta));
-    }
-
-    /// Цвета
-    public static int getTimerColor(TntEntity tnt, float tickDelta) {
-        return getTimerColor(getTntType(tnt), getFuseSeconds(tnt, tickDelta));
     }
 
     public static int getTimerColor(TntType type, double seconds) {
@@ -421,12 +470,12 @@ public class BetterTnt {
         }
 
         /*
-         * C4 / ICE / EXPLOSIVE / NORMAL:
+         * C4 / Ледяная волна / Разрыва / Обычный:
          *
-         * 0.00 - 1.00 RED
-         * 1.01 - 3.00 YELLOW
-         * 3.01 - 4.00 LIGHT GREEN
-         * 4.01 - 5.00 GREEN
+         * 0.00 - 1.00 Красный
+         * 1.01 - 3.00 Желтый
+         * 3.01 - 4.00 Светло-зеленый
+         * 4.01 - 5.00 Зеленый
          */
 
         if (seconds <= 1.00D) {
@@ -446,8 +495,8 @@ public class BetterTnt {
 
     public static void renderTimer(MatrixStack matrices, TntEntity tnt, Camera camera, TextRenderer textRenderer, VertexConsumerProvider vertexConsumers, int light, float tickDelta) {
         if (!isTimerEnabled()
-                || tnt == null
-                || !tnt.isAlive()) {
+            || tnt == null
+            || !tnt.isAlive()) {
             return;
         }
 
@@ -486,7 +535,6 @@ public class BetterTnt {
         matrices.pop();
     }
 
-    /// Отслеживание
     private void trackTnt(TntEntity entity) {
         if (entity == null || !entity.isAlive()) {
             return;
@@ -521,7 +569,6 @@ public class BetterTnt {
         tracked.lastSyncNanos = now;
     }
 
-    /// Alert
     public static List<AlertInfo> getAlertTnts(float tickDelta) {
         if (!isAlertEnabled()) {
             return Collections.emptyList();
@@ -571,24 +618,30 @@ public class BetterTnt {
     public static String getAlertTypeName(TntType type) {
         switch (type) {
             case A: return "Динамита A";
-
             case B: return "Динамита B";
-
             case B2: return "Динамита Б2";
-
             case C4: return "C4 Взрывчатки";
-
             case ICE_WAVE: return "Ледяной волны";
-
             case EXPLOSIVE_WAVE: return "Разрывной волны";
-
             case NORMAL:
-
             default: return "Обычного динамита";
         }
     }
 
-    /// Проверка сервера
+    public static double getExplosionBlockRadius(TntEntity tnt) {
+        if (tnt == null) {
+            return 8.0D;
+        }
+
+        return switch (getTntType(tnt)) {
+            case A -> 20.0D;
+            case B -> 40.0D;
+            case B2 -> 24.0D;
+
+            case NORMAL, C4, ICE_WAVE, EXPLOSIVE_WAVE -> 8.0D;
+        };
+    }
+
     private boolean isHolyWorldServer() {
         MinecraftClient mc = mc();
 

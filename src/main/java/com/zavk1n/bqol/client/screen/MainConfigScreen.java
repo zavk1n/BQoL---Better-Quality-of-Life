@@ -1,14 +1,16 @@
 package com.zavk1n.bqol.client.screen;
 
 import com.zavk1n.bqol.config.BQoLConfig;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
+
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Random;
@@ -63,7 +65,6 @@ public abstract class MainConfigScreen extends Screen {
         }
     }
 
-    /// Конструктор
     protected MainConfigScreen(Text title, Screen parent) {
         super(title);
 
@@ -82,7 +83,6 @@ public abstract class MainConfigScreen extends Screen {
         clampScroll();
     }
 
-    /// Фрагменты
     private void initFragments() {
         int columns = 5;
         int rows = 7;
@@ -154,7 +154,6 @@ public abstract class MainConfigScreen extends Screen {
         }
     }
 
-    /// Рендер
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         context.fill(0, 0, width, height, BACKGROUND_COLOR);
@@ -189,7 +188,6 @@ public abstract class MainConfigScreen extends Screen {
         return getContentBottom() - getContentTop();
     }
 
-    /// Скролл
     protected void updateScroll() {
         float difference = targetScrollOffset - scrollOffset;
 
@@ -218,16 +216,12 @@ public abstract class MainConfigScreen extends Screen {
         targetScrollOffset = 0F;
     }
 
-    /// СкроллБар
     protected int getScrollbarX() {
-        int buttonsStartX = width / 2 + 50;
+        int gridWidth = 548;
 
-        int buttonWidth = 80;
-        int buttonGap = 10;
+        int gridStartX = (width - gridWidth) / 2;
 
-        int configRight = buttonsStartX + buttonWidth + buttonGap + buttonWidth;
-
-        return configRight + 12;
+        return gridStartX + gridWidth + 20;
     }
 
     protected int getScrollbarThumbHeight() {
@@ -357,11 +351,15 @@ public abstract class MainConfigScreen extends Screen {
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    /// Отслеживание клавиш
     private void syncMovementKeys() {
         MinecraftClient client = MinecraftClient.getInstance();
 
         if (client == null || client.getWindow() == null) {
+            return;
+        }
+
+        if (isTextInputFocused()) {
+            releaseMovementKeys();
             return;
         }
 
@@ -378,6 +376,26 @@ public abstract class MainConfigScreen extends Screen {
         syncKey(client.options.sprintKey, GLFW.GLFW_KEY_LEFT_CONTROL, GLFW.GLFW_KEY_RIGHT_CONTROL, handle);
     }
 
+    private void releaseMovementKeys() {
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        if (client == null) {
+            return;
+        }
+
+        client.options.forwardKey.setPressed(false);
+        client.options.backKey.setPressed(false);
+        client.options.leftKey.setPressed(false);
+        client.options.rightKey.setPressed(false);
+        client.options.jumpKey.setPressed(false);
+        client.options.sneakKey.setPressed(false);
+        client.options.sprintKey.setPressed(false);
+    }
+
+    protected boolean isTextInputFocused() {
+        return getFocused() instanceof TextFieldWidget;
+    }
+
     private void syncKey(KeyBinding keyBinding, int key, long windowHandle) {
         boolean pressed = GLFW.glfwGetKey(windowHandle, key) == GLFW.GLFW_PRESS;
 
@@ -391,13 +409,11 @@ public abstract class MainConfigScreen extends Screen {
         keyBinding.setPressed(pressed);
     }
 
-    /// Пауза
     @Override
     public boolean shouldPause() {
         return false;
     }
 
-    /// Закрытие
     @Override
     public void close() {
         config.save();

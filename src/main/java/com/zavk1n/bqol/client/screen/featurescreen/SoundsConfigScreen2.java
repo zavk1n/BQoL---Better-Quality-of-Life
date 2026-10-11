@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 public class SoundsConfigScreen2 extends MainConfigScreen {
     private List<SoundsModeEntry> column1 = new ArrayList<>(), column2 = new ArrayList<>(), column3 = new ArrayList<>();
 
-    /// Виджеты
     private ButtonWidget previousButton;
 
     private int columnWidth, col1X, col2X, col3X;
@@ -35,7 +34,6 @@ public class SoundsConfigScreen2 extends MainConfigScreen {
         }
     }
 
-    /// Конструктор
     public SoundsConfigScreen2(Screen parent) {
         super(Text.literal("Better Sounds Settings"), parent);
     }
@@ -51,7 +49,6 @@ public class SoundsConfigScreen2 extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
 
@@ -103,28 +100,20 @@ public class SoundsConfigScreen2 extends MainConfigScreen {
         updateAllButtons();
     }
 
-    /// Работа с колоннами
     private void fillColumns() {
         column1.clear();
         column2.clear();
         column3.clear();
 
-        column1.add(new SoundsModeEntry("Swim Mode", "Disables swim sounds.",
-            config::isBetterSoundsSwim, config::setBetterSoundsSwim));
-        column1.add(new SoundsModeEntry("Charge Crossbow Mode", "Disables crossbow sounds.",
-            config::isBetterSoundsChargeCrossbow, config::setBetterSoundsChargeCrossbow));
-        column1.add(new SoundsModeEntry("Bee Mode", "Disables crossbow sounds.",
-            config::isBetterSoundsBee, config::setBetterSoundsBee));
+        column1.add(new SoundsModeEntry("Swim Mode", "Disables swim sounds.", config::isBetterSoundsSwim, config::setBetterSoundsSwim));
+        column1.add(new SoundsModeEntry("Charge Crossbow Mode", "Disables crossbow sounds.", config::isBetterSoundsChargeCrossbow, config::setBetterSoundsChargeCrossbow));
+        column1.add(new SoundsModeEntry("Bee Mode", "Disables crossbow sounds.", config::isBetterSoundsBee, config::setBetterSoundsBee));
 
-        column2.add(new SoundsModeEntry("Enderman Mode", "Disables fall sounds.",
-            config::isBetterSoundsEnderman, config::setBetterSoundsEnderman));
+        column2.add(new SoundsModeEntry("Enderman Mode", "Disables fall sounds.", config::isBetterSoundsEnderman, config::setBetterSoundsEnderman));
 
-        column3.add(new SoundsModeEntry("Fall Mode", "Disables fall sounds.",
-            config::isBetterSoundsFall, config::setBetterSoundsFall));
-        column3.add(new SoundsModeEntry("Fireworks Mode", "Disables eating sounds.",
-            config::isBetterSoundsFireworks, config::setBetterSoundsFireworks));
-        column3.add(new SoundsModeEntry("Blaze Mode", "Disables crossbow sounds.",
-            config::isBetterSoundsBlaze, config::setBetterSoundsBlaze));
+        column3.add(new SoundsModeEntry("Fall Mode", "Disables fall sounds.", config::isBetterSoundsFall, config::setBetterSoundsFall));
+        column3.add(new SoundsModeEntry("Fireworks Mode", "Disables eating sounds.", config::isBetterSoundsFireworks, config::setBetterSoundsFireworks));
+        column3.add(new SoundsModeEntry("Blaze Mode", "Disables crossbow sounds.", config::isBetterSoundsBlaze, config::setBetterSoundsBlaze));
     }
 
     private void createColumn(List<SoundsModeEntry> column, int columnX) {
@@ -163,7 +152,6 @@ public class SoundsConfigScreen2 extends MainConfigScreen {
         return btn;
     }
 
-    /// Обновление состояния кнопок
     private void updateButton(ButtonWidget button, boolean enabled) {
         button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
             .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
@@ -189,7 +177,6 @@ public class SoundsConfigScreen2 extends MainConfigScreen {
         }
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -225,7 +212,6 @@ public class SoundsConfigScreen2 extends MainConfigScreen {
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
         BetterSounds.refreshBlockedStatus();
@@ -245,4 +231,3 @@ public class SoundsConfigScreen2 extends MainConfigScreen {
         }
     }
 }
-// v1.0

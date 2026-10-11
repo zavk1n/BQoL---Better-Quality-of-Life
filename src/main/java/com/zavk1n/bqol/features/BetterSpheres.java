@@ -18,7 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BetterSpheres {
-
     private MinecraftClient mc() {
         if (client == null) client = MinecraftClient.getInstance();
         return client;
@@ -34,7 +33,14 @@ public class BetterSpheres {
     private MinecraftClient client;
     private final BQoLConfig config = BQoLConfig.getInstance();
 
-    /// Really World Helpers
+    private final BlockedFeatures blocked = new BlockedFeatures();
+    private static class BlockedFeatures {
+        boolean main;
+        boolean holyworld;
+        boolean hwgolden;
+        boolean reallyworld;
+    }
+
     private record NameSegment(String text, int color) {}
     private enum NameSpecType {
         NONE,
@@ -186,7 +192,6 @@ public class BetterSpheres {
     private static final int GOLDMINIHEADER = 0xFFD640;
     private static final int GOLDSTROKE = 0xFFE275;
 
-    /// HolyWorld Helpers
     private enum SphereType {
         DEFAULT,
         EPIC,
@@ -313,7 +318,6 @@ public class BetterSpheres {
 
     private final List<RWMatch> rwMatches;
 
-    /// Таблица перевода чисел
     private static final Map<Character, Integer> CONVERTER =
         Map.of(
             'I', 1,
@@ -325,23 +329,11 @@ public class BetterSpheres {
             'M', 1000
         );
 
-    /// Паттерны поиска кодов цветов и чисел
     private static final Pattern COLOR_PATTERN = Pattern.compile("§[0-9A-FK-ORa-fk-or]");
     private static final Pattern LEVEL_PATTERN = Pattern.compile("\\b(\\d+)\\b");
 
-    private final BlockedFeatures blocked = new BlockedFeatures();
-
-    private static class BlockedFeatures {
-        boolean main;
-        boolean holyworld;
-        boolean golden;
-        boolean parameters;
-        boolean names;
-    }
-
     private boolean registered;
 
-    /// HOLYWORLD
     private List<HWDefaultSphereMatch> createSphereMatchesHolyWorld() {
         return List.of(
             new HWDefaultSphereMatch(
@@ -433,7 +425,6 @@ public class BetterSpheres {
         applyHWSphereNames(stack, originalName, hwSphereInfo, hwSphereResult);
     }
 
-    /// REALLYWORLD
     private void processTooltipReallyWorld(ItemStack stack, List<Text> lines) {
         if (blocked.main || lines == null || lines.isEmpty()) {
             return;
@@ -1442,7 +1433,6 @@ public class BetterSpheres {
         }
     }
 
-    /// Публичные статические методы
     public static void initialize() {
         if (instance == null) {
             instance = new BetterSpheres();
@@ -1476,9 +1466,8 @@ public class BetterSpheres {
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("better_spheres");
         blocked.holyworld = LiteApiManager.isFeatureBlocked("better_spheres_holyworld");
-        blocked.golden = LiteApiManager.isFeatureBlocked("better_spheres_special");
-        blocked.parameters = LiteApiManager.isFeatureBlocked("better_spheres_parameters");
-        blocked.names = LiteApiManager.isFeatureBlocked("better_spheres_names");
+        blocked.hwgolden = LiteApiManager.isFeatureBlocked("better_spheres_holyworld_golden");
+        blocked.reallyworld = LiteApiManager.isFeatureBlocked("better_spheres_reallyworld");
     }
 
     private boolean isEnabledInternal() {
@@ -1490,7 +1479,6 @@ public class BetterSpheres {
         refreshBlockedStatusInternal();
     }
 
-    /// Регистрация
     private void registerCallbacks() {
         if (registered) {
             return;
@@ -1516,13 +1504,11 @@ public class BetterSpheres {
         });
     }
 
-    /// Проверки на содержания тултипа
     private boolean containsLine(List<String> lines, String text) {
         return lines.stream()
             .anyMatch(line -> line.contains(text));
     }
 
-    /// Меняет только цвет названия, сохраняя остальные свойства стиля
     private void setNameColor(ItemStack stack, int color) {
         Text name = stack.getName();
 
@@ -1535,7 +1521,6 @@ public class BetterSpheres {
         stack.setCustomName(result);
     }
 
-    /// Меняет название, сохраняя исходный стиль
     private void renamePreservingStyle(ItemStack stack, String newName) {
         Text oldName = stack.getName();
 
@@ -1547,7 +1532,6 @@ public class BetterSpheres {
         stack.setCustomName(result);
     }
 
-    /// Окраска по принципу чередования
     private void setAlternatingNameColors(ItemStack stack, int color1, int color2) {
         Text oldName = stack.getName();
 
@@ -1580,7 +1564,6 @@ public class BetterSpheres {
         stack.setCustomName(result);
     }
 
-    /// Окраска по принципу отдельных сегментов
     private void setSegmentedName(ItemStack stack, List<NameSegment> segments) {
         Text oldName = stack.getName();
 
@@ -1596,7 +1579,6 @@ public class BetterSpheres {
         stack.setCustomName(result);
     }
 
-    /// Поиск сфер
     private HWSphereResult searchHWSpheres(Map<String, Integer> parameters) {
         return new HWSphereResult(
             findHWDefaultSphere(parameters),
@@ -1632,15 +1614,12 @@ public class BetterSpheres {
         return null;
     }
 
-    /// Определение информации о сфере
     private HWSphereInfo getHWSphereInfo(String name) {
         if (name == null) {
             return null;
         }
 
-        final List<String> CUSTOM_KEYWORDS = List.of(
-            "Цербера", "Флеша", "ARMORTALITY", "IMMORTALITY", "Eternity", "Stinger"
-        );
+        final List<String> CUSTOM_KEYWORDS = List.of("Цербера", "Флеша", "ARMORTALITY", "IMMORTALITY", "Eternity", "Stinger");
 
         for (String keyword : CUSTOM_KEYWORDS) {
             if (name.contains(keyword)) {
@@ -1652,7 +1631,6 @@ public class BetterSpheres {
             }
         }
 
-        // Стандартные типы
         if (name.contains("Мифическая")) {
             return new HWSphereInfo(
                 SphereType.MYTHIC,
@@ -1688,7 +1666,6 @@ public class BetterSpheres {
         return null;
     }
 
-    /// Парс параметров
     private Map<String, Integer> parseParametersFromTooltip(List<Text> lines) {
         Map<String, Integer> result = new HashMap<>();
 
@@ -1730,7 +1707,6 @@ public class BetterSpheres {
         return result;
     }
 
-    /// Извлечение уровня
     private int extractLevel(String line) {
         Matcher digitMatcher = LEVEL_PATTERN.matcher(line);
 
@@ -1752,7 +1728,6 @@ public class BetterSpheres {
         );
     }
 
-    /// Конвертация чисел
     private int romanToInt(String roman) {
         if (roman == null
             || roman.isBlank()
@@ -1781,7 +1756,6 @@ public class BetterSpheres {
         return result;
     }
 
-    /// Проверка параметров на совпадение
     private boolean parametersMatch(Map<String, Integer> actual, Map<String, Integer> required) {
         if (actual.size() != required.size()) {
             return false;
@@ -1796,7 +1770,6 @@ public class BetterSpheres {
         return true;
     }
 
-    /// Применение изменений
     private void removeParameterLines(List<Text> lines) {
         lines.removeIf(line -> {
             String clean = line.getString().trim();
@@ -1868,7 +1841,7 @@ public class BetterSpheres {
     }
 
     private void applyHWDefaultSphereParameters(List<Text> lines, Map<String, Integer> parameters, HWSphereInfo sphereInfo, HWDefaultSphereMatch defaultMatch) {
-        if (blocked.parameters || sphereInfo == null) {
+        if (sphereInfo == null) {
             return;
         }
 
@@ -1905,7 +1878,7 @@ public class BetterSpheres {
 
     private void applyHWGoldenSphereParameters(List<Text> lines, HWGoldenSphereMatch match) {
         if (!config.isHWGoldenSpheres()
-            || blocked.golden
+            || blocked.hwgolden
             || match == null) {
             return;
         }
@@ -1922,8 +1895,7 @@ public class BetterSpheres {
     }
 
     private void applyHWDefaultSphereName(ItemStack stack, String originalName, HWSphereInfo sphereInfo) {
-        if (blocked.names
-            || sphereInfo == null
+        if (sphereInfo == null
             || sphereInfo.type() == SphereType.LEGENDARY
             || sphereInfo.type() == SphereType.MYTHIC
             || sphereInfo.type() == SphereType.CUSTOM) {
@@ -1931,15 +1903,14 @@ public class BetterSpheres {
         }
 
         stack.setCustomName(Text.literal(originalName)
-                .styled(style -> style
-                    .withColor(sphereInfo.nameColor())
-                    .withItalic(false))
+            .styled(style -> style
+                .withColor(sphereInfo.nameColor())
+                .withItalic(false))
         );
     }
 
     private void applyHWGoldenSphereName(ItemStack stack, HWGoldenSphereMatch match) {
         if (!config.isHWGoldenSpheres()
-            || blocked.names
             || match == null) {
             return;
         }
@@ -1955,14 +1926,11 @@ public class BetterSpheres {
     }
 
     private Style getReallyWorldNameStyle(Text name) {
-        return (name.getStyle() != null
-            ? name.getStyle()
-            : Style.EMPTY)
+        return (name.getStyle() != null ? name.getStyle() : Style.EMPTY)
             .withBold(true)
             .withItalic(false);
     }
 
-    /// Проверка серверов
     private boolean isHolyWorld() {
         MinecraftClient client = mc();
 
@@ -1999,4 +1967,3 @@ public class BetterSpheres {
             .contains("reallyworld");
     }
 }
-// v1.0

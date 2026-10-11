@@ -10,12 +10,7 @@ public final class FeatureCheckerDeserializer
     implements JsonDeserializer<CheckFeaturesResponse> {
 
     @Override
-    public CheckFeaturesResponse deserialize(
-        JsonElement json,
-        Type typeOfT,
-        JsonDeserializationContext context
-    ) throws JsonParseException {
-
+    public CheckFeaturesResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         if (json == null || json.isJsonNull()) {
             throw new JsonParseException("Response is null");
         }
@@ -32,8 +27,7 @@ public final class FeatureCheckerDeserializer
             throw new JsonParseException("Missing required field 'id'");
         }
 
-        if (!idElement.isJsonPrimitive()
-            || !idElement.getAsJsonPrimitive().isString()) {
+        if (!idElement.isJsonPrimitive() || !idElement.getAsJsonPrimitive().isString()) {
             throw new JsonParseException("'id' must be a string");
         }
 
@@ -45,8 +39,7 @@ public final class FeatureCheckerDeserializer
             throw new JsonParseException("Missing required field 'ok'");
         }
 
-        if (!okElement.isJsonPrimitive()
-            || !okElement.getAsJsonPrimitive().isBoolean()) {
+        if (!okElement.isJsonPrimitive() || !okElement.getAsJsonPrimitive().isBoolean()) {
             throw new JsonParseException("'ok' must be a boolean");
         }
 
@@ -59,8 +52,7 @@ public final class FeatureCheckerDeserializer
                 throw new JsonParseException("Missing required field 'error'");
             }
 
-            if (!errorElement.isJsonPrimitive()
-                || !errorElement.getAsJsonPrimitive().isString()) {
+            if (!errorElement.isJsonPrimitive() || !errorElement.getAsJsonPrimitive().isString()) {
                 throw new JsonParseException("'error' must be a string");
             }
 
@@ -109,8 +101,7 @@ public final class FeatureCheckerDeserializer
         List<String> blocklist = new ArrayList<>(array.size());
 
         for (JsonElement element : array) {
-            if (!element.isJsonPrimitive()
-                || !element.getAsJsonPrimitive().isString()) {
+            if (!element.isJsonPrimitive() || !element.getAsJsonPrimitive().isString()) {
                 throw new JsonParseException(
                     "Every blocklist entry must be a string"
                 );
@@ -122,4 +113,3 @@ public final class FeatureCheckerDeserializer
         return CheckFeaturesResponse.success(id, blocklist);
     }
 }
-// v1.0

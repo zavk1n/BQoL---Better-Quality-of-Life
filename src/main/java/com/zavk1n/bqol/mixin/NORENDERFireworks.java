@@ -1,10 +1,12 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.config.BQoLConfig;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.particle.FireworksSparkParticle;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexConsumer;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,4 +30,3 @@ public class NORENDERFireworks {
         }
     }
 }
-// v1.0

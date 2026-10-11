@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.features.*;
+
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -32,16 +33,24 @@ public final class LiteApiManager {
     private static final List<String> FEATURES = List.of(
             /// Better Sprint
             "better_sprint",
+
             "better_sprint_default",
             "better_sprint_pvp",
             "better_sprint_stair_up",
             "better_sprint_water_sprint",
+
+            /// BetterRCT
+            "better_rct",
+
+            "better_rct_holyworld",
+            "better_rct_reallyworld",
 
             /// Better Sounds
             "better_sounds",
 
             /// Better Interact
             "better_interact",
+
             "better_interact_click_through",
             "better_interact_auto_signs",
             "better_interact_anti_signs",
@@ -49,12 +58,23 @@ public final class LiteApiManager {
 
             /// Better Tnt
             "better_tnt",
-            "better_tnt_timer",
+
+            "better_tnt_timer_tnt",
             "better_tnt_alert",
             "better_tnt_alert_show_xyz",
+            "better_tnt_alert_show_blocks",
+            "better_tnt_explosion_area",
+
+            /// Better Prefixes
+            "better_prefixes",
+
+            "better_prefixes_name_protect",
+            "better_prefixes_donate",
+            "better_prefixes_title",
 
             /// Better Holograms
             "better_holograms",
+
             "better_holograms_visible_armor_stand",
             "better_holograms_anti_holograms",
 
@@ -65,15 +85,13 @@ public final class LiteApiManager {
             "better_spheres_holyworld_golden",
 
             "better_spheres_reallyworld",
-            "better_spheres_reallyworld_golden",
 
             /// Better Sky
             "better_sky",
 
-            "better_sky_color",
-
             /// Shulker Particles
             "shulker_particles",
+
             "shulker_particles_constant",
             "shulker_particles_breaking",
             "shulker_particles_vanilla_breaking",
@@ -82,11 +100,16 @@ public final class LiteApiManager {
 
             /// Better Fog
             "better_fog",
+
+            "better_fog_color",
+            "better_fog_distance",
             "better_fog_no_fog",
             "better_fog_night_vision",
+            "better_fog_no_blindness",
 
             /// Custom Health
             "custom_health",
+
             "custom_health_hovering",
             "custom_health_scaling",
             "custom_health_pvp",
@@ -96,19 +119,11 @@ public final class LiteApiManager {
 
             /// No Render
             "no_render",
-            "no_render_totem_overlay",
-            "no_render_fire_overlay",
-            "no_render_totem_particles",
-            "no_render_potion_particles",
-            "no_render_ground_fire",
-            "no_render_smoke",
-            "no_render_bubbles",
-            "no_render_weather",
-            "no_render_arrows",
-            "no_render_fireworks",
-            "no_render_names",
-            "no_render_players",
-            "no_render_hand"
+
+            /// Better Mine
+            "better_mine",
+            "better_mine_holyworld",
+            "better_mine_holyworld_mine_helper"
     );
 
     private static long lastRequestTime = 0;
@@ -124,7 +139,6 @@ public final class LiteApiManager {
                 });
     }
 
-    /// Отправление запроса
     public static CompletableFuture<CheckFeaturesResponse> sendRequest() {
         long now = System.currentTimeMillis();
 
@@ -162,11 +176,7 @@ public final class LiteApiManager {
 
         lastRequestTime = System.currentTimeMillis();
 
-        BQoL.LOGGER.info(
-            "LiteApi: sent request id={}, attempt={}",
-            request.id(),
-            attempt + 1
-        );
+        BQoL.LOGGER.info("LiteApi: sent request id={}, attempt={}", request.id(), attempt + 1);
 
         return responseFuture
             .orTimeout(5, TimeUnit.SECONDS)
@@ -178,11 +188,7 @@ public final class LiteApiManager {
                     return response;
                 }
 
-                BQoL.LOGGER.warn(
-                    "LiteApi: request {} timed out (attempt {})",
-                    request.id(),
-                    attempt + 1
-                );
+                BQoL.LOGGER.warn("LiteApi: request {} timed out (attempt {})", request.id(), attempt + 1);
 
                 if (attempt + 1 >= maxAttempts) {
                     return null;
@@ -217,37 +223,23 @@ public final class LiteApiManager {
 
                     case "BAD_REQUEST":
                     case "RATE_LIMITED":
-                        BQoL.LOGGER.warn(
-                            "LiteApi: request rejected ({}){}",
-                            response.error(),
-                            response.message() != null
-                                ? ": " + response.message()
-                                : ""
-                        );
+                        BQoL.LOGGER.warn("LiteApi: request rejected ({}){}", response.error(), response.message() != null ? ": " + response.message() : "");
                         return CompletableFuture.completedFuture(response);
 
                     case "NOT_FOUND":
-                        BQoL.LOGGER.error(
-                            "LiteApi: server does not support checkFeatures()"
-                        );
+                        BQoL.LOGGER.error("LiteApi: server does not support checkFeatures()");
                         return CompletableFuture.completedFuture(response);
 
                     case "INTERNAL_ERROR":
-
                         if (attempt + 1 >= maxAttempts) {
                             return CompletableFuture.completedFuture(response);
                         }
 
                         CompletableFuture<CheckFeaturesResponse> retry = new CompletableFuture<>();
-
                         CompletableFuture
                             .delayedExecutor(delayMs, TimeUnit.MILLISECONDS)
-                            .execute(() ->
-                                sendRequestInternal(
-                                    maxAttempts,
-                                    delayMs,
-                                    attempt + 1
-                                ).thenAccept(retry::complete)
+                            .execute(() -> sendRequestInternal(maxAttempts, delayMs, attempt + 1)
+                                .thenAccept(retry::complete)
                             );
 
                         return retry;
@@ -258,16 +250,12 @@ public final class LiteApiManager {
             });
     }
 
-    /// Обработчик ответов
     private static void handleResponse(String json) {
         try {
             JsonObject root = JsonParser.parseString(json).getAsJsonObject();
 
             if (root.has("event")) {
-                BQoL.LOGGER.debug(
-                    "LiteApi: ignoring push event '{}'",
-                    root.get("event").getAsString()
-                );
+                BQoL.LOGGER.debug("LiteApi: ignoring push event '{}'", root.get("event").getAsString());
                 return;
             }
 
@@ -275,64 +263,40 @@ public final class LiteApiManager {
             CompletableFuture<CheckFeaturesResponse> future = pending.remove(response.id());
 
             if (future == null) {
-                BQoL.LOGGER.warn(
-                    "LiteApi: received response for unknown request id={}",
-                    response.id()
-                );
+                BQoL.LOGGER.warn("LiteApi: received response for unknown request id={}", response.id());
                 return;
             }
 
             future.complete(response);
 
             if (response.isOk()) {
+                updateBlocklist(new HashSet<>(response.blocklist()));
+
                 BQoL.LOGGER.info(
                     "LiteApi: received response id={}, blocklist size={}",
                     response.id(),
                     response.blocklist().size()
                 );
-            } else {
-                if (response.message() != null && !response.message().isBlank()) {
-                    BQoL.LOGGER.warn(
-                        "LiteApi: server returned {} for request {} ({})",
-                        response.error(),
-                        response.id(),
-                        response.message()
-                    );
-                } else {
-                    BQoL.LOGGER.warn(
-                        "LiteApi: server returned {} for request {}",
-                        response.error(),
-                        response.id()
-                    );
-                }
+            } else { BQoL.LOGGER.info("LiteApi: not received responce :(");
             }
 
+            future.complete(response);
+
         } catch (JsonParseException e) {
-            BQoL.LOGGER.warn(
-                "LiteApi: failed to parse response: {}",
-                e.getMessage()
-            );
+            BQoL.LOGGER.warn("LiteApi: failed to parse response: {}", e.getMessage());
         } catch (Exception e) {
-            BQoL.LOGGER.error(
-                "LiteApi: failed to handle response",
-                e
-            );
+            BQoL.LOGGER.error("LiteApi: failed to handle response", e);
         }
     }
 
-    /// Обновление листа
     public static void updateBlocklist(Set<String> newBlocked) {
         blockedFeatures = new HashSet<>(newBlocked);
 
-        BQoL.LOGGER.info(
-            "LiteApi: blocked features updated: {}",
-            blockedFeatures
-        );
+        BQoL.LOGGER.info("LiteApi: blocked features updated: {}", blockedFeatures);
 
         applyBlockingModules();
     }
 
-    /// Запасной ручной блок
     public static void manualBlock(String featureId) {
         if (featureId == null || featureId.isBlank()) {
             return;
@@ -340,10 +304,7 @@ public final class LiteApiManager {
 
         blockedFeatures.add(featureId);
 
-        BQoL.LOGGER.info(
-            "LiteApi: manually blocked feature {}",
-            featureId
-        );
+        BQoL.LOGGER.info("LiteApi: manually blocked feature {}", featureId);
 
         applyBlockingModules();
     }
@@ -355,12 +316,21 @@ public final class LiteApiManager {
 
         /// Better Sprint
         if (isFeatureBlocked("better_sprint")) config.setBetterSprintEnabled(false);
+
         if (isFeatureBlocked("better_sprint_default")) config.setBetterSprintDefaultMode(false);
         if (isFeatureBlocked("better_sprint_pvp")) config.setBetterSprintPvPMode(false);
         if (isFeatureBlocked("better_sprint_stair_up")) config.setBetterSprintStairUp(false);
         if (isFeatureBlocked("better_sprint_water_sprint")) config.setBetterSprintWaterSprint(false);
 
         BetterSprint.refreshBlockedStatus();
+
+        /// Better RCT
+        if (isFeatureBlocked("better_rct")) config.setBetterRCTEnabled(false);
+
+        if (isFeatureBlocked("better_rct_holyworld")) config.setBetterRCTHolyWorld(false);
+        if (isFeatureBlocked("better_rct_reallyworld")) config.setBetterRCTReallyWorld(false);
+
+        BetterRCT.refreshBlockedStatus();
 
         /// Better Sounds
         if (isFeatureBlocked("better_sounds")) config.setBetterSoundsEnabled(false);
@@ -369,6 +339,7 @@ public final class LiteApiManager {
 
         /// Better Interact
         if (isFeatureBlocked("better_interact")) config.setBetterInteractEnabled(false);
+
         if (isFeatureBlocked("better_interact_click_through")) config.setBetterInteractClickThrough(false);
         if (isFeatureBlocked("better_interact_anti_signs")) config.setBetterInteractAntiSigns(false);
         if (isFeatureBlocked("better_interact_auto_signs")) config.setBetterInteractAutoSigns(false);
@@ -378,21 +349,33 @@ public final class LiteApiManager {
 
         /// Better Tnt
         if (isFeatureBlocked("better_tnt")) config.setBetterTntEnabled(false);
-        if (isFeatureBlocked("better_tnt_timer")) config.setBetterTntTimer(false);
+
+        if (isFeatureBlocked("better_tnt_timer_tnt")) config.setBetterTntTimer(false);
         if (isFeatureBlocked("better_tnt_alert")) config.setBetterTntAlert(false);
         if (isFeatureBlocked("better_tnt_alert_show_xyz")) config.setBetterTntAlertShowXYZ(false);
+        if (isFeatureBlocked("better_tnt_alert_show_blocks")) config.setBetterTntAlertShowBlocks(false);
+        if (isFeatureBlocked("better_tnt_explosion_area")) config.setBetterTntExplosionArea(false);
 
-        BetterTnt.refreshBlockedStatus();
+        /// Better Prefixes
+        if (isFeatureBlocked("better_prefixes")) config.setBetterPrefixesEnabled(false);
+
+        if (isFeatureBlocked("better_prefixes_name_protect")) config.setBetterPrefixesNameProtect(false);
+        if (isFeatureBlocked("better_prefixes_donate")) config.setBetterPrefixesDonate(false);
+        if (isFeatureBlocked("better_prefixes_title")) config.setBetterPrefixesTitle(false);
+
+        BetterPrefixes.refreshBlockedStatus();
 
         /// Better Holograms
-        if (isFeatureBlocked("better_holograms")) config.setBetterTntEnabled(false);
-        if (isFeatureBlocked("better_holograms_visible_armor_stand")) config.setBetterTntTimer(false);
-        if (isFeatureBlocked("better_holograms_anti_holograms")) config.setBetterTntEnabled(false);
+        if (isFeatureBlocked("better_holograms")) config.setBetterHologramsEnabled(false);
+
+        if (isFeatureBlocked("better_holograms_visible_armor_stand")) config.setBetterHologramsVisibleArmorStand(false);
+        if (isFeatureBlocked("better_holograms_anti_holograms")) config.setBetterHologramsAntiHolograms(false);
 
         BetterHolograms.refreshBlockedStatus();
 
         /// Better Spheres
         if (isFeatureBlocked("better_spheres")) config.setBetterSpheresEnabled(false);
+
         if (isFeatureBlocked("better_spheres_holyworld")) {
             config.setHolyWorldSpheresEnabled(false);
             config.setHWGoldenSpheres(false);
@@ -406,12 +389,12 @@ public final class LiteApiManager {
 
         /// Better Sky
         if (isFeatureBlocked("better_sky")) config.setBetterSkyEnabled(false);
-        if (isFeatureBlocked("better_sky_color")) config.setBetterSkyColorEnabled(false);
 
         BetterSky.refreshBlockedStatus();
 
         /// Shulker Particles
         if (isFeatureBlocked("shulker_particles")) config.setShulkerParticlesEnabled(false);
+
         if (isFeatureBlocked("shulker_particles_constant")) config.setShulkerParticlesConstant(false);
         if (isFeatureBlocked("shulker_particles_breaking")) config.setShulkerParticlesBreaking(false);
         if (isFeatureBlocked("shulker_particles_vanilla_breaking")) config.setShulkerParticlesVanillaBreaking(false);
@@ -426,8 +409,11 @@ public final class LiteApiManager {
             if (client != null && client.worldRenderer != null) client.worldRenderer.reload();
         }
 
-        if (isFeatureBlocked("better_fog_no_fog")) config.setNoFog(false);
-        if (isFeatureBlocked("better_fog_night_vision")) config.setNightVision(false);
+        if (isFeatureBlocked("better_fog_color")) config.setBetterFogColor(0x000000);
+        if (isFeatureBlocked("better_fog_distance")) config.setBetterFogDistance(16);
+        if (isFeatureBlocked("better_fog_no_fog")) config.setBetterFogNoFog(false);
+        if (isFeatureBlocked("better_fog_night_vision")) config.setBetterFogNightVision(false);
+        if (isFeatureBlocked("better_fog_no_blindness")) config.setBetterFogNoBlindness(false);
 
         BetterFog.refreshBlockedStatus();
 
@@ -451,21 +437,13 @@ public final class LiteApiManager {
 
         /// No Renders
         if (isFeatureBlocked("no_render")) config.setNoRenderEnabled(false);
-        if (isFeatureBlocked("no_render_totem_overlay")) config.setNoRenderTotemOverlay(false);
-        if (isFeatureBlocked("no_render_fire_overlay")) config.setNoRenderFireOverlayEnabled(false);
-        if (isFeatureBlocked("no_render_totem_particles")) config.setNoRenderTotemParticlesEnabled(false);
-        if (isFeatureBlocked("no_render_potion_particles")) config.setNoRenderPotionParticlesEnabled(false);
-        if (isFeatureBlocked("no_render_explosion")) config.setNoRenderExplosionEnabled(false);
-        if (isFeatureBlocked("no_render_smoke")) config.setNoRenderSmokeEnabled(false);
-        if (isFeatureBlocked("no_render_bubbles")) config.setNoRenderBubblesEnabled(false);
-        if (isFeatureBlocked("no_render_weather")) config.setNoRenderWeatherEnabled(false);
-        if (isFeatureBlocked("no_render_arrows")) config.setNoRenderArrowsEnabled(false);
-        if (isFeatureBlocked("no_render_fireworks")) config.setNoRenderFireworksEnabled(false);
-        if (isFeatureBlocked("no_render_names")) config.setNoRenderNamesEnabled(false);
-        if (isFeatureBlocked("no_render_players")) config.setNoRenderPlayersEnabled(false);
-        if (isFeatureBlocked("no_render_hand")) config.setNoRenderHandEnabled(false);
 
         NoRender.refreshBlockedStatus();
+
+        /// Better Mine
+        if (isFeatureBlocked("better_mine")) config.setBetterMineEnabled(false);
+        if (isFeatureBlocked("better_mine_holyworld")) config.setBetterMineHolyWorldEnabled(false);
+        if (isFeatureBlocked("better_mine_holyworld_mine_helper")) config.setHolyWorldMineHelperEnabled(false);
     }
 
     public static boolean isFeatureBlocked(String feature) {
@@ -476,7 +454,6 @@ public final class LiteApiManager {
         return Collections.unmodifiableSet(blockedFeatures);
     }
 
-    /// Утилита сброса
     public static void reset() {
         pending.clear();
 
@@ -489,4 +466,3 @@ public final class LiteApiManager {
         BQoL.LOGGER.info("LiteApi: reset");
     }
 }
-// v1.0

@@ -3,46 +3,18 @@ package com.zavk1n.bqol.features;
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
-import net.minecraft.client.MinecraftClient;
 
 public class NoRender {
-
-    private MinecraftClient mc() {
-        if (client == null) {
-            client = MinecraftClient.getInstance();
-        }
-        return client;
-    }
-
     private NoRender() {}
 
     private static NoRender instance;
-    private MinecraftClient client;
     private final BQoLConfig config = BQoLConfig.getInstance();
 
-    /// Блокировки
     private final BlockedFeatures blocked = new BlockedFeatures();
-
     private static class BlockedFeatures {
         boolean main;
-        boolean totemOverlay;
-        boolean fireOverlay;
-        boolean totemParticles;
-        boolean potionParticles;
-        boolean explosion;
-        boolean smoke;
-        boolean bubbles;
-        boolean arrows;
-        boolean weather;
-        boolean glint;
-        boolean flowers;
-        boolean fireworks;
-        boolean names;
-        boolean players;
-        boolean hand;
     }
 
-    /// Публичные статические методы
     public static void initialize() {
         if (instance == null) {
             instance = new NoRender();
@@ -80,24 +52,8 @@ public class NoRender {
         }
     }
 
-    /// Внутренние динамические методы
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("no_render");
-        blocked.totemOverlay = LiteApiManager.isFeatureBlocked("no_render_totem_overlay");
-        blocked.fireOverlay = LiteApiManager.isFeatureBlocked("no_render_fire_overlay");
-        blocked.totemParticles = LiteApiManager.isFeatureBlocked("no_render_totem_particles");
-        blocked.potionParticles = LiteApiManager.isFeatureBlocked("no_render_potion_particles");
-        blocked.explosion = LiteApiManager.isFeatureBlocked("no_render_explosion");
-        blocked.smoke = LiteApiManager.isFeatureBlocked("no_render_smoke");
-        blocked.bubbles = LiteApiManager.isFeatureBlocked("no_render_bubbles");
-        blocked.weather = LiteApiManager.isFeatureBlocked("no_render_weather");
-        blocked.arrows = LiteApiManager.isFeatureBlocked("no_render_arrows");
-        blocked.glint = LiteApiManager.isFeatureBlocked("no_render_fireworks");
-        blocked.flowers = LiteApiManager.isFeatureBlocked("no_render_fireworks");
-        blocked.fireworks = LiteApiManager.isFeatureBlocked("no_render_fireworks");
-        blocked.names = LiteApiManager.isFeatureBlocked("no_render_names");
-        blocked.players = LiteApiManager.isFeatureBlocked("no_render_players");
-        blocked.hand = LiteApiManager.isFeatureBlocked("no_render_hand");
     }
 
     private void reloadFromConfigInternal() {
@@ -114,9 +70,8 @@ public class NoRender {
         reloadFromConfigInternal();
     }
 
-    /// Методы для режимов
     public boolean isTotemOverlayEnabled() {
-        return isEnabledInternal() && !blocked.totemOverlay;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getTotemMode() {
@@ -124,21 +79,21 @@ public class NoRender {
     }
 
     public boolean isFireOverlayEnabled() {
-        return isEnabledInternal() && !blocked.fireOverlay;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getFireMode() {
         return config.getNoRenderFireOverlay();
     }
 
-    public boolean isTotemParticlesEnabled() { return isEnabledInternal() && !blocked.totemParticles; }
+    public boolean isTotemParticlesEnabled() { return isEnabledInternal(); }
 
     public BQoLConfig.RenderMode getTotemParticlesMode() {
         return config.getNoRenderTotemParticles();
     }
 
     public boolean isPotionParticlesEnabled() {
-        return isEnabledInternal() && !blocked.potionParticles;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getPotionParticlesMode() {
@@ -146,7 +101,7 @@ public class NoRender {
     }
 
     public boolean isExplosionEnabled() {
-        return isEnabledInternal() && !blocked.explosion;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getExplosionMode() {
@@ -154,7 +109,7 @@ public class NoRender {
     }
 
     public boolean isSmokeEnabled() {
-        return isEnabledInternal() && !blocked.smoke;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getSmokeMode() {
@@ -162,7 +117,7 @@ public class NoRender {
     }
 
     public boolean isBubblesEnabled() {
-        return isEnabledInternal() && !blocked.bubbles;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getBubblesMode() {
@@ -170,7 +125,7 @@ public class NoRender {
     }
 
     public boolean isWeatherEnabled() {
-        return isEnabledInternal() && !blocked.weather;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getWeatherMode() {
@@ -178,7 +133,7 @@ public class NoRender {
     }
 
     public boolean isArrowsEnabled() {
-        return isEnabledInternal() && !blocked.arrows;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getArrowsMode() {
@@ -186,7 +141,7 @@ public class NoRender {
     }
 
     public boolean isFireworksEnabled() {
-        return isEnabledInternal() && !blocked.fireworks;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getFireworksMode() {
@@ -194,7 +149,7 @@ public class NoRender {
     }
 
     public boolean isNamesEnabled() {
-        return isEnabledInternal() && !blocked.names;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getNamesMode() {
@@ -202,7 +157,7 @@ public class NoRender {
     }
 
     public boolean isPlayersEnabled() {
-        return isEnabledInternal() && !blocked.players;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getPlayersMode() {
@@ -210,7 +165,7 @@ public class NoRender {
     }
 
     public boolean isHandEnabled() {
-        return isEnabledInternal() && !blocked.hand;
+        return isEnabledInternal();
     }
 
     public BQoLConfig.RenderMode getHandMode() {

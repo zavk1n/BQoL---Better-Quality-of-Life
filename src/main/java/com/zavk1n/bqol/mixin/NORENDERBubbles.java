@@ -1,9 +1,11 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.config.BQoLConfig;
+
 import net.minecraft.block.BubbleColumnBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,4 +25,3 @@ public class NORENDERBubbles {
         ci.cancel();
     }
 }
-// v1.0

@@ -2,7 +2,9 @@ package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.config.BQoLConfig.RenderMode;
+
 import net.minecraft.client.gui.hud.InGameOverlayRenderer;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -46,4 +48,3 @@ public class NORENDERFireOverlay {
         };
     }
 }
-// v1.0

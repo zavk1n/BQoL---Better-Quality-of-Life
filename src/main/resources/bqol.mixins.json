@@ -4,8 +4,13 @@
   "package": "com.zavk1n.bqol.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "ACCESSORBossHealthOverlay",
+    "CommandSuggestions",
+    "FOGRenderFogDistance",
+    "FOGRenderFogColor",
     "FOGNoFog",
     "FOGRenderNightVision",
+    "FOGNoBlindness",
     "HEALTHRenderIndicator",
     "HOLOGRAMSArmorStandRenderer",
     "HOLOGRAMSArmorStandName",
@@ -45,7 +50,11 @@
     "SKYTime",
     "TNTEntityRegisterer",
     "TNTInGameHud",
-    "TNTEntityRenderer"
+    "TNTEntityRenderer",
+    "TNTExplosionAreaRenderer",
+    "PREFIXESGetName",
+    "PREFIXESAddName",
+    "PREFIXESScoreboard"
   ],
   "client": [],
   "injectors": {

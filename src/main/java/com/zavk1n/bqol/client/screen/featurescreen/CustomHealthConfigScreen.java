@@ -3,8 +3,8 @@ package com.zavk1n.bqol.client.screen.featurescreen;
 import com.zavk1n.bqol.client.screen.MainConfigScreen;
 import com.zavk1n.bqol.client.screen.featurescreen.utils.ColorCheckbox;
 import com.zavk1n.bqol.features.CustomHealth;
-
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
+
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -16,17 +16,15 @@ import java.util.function.Consumer;
 
 public class CustomHealthConfigScreen extends MainConfigScreen {
 
-    /// Виджеты
     private SliderWidget durationSlider;
     private ButtonWidget positionBtn, hoveringBtn, scalingBtn, pvpModeBtn, decimalBtn, goldenHeartsBtn;
     private ColorCheckbox goldenHeartsPlusCheck;
 
-    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45, LABEL_WIDTH = 220;
+    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
 
     private static final String[] Position_NAMES = {"Over", "Left", "Right", "Under"};
 
-    /// Конструктор
     public CustomHealthConfigScreen(Screen parent) {
         super(Text.literal("Custom Health Settings"), parent);
     }
@@ -42,7 +40,6 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
 
@@ -195,7 +192,6 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
         return button;
     }
 
-    /// Обновление состояния кнопок
     private void updateButton(ButtonWidget button, boolean enabled) {
         button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
             .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
@@ -215,7 +211,6 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
         }
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -265,8 +260,7 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
     private void renderLabel(DrawContext ctx, int x, int y, int mousex, int mousey, String title, String desc) {
         int titleWidth = textRenderer.getWidth(title);
 
-        boolean hovered =
-            mousex >= x &&
+        boolean hovered = mousex >= x &&
                 mousex <= x + titleWidth &&
                 mousey >= y &&
                 mousey <= y + textRenderer.fontHeight;
@@ -277,7 +271,6 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
         ctx.drawTextWithShadow(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
 
@@ -299,4 +292,3 @@ public class CustomHealthConfigScreen extends MainConfigScreen {
         }
     }
 }
-// v1.0

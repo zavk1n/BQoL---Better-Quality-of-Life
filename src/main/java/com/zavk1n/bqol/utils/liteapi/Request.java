@@ -19,4 +19,3 @@ public abstract class Request {
         return method;
     }
 }
-// v1.0

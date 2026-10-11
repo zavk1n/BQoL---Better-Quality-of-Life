@@ -1,12 +1,14 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterSprint;
+
 import net.minecraft.block.*;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -52,15 +54,15 @@ public abstract class SPRINTStairUpAllowFastMoving {
         velocityZ /= length;
 
         BlockPos currentPos = BlockPos.ofFloored(
-                player.getX(),
-                player.getY() - 0.05D,
-                player.getZ()
+            player.getX(),
+            player.getY() - 0.05D,
+            player.getZ()
         );
 
         BlockPos targetPos = BlockPos.ofFloored(
-                player.getX() + velocityX,
-                player.getY(),
-                player.getZ() + velocityZ
+            player.getX() + velocityX,
+            player.getY(),
+            player.getZ() + velocityZ
         );
 
         if (!isHeightAllowed(player, targetPos)) {
@@ -92,7 +94,6 @@ public abstract class SPRINTStairUpAllowFastMoving {
         return true;
     }
 
-    /// Список блоков "ступенек"
     private boolean isStepBlock(BlockState state) {
         Block block = state.getBlock();
 
@@ -129,7 +130,6 @@ public abstract class SPRINTStairUpAllowFastMoving {
         return block instanceof CakeBlock;
     }
 
-    /// Проврека нужной стороны у лестницы
     private boolean isValidStairsSide(BlockPos currentPos, BlockPos targetPos, BlockState stairState) {
         Direction facing = stairState.get(StairsBlock.FACING);
 
@@ -139,11 +139,9 @@ public abstract class SPRINTStairUpAllowFastMoving {
         return dx == facing.getOffsetX() && dz == facing.getOffsetZ();
     }
 
-    /// Проверка корректной высоты подъема
     private boolean isHeightAllowed(ClientPlayerEntity player, BlockPos targetPos) {
         double dy = targetPos.getY() - player.getY();
 
         return dy <= 1.0 && dy >= -1.0;
     }
 }
-// v1.0

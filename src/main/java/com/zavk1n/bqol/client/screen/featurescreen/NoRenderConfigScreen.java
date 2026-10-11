@@ -14,8 +14,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class NoRenderConfigScreen extends MainConfigScreen {
-
-    /// Виджеты
     private ButtonWidget totemOverlayToggleBtn, totemOverlayModeBtn,
         fireOverlayToggleBtn, fireOverlayModeBtn,
         totemParticlesToggleBtn, totemParticlesModeBtn,
@@ -33,10 +31,8 @@ public class NoRenderConfigScreen extends MainConfigScreen {
     private ButtonWidget saveButton;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, BUTTON_GAP = 10, SPACING = 45;
-
     private boolean changed = false;
 
-    /// Конструктор
     public NoRenderConfigScreen(Screen parent) {
         super(Text.literal("No Render Settings"), parent);
     }
@@ -53,7 +49,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро
     private void rebuildUI() {
         clearChildren();
 
@@ -78,7 +73,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
 
         int contentY = 60;
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_totem_overlay")) {
             totemOverlayToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderTotemOverlayEnabled, config::setNoRenderTotemOverlay);
             totemOverlayModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderTotemOverlayEnabled,
@@ -88,9 +82,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 true
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_fire_overlay")) {
             fireOverlayToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderFireOverlayEnabled, config::setNoRenderFireOverlayEnabled);
             fireOverlayModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderFireOverlayEnabled,
@@ -100,9 +92,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 true
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_totem_particles")) {
             totemParticlesToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderTotemParticlesEnabled, config::setNoRenderTotemParticlesEnabled);
             totemParticlesModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderTotemParticlesEnabled,
@@ -112,9 +102,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 true
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_potion_particles")) {
             potionParticlesToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderPotionParticlesEnabled, config::setNoRenderPotionParticlesEnabled);
             potionParticlesModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderPotionParticlesEnabled,
@@ -124,9 +112,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 true
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_explosion")) {
             explosionToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderExplosionEnabled, config::setNoRenderExplosionEnabled);
             explosionModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderExplosionEnabled,
@@ -136,9 +122,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 false
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_smoke")) {
             smokeToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderSmokeEnabled, config::setNoRenderSmokeEnabled);
             smokeModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderSmokeEnabled,
@@ -148,9 +132,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 false
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_bubbles")) {
             bubblesToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderBubblesEnabled, config::setNoRenderBubblesEnabled);
             bubblesModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderBubblesEnabled,
@@ -160,9 +142,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 false
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_weather")) {
             weatherToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderWeatherEnabled, config::setNoRenderWeatherEnabled);
             weatherModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderWeatherEnabled,
@@ -172,9 +152,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 false
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_arrows")) {
             arrowsToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderArrowsEnabled, config::setNoRenderArrowsEnabled);
             arrowsModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderArrowsEnabled,
@@ -184,9 +162,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 false
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_fireworks")) {
             fireworksToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderFireworksEnabled, config::setNoRenderFireworksEnabled);
             fireworksModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderFireworksEnabled,
@@ -196,9 +172,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 false
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_names")) {
             namesToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderNamesEnabled, config::setNoRenderNamesEnabled);
             namesModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderNamesEnabled,
@@ -208,9 +182,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 false
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_hand")) {
             handToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderHandEnabled, config::setNoRenderHandEnabled);
             handModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderHandEnabled,
@@ -220,9 +192,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 false
             );
             contentY += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_players")) {
             playersToggleBtn = createToggleButton(rightX, contentY, config::isNoRenderPlayersEnabled, config::setNoRenderPlayersEnabled);
             playersModeBtn = createModeButton(modeX, contentY,
                 config::isNoRenderPlayersEnabled,
@@ -232,7 +202,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
                 false
             );
             contentY += SPACING;
-        }
 
         int contentBottom = contentY + 70;
 
@@ -249,7 +218,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         updateScroll();
     }
 
-    /// Создание элементов
     private ButtonWidget createToggleButton(int x, int y, Supplier<Boolean> enabledGetter, Consumer<Boolean> enabledSetter) {
         ButtonWidget button = ButtonWidget.builder(Text.literal(""),
                 b -> {
@@ -302,7 +270,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         return button;
     }
 
-    /// Обновление элементов
     private void updateAllButtons() {
         if (totemOverlayToggleBtn != null) {
             updateToggleButton(totemOverlayToggleBtn, config.isNoRenderTotemOverlayEnabled());
@@ -410,7 +377,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         }
     }
 
-    /// Скролл
     @Override
     protected void updateScroll() {
         super.updateScroll();
@@ -486,7 +452,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         }
     }
 
-    /// Рендер
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         updateButtonPositions();
@@ -566,108 +531,87 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         int leftX = width / 4;
         int y = 60 - Math.round(scrollOffset);
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_totem_overlay")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Totem Overlay",
-                "Hide or reduce the totem overlay."
-            );
-            y += SPACING;
-        }
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Totem Overlay",
+            "Hide or reduce the totem overlay."
+        );
+        y += SPACING;
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_fire_overlay")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Fire Overlay",
-                "Hide or reduce the fire overlay."
-            );
-            y += SPACING;
-        }
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Fire Overlay",
+            "Hide or reduce the fire overlay."
+        );
+        y += SPACING;
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_totem_particles")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Totem Particles",
-                "Hide or reduce the totem particles."
-            );
-            y += SPACING;
-        }
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Totem Particles",
+            "Hide or reduce the totem particles."
+        );
+        y += SPACING;
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_potion_particles")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Potion Particles",
-                "Hide or reduce the potion particles."
-            );
-            y += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_explosion")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Explosion",
-                "Hide explosion."
-            );
-            y += SPACING;
-        }
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Potion Particles",
+            "Hide or reduce the potion particles."
+        );
+        y += SPACING;
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_smoke")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Smoke",
-                "Hide smoke."
-            );
-            y += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_bubbles")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Bubbles",
-                "Hide bubbles particles."
-            );
-            y += SPACING;
-        }
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Explosion",
+            "Hide explosion."
+        );
+        y += SPACING;
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_weather")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Weather",
-                "Hide rain, snow and water splashes."
-            );
-            y += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_arrows")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Arrows",
-                "Hide arrows on players."
-            );
-            y += SPACING;
-        }
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Smoke",
+            "Hide smoke."
+        );
+        y += SPACING;
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_fireworks")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Fireworks",
-                "Hide fireworks particles."
-            );
-            y += SPACING;
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_names")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Names",
-                "Hide players names."
-            );
-            y += SPACING;
-        }
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Bubbles",
+            "Hide bubbles particles."
+        );
+        y += SPACING;
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_hand")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Hand",
-                "Hide client player's hand."
-            );
-            y += SPACING;
-        }
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Weather",
+            "Hide rain, snow and water splashes."
+        );
+        y += SPACING;
 
-        if (!LiteApiManager.isFeatureBlocked("no_render_players")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "Players",
-                "Hide players."
-            );
-        }
+
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Arrows",
+            "Hide arrows on players."
+        );
+        y += SPACING;
+
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Fireworks",
+            "Hide fireworks particles."
+        );
+        y += SPACING;
+
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Names",
+            "Hide players names."
+        );
+        y += SPACING;
+
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Hand",
+            "Hide client player's hand."
+        );
+        y += SPACING;
+
+        renderLabel(context, leftX, y, mouseX, mouseY,
+            "Players",
+            "Hide players."
+        );
     }
 
     private void renderLabel(DrawContext context, int x, int y, int mouseX, int mouseY, String title, String desc) {
@@ -793,7 +737,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         button.visible = visible;
     }
 
-    /// Сохранение
     private void save() {
         config.save();
 
@@ -803,7 +746,6 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         changed = false;
     }
 
-    /// Закрытие
     @Override
     public void close() {
         if (changed) {

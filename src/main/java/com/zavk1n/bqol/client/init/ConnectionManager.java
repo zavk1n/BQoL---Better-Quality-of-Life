@@ -3,6 +3,7 @@ package com.zavk1n.bqol.client.init;
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.features.CustomHealth;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -59,4 +60,3 @@ public final class ConnectionManager {
         }
     }
 }
-// v1.0

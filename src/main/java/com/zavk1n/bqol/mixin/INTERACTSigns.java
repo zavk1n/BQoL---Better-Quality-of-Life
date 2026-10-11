@@ -2,10 +2,12 @@ package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.features.BetterInteract;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
 import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,7 +18,6 @@ public class INTERACTSigns {
 
     @Inject(method = "onSignEditorOpen", at = @At("HEAD"), cancellable = true)
     private void bqol$skipSignEditor(SignEditorOpenS2CPacket packet, CallbackInfo ci) {
-        /// AUTO-SIGNS
         if (BetterInteract.isAutoSignsEnabled()) {
             BQoLConfig config = BQoLConfig.getInstance();
 
@@ -34,14 +35,7 @@ public class INTERACTSigns {
 
                 if (client.getNetworkHandler() != null) {
                     client.getNetworkHandler().sendPacket(
-                        new UpdateSignC2SPacket(
-                            packet.getPos(),
-                            packet.isFront(),
-                            line1,
-                            line2,
-                            line3,
-                            line4
-                        )
+                        new UpdateSignC2SPacket(packet.getPos(), packet.isFront(), line1, line2, line3, line4)
                     );
                 }
 
@@ -50,7 +44,6 @@ public class INTERACTSigns {
             }
         }
 
-        /// ANTI-SIGNS
         if (!BetterInteract.isAntiSignsEnabled()) {
             return;
         }
@@ -58,4 +51,3 @@ public class INTERACTSigns {
         ci.cancel();
     }
 }
-// v1.0

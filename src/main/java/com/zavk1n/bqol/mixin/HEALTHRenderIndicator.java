@@ -41,4 +41,3 @@ public class HEALTHRenderIndicator {
         localText.set(Text.literal(indicator + " ").append(text));
     }
 }
-// v1.0

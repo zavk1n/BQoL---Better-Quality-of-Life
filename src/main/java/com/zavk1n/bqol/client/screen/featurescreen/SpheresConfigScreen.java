@@ -13,14 +13,11 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public class SpheresConfigScreen extends MainConfigScreen {
-
-    /// Виджеты
     private ButtonWidget holyWorldSpheresBtn, holyWorldSpheresSettingsBtn, reallyWorldSpheresBtn, reallyWorldSpheresSettingsBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
 
-    /// Конструктор
     public SpheresConfigScreen(Screen parent) {
         super(Text.literal("Better Spheres Settings"), parent);
     }
@@ -36,7 +33,6 @@ public class SpheresConfigScreen extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
 
@@ -49,13 +45,7 @@ public class SpheresConfigScreen extends MainConfigScreen {
         int y = 60;
 
         if (!LiteApiManager.isFeatureBlocked("better_spheres_holyworld")) {
-            holyWorldSpheresBtn = createButton(
-                rightX,
-                y,
-                config::isHolyWorldSpheresEnabled,
-                config::setHolyWorldSpheresEnabled
-            );
-
+            holyWorldSpheresBtn = createButton(rightX, y, config::isHolyWorldSpheresEnabled, config::setHolyWorldSpheresEnabled);
             holyWorldSpheresSettingsBtn = ButtonWidget.builder(
                     Text.literal("Settings"),
                     button -> {
@@ -64,28 +54,16 @@ public class SpheresConfigScreen extends MainConfigScreen {
                             client.setScreen(new HolyWorldSpheresConfigScreen(this));
                         }
                     })
-                .dimensions(
-                    rightX + BUTTON_WIDTH + 10,
-                    y - 3,
-                    BUTTON_WIDTH,
-                    BUTTON_HEIGHT
-                )
+                .dimensions(rightX + BUTTON_WIDTH + 10, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build();
 
             addDrawableChild(holyWorldSpheresBtn);
             addDrawableChild(holyWorldSpheresSettingsBtn);
-
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("better_spheres_reallyworld")) {
-            reallyWorldSpheresBtn = createButton(
-                rightX,
-                y,
-                config::isReallyWorldSpheresEnabled,
-                config::setReallyWorldSpheresEnabled
-            );
-
+            reallyWorldSpheresBtn = createButton(rightX, y, config::isReallyWorldSpheresEnabled, config::setReallyWorldSpheresEnabled);
             reallyWorldSpheresSettingsBtn = ButtonWidget.builder(
                     Text.literal("Settings"),
                     button -> {
@@ -94,25 +72,16 @@ public class SpheresConfigScreen extends MainConfigScreen {
                             client.setScreen(new ReallyWorldSpheresConfigScreen(this));
                         }
                     })
-                .dimensions(
-                    rightX + BUTTON_WIDTH + 10,
-                    y - 3,
-                    BUTTON_WIDTH,
-                    BUTTON_HEIGHT
-                )
+                .dimensions(rightX + BUTTON_WIDTH + 10, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build();
 
             addDrawableChild(reallyWorldSpheresBtn);
             addDrawableChild(reallyWorldSpheresSettingsBtn);
         }
 
-        addDrawableChild(
-            ButtonWidget.builder(
-                    Text.literal("Save & Back"),
-                    button -> close()
-                )
-                .dimensions(width / 2 - 50, height - 40, 100, 25)
-                .build()
+        addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
+            .dimensions(width / 2 - 50, height - 40, 100, 25)
+            .build()
         );
 
         updateAllButtons();
@@ -123,10 +92,8 @@ public class SpheresConfigScreen extends MainConfigScreen {
                 Text.literal(""),
                 btn -> {
                     boolean enabled = !getter.getAsBoolean();
-
                     setter.accept(enabled);
                     changed = true;
-
                     updateButton(btn, enabled);
                 })
             .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -137,7 +104,6 @@ public class SpheresConfigScreen extends MainConfigScreen {
         return button;
     }
 
-    /// Обновление состояния кнопок
     private void updateButton(ButtonWidget button, boolean enabled) {
         button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
                 .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
@@ -153,7 +119,6 @@ public class SpheresConfigScreen extends MainConfigScreen {
         }
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -169,7 +134,7 @@ public class SpheresConfigScreen extends MainConfigScreen {
             y += SPACING;
         }
 
-        if (!LiteApiManager.isFeatureBlocked("better_spheres_reallyWorld")) {
+        if (!LiteApiManager.isFeatureBlocked("better_spheres_reallyworld")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "ReallyWorld Spheres",
                 "Customization spheres for the ReallyWorld."
@@ -191,7 +156,6 @@ public class SpheresConfigScreen extends MainConfigScreen {
         context.drawTextWithShadow(textRenderer, Text.literal(description), x, y + 12, 0xFF888888);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
         BetterSpheres.refreshBlockedStatus();
@@ -210,4 +174,3 @@ public class SpheresConfigScreen extends MainConfigScreen {
         }
     }
 }
-// v1.0

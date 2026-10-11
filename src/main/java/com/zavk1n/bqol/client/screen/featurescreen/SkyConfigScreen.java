@@ -15,8 +15,6 @@ import net.minecraft.text.Text;
 import java.util.function.Consumer;
 
 public class SkyConfigScreen extends MainConfigScreen {
-
-    /// Виджеты
     private ColorSlider colorSlider;
     private TextFieldWidget hexField;
     private SliderWidget timeSlider;
@@ -28,7 +26,6 @@ public class SkyConfigScreen extends MainConfigScreen {
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45, CONTROL_WIDTH = 180;
 
-    /// Конструктор
     public SkyConfigScreen(Screen parent) {
         super(Text.literal("Better Sky Settings"), parent);
     }
@@ -44,7 +41,6 @@ public class SkyConfigScreen extends MainConfigScreen {
         rebuildUI();
     }
 
-    /// Ядро создания экрана
     private void rebuildUI() {
         clearChildren();
 
@@ -155,7 +151,6 @@ public class SkyConfigScreen extends MainConfigScreen {
         return field;
     }
 
-    /// Обновление состояния элементов
     private void updateHexField() {
         if (hexField == null) {
             return;
@@ -181,7 +176,6 @@ public class SkyConfigScreen extends MainConfigScreen {
             .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
     }
 
-    /// Работа с цветами
     private int parseHex(String hex) {
         if (hex == null) {
             return -1;
@@ -272,7 +266,6 @@ public class SkyConfigScreen extends MainConfigScreen {
         return (Math.round((r + m) * 255) << 16) | (Math.round((g + m) * 255) << 8) | Math.round((b + m) * 255);
     }
 
-    /// Создание названий и описаний
     @Override
     public void render(DrawContext context,int mouseX,int mouseY,float delta){
         super.render(context,mouseX,mouseY,delta);
@@ -310,7 +303,6 @@ public class SkyConfigScreen extends MainConfigScreen {
         context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
     }
 
-    /// Сохранение и закрытие
     private void save() {
         config.save();
         BetterSky.refreshBlockedStatus();
@@ -330,4 +322,3 @@ public class SkyConfigScreen extends MainConfigScreen {
         }
     }
 }
-// v1.0
