@@ -30,6 +30,8 @@ public final class LiteApiManager {
     private static final ConcurrentHashMap<String, CompletableFuture<CheckFeaturesResponse>> pending = new ConcurrentHashMap<>();
     private static Set<String> blockedFeatures = new HashSet<>();
 
+    private static final Set<String> manuallyBlockedFeatures = ConcurrentHashMap.newKeySet();
+
     private static final List<String> FEATURES = List.of(
             /// Better Sprint
             "better_sprint",
@@ -38,6 +40,7 @@ public final class LiteApiManager {
             "better_sprint_pvp",
             "better_sprint_stair_up",
             "better_sprint_water_sprint",
+            "better_sprint_scaffold",
 
             /// BetterRCT
             "better_rct",
@@ -65,6 +68,14 @@ public final class LiteApiManager {
             "better_tnt_alert_show_blocks",
             "better_tnt_explosion_area",
 
+            /// Better TP
+            "better_tp",
+            "better_tp_auto_accept",
+            "better_tp_auto_deny",
+
+            /// Better RRLS
+            "better_rrls",
+
             /// Better Prefixes
             "better_prefixes",
 
@@ -90,13 +101,10 @@ public final class LiteApiManager {
             "better_sky",
 
             /// Shulker Particles
-            "shulker_particles",
+            "better_particles",
 
-            "shulker_particles_constant",
-            "shulker_particles_breaking",
-            "shulker_particles_vanilla_breaking",
-            "shulker_particles_constant_dependence",
-            "shulker_particles_breaking_dependence",
+            "better_particles_shulkers",
+            "better_particles_totems",
 
             /// Better Fog
             "better_fog",
@@ -107,15 +115,15 @@ public final class LiteApiManager {
             "better_fog_night_vision",
             "better_fog_no_blindness",
 
-            /// Custom Health
-            "custom_health",
+            /// Better Health
+            "better_health",
 
-            "custom_health_hovering",
-            "custom_health_scaling",
-            "custom_health_pvp",
-            "custom_health_decimal",
-            "custom_health_golden_hearts",
-            "custom_health_golden_plus",
+            "better_health_hovering",
+            "better_health_scaling",
+            "better_health_pvp",
+            "better_health_decimal",
+            "better_health_golden_hearts",
+            "better_health_golden_plus",
 
             /// No Render
             "no_render",
@@ -289,10 +297,10 @@ public final class LiteApiManager {
         }
     }
 
-    public static void updateBlocklist(Set<String> newBlocked) {
+    public static void updateBlocklist (Set<String> newBlocked) {
         blockedFeatures = new HashSet<>(newBlocked);
 
-        BQoL.LOGGER.info("LiteApi: blocked features updated: {}", blockedFeatures);
+        BQoL.LOGGER.info("LiteApi: blocked features updated: {}", getBlockedFeatures());
 
         applyBlockingModules();
     }
@@ -302,7 +310,7 @@ public final class LiteApiManager {
             return;
         }
 
-        blockedFeatures.add(featureId);
+        manuallyBlockedFeatures.add(featureId);
 
         BQoL.LOGGER.info("LiteApi: manually blocked feature {}", featureId);
 
@@ -321,6 +329,7 @@ public final class LiteApiManager {
         if (isFeatureBlocked("better_sprint_pvp")) config.setBetterSprintPvPMode(false);
         if (isFeatureBlocked("better_sprint_stair_up")) config.setBetterSprintStairUp(false);
         if (isFeatureBlocked("better_sprint_water_sprint")) config.setBetterSprintWaterSprint(false);
+        if (isFeatureBlocked("better_sprint_scaffold")) config.setBetterSprintScaffold(false);
 
         BetterSprint.refreshBlockedStatus();
 
@@ -355,6 +364,15 @@ public final class LiteApiManager {
         if (isFeatureBlocked("better_tnt_alert_show_xyz")) config.setBetterTntAlertShowXYZ(false);
         if (isFeatureBlocked("better_tnt_alert_show_blocks")) config.setBetterTntAlertShowBlocks(false);
         if (isFeatureBlocked("better_tnt_explosion_area")) config.setBetterTntExplosionArea(false);
+
+        /// Better TP
+        if (isFeatureBlocked("better_tp")) config.setBetterTPEnabled(false);
+
+        if (isFeatureBlocked("better_tp_auto_accept")) config.setBetterTPAutoAccept(false);
+        if (isFeatureBlocked("better_tp_auto_deny")) config.setBetterTPAutoDeny(false);
+
+        /// Better RRLS
+        if (isFeatureBlocked("better_rrls")) config.setBetterRRLSEnabled(false);
 
         /// Better Prefixes
         if (isFeatureBlocked("better_prefixes")) config.setBetterPrefixesEnabled(false);
@@ -392,16 +410,13 @@ public final class LiteApiManager {
 
         BetterSky.refreshBlockedStatus();
 
-        /// Shulker Particles
-        if (isFeatureBlocked("shulker_particles")) config.setShulkerParticlesEnabled(false);
+        /// Better Particles
+        if (isFeatureBlocked("better_particles")) config.setBetterParticlesEnabled(false);
 
-        if (isFeatureBlocked("shulker_particles_constant")) config.setShulkerParticlesConstant(false);
-        if (isFeatureBlocked("shulker_particles_breaking")) config.setShulkerParticlesBreaking(false);
-        if (isFeatureBlocked("shulker_particles_vanilla_breaking")) config.setShulkerParticlesVanillaBreaking(false);
-        if (isFeatureBlocked("shulker_particles_constant_dependence")) config.setShulkerParticlesConstantDependence(false);
-        if (isFeatureBlocked("shulker_particles_breaking_dependence")) config.setShulkerParticlesBreakingDependence(false);
+        if (isFeatureBlocked("better_particles_shulkers")) config.setBetterParticlesShulkersEnabled(false);
+        if (isFeatureBlocked("better_particles_totems")) config.setBetterParticlesShulkersEnabled(false);
 
-        ShulkerParticles.refreshBlockedStatus();
+        BetterParticles.refreshBlockedStatus();
 
         /// Better Fog
         if (isFeatureBlocked("better_fog")) {
@@ -417,23 +432,23 @@ public final class LiteApiManager {
 
         BetterFog.refreshBlockedStatus();
 
-        /// Custom Health
-        if (isFeatureBlocked("custom_health")) {
-            config.setCustomHealthEnabled(false);
-            CustomHealth.resetDisplay();
+        /// Better Health
+        if (isFeatureBlocked("better_health")) {
+            config.setBetterHealthEnabled(false);
+            BetterHealth.resetDisplay();
         }
 
-        if (isFeatureBlocked("custom_health_hovering")) config.setCustomHealthHovering(false);
-        if (isFeatureBlocked("custom_health_scaling")) config.setCustomHealthScaling(false);
-        if (isFeatureBlocked("custom_health_pvp")) config.setCustomHealthPvPMode(false);
-        if (isFeatureBlocked("custom_health_decimal")) config.setCustomHealthDecimal(false);
-        if (isFeatureBlocked("custom_health_golden_hearts")) {
-            config.setCustomHealthGoldenHearts(false);
-            config.setCustomHealthGoldenHeartsPlus(false);
+        if (isFeatureBlocked("better_health_hovering")) config.setBetterHealthHovering(false);
+        if (isFeatureBlocked("better_health_scaling")) config.setBetterHealthScaling(false);
+        if (isFeatureBlocked("better_health_pvp")) config.setBetterHealthPvPMode(false);
+        if (isFeatureBlocked("better_health_decimal")) config.setBetterHealthDecimal(false);
+        if (isFeatureBlocked("better_health_golden_hearts")) {
+            config.setBetterHealthGoldenHearts(false);
+            config.setBetterHealthGoldenHeartsPlus(false);
         }
-        if (isFeatureBlocked("custom_health_golden_plus")) config.setCustomHealthGoldenHeartsPlus(false);
+        if (isFeatureBlocked("better_health_golden_plus")) config.setBetterHealthGoldenHeartsPlus(false);
 
-        CustomHealth.refreshBlockedStatus();
+        BetterHealth.refreshBlockedStatus();
 
         /// No Renders
         if (isFeatureBlocked("no_render")) config.setNoRenderEnabled(false);
@@ -447,11 +462,15 @@ public final class LiteApiManager {
     }
 
     public static boolean isFeatureBlocked(String feature) {
-        return blockedFeatures.contains(feature);
+        return blockedFeatures.contains(feature) || manuallyBlockedFeatures.contains(feature);
     }
 
     public static Set<String> getBlockedFeatures() {
-        return Collections.unmodifiableSet(blockedFeatures);
+        Set<String> result = new HashSet<>(blockedFeatures);
+
+        result.addAll(manuallyBlockedFeatures);
+
+        return Collections.unmodifiableSet(result);
     }
 
     public static void reset() {

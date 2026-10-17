@@ -5,6 +5,7 @@ import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.mixin.ACCESSORBossHealthOverlay;
 import com.zavk1n.bqol.utils.chat.Chat;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
+import com.zavk1n.bqol.utils.liteapi.restapi.HWServers;
 import com.zavk1n.bqol.utils.rct.HolyWorldController;
 import com.zavk1n.bqol.utils.rct.ReallyWorldController;
 
@@ -73,7 +74,6 @@ public class BetterRCT {
     private static final String[] COMMANDS = {".rct", ".an"};
 
     private static final int SIDEBAR_SLOT = 1;
-    private static final int MAX_HOLYWORLD_ANARCHIES = 36;
     private static final int MAX_REALLYWORLD_ANARCHIES = 32;
     private static final int INVENTORY_SLOTS = 36;
     private static final long PVP_CONFIRM_MS = 3000L;
@@ -87,6 +87,7 @@ public class BetterRCT {
         if (instance == null) {
             instance = new BetterRCT();
             instance.refreshBlockedStatusInternal();
+            HWServers.getInstance().refresh();
             BQoL.LOGGER.info("Better RCT initialized");
         }
     }
@@ -135,6 +136,10 @@ public class BetterRCT {
         }
     }
 
+    public static int getMaxHolyWorldAnarchies() {
+        return HWServers.getInstance().getMaxAnarchy();
+    }
+
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("better_rct");
         blocked.holyworld = LiteApiManager.isFeatureBlocked("better_rct_holyworld");
@@ -179,6 +184,10 @@ public class BetterRCT {
 
         if (!holyWorld && !reallyWorld) {
             return;
+        }
+
+        if (holyWorld) {
+            HWServers.getInstance().updateIfNeeded();
         }
 
         readSidebar(mc);
@@ -285,28 +294,51 @@ public class BetterRCT {
         return null;
     }
 
-    private String requestedHolyWorldNumber(String argument) {
-        if (argument.isEmpty()) {
-            if (currentNumber != null) {
-                return currentNumber;
-            }
-
-            return holyWorldController.lastNumber;
+    private static boolean isValidHolyWorldNumber(String number) {
+        if (number == null || !number.matches("\\d+")) {
+            return false;
         }
 
-        if (!argument.matches("\\d+")) {
+        try {
+            return HWServers.getInstance()
+                .exists(Integer.parseInt(number));
+
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private String requestedHolyWorldNumber(String argument) {
+        HWServers servers = HWServers.getInstance();
+
+        String requested = argument;
+
+        if (requested.isEmpty()) {
+
+            if (currentNumber != null && isValidHolyWorldNumber(currentNumber)) {
+                return Integer.toString(Integer.parseInt(currentNumber));
+            }
+
+            requested = holyWorldController.lastNumber;
+
+            if (requested == null || requested.isBlank()) {
+                return null;
+            }
+        }
+
+        if (!requested.matches("\\d+")) {
             return null;
         }
 
         int number;
 
         try {
-            number = Integer.parseInt(argument);
+            number = Integer.parseInt(requested);
         } catch (NumberFormatException e) {
             return null;
         }
 
-        if (number < 1 || number > MAX_HOLYWORLD_ANARCHIES) {
+        if (!servers.exists(number)) {
             return null;
         }
 
@@ -362,23 +394,37 @@ public class BetterRCT {
     }
 
     private void sendHolyWorldNumberError(String argument) {
-        if (argument.isEmpty()) {
-            Chat.send(mc(), Chat.invalidNumber());
+        MinecraftClient mc = mc();
+
+        if (argument == null || !argument.matches("\\d+")) {
+            Chat.send(mc, Chat.invalidNumber());
+            return;
+        }
+
+        int number;
+
+        try {
+            number = Integer.parseInt(argument);
+        } catch (NumberFormatException e) {
+            Chat.send(mc, Chat.invalidNumber());
+            return;
+        }
+
+        if (number < 1) {
+            Chat.send(mc, Chat.invalidNumber());
+            return;
+        }
+
+        HWServers servers = HWServers.getInstance();
+
+        if (!servers.isLoaded()) {
+            Chat.send(mc, Text.literal("Список серверов HolyWorld ещё не загружен. " + "Используется резервный диапазон 1–36.")
+                .styled(style -> style.withColor(MESSAGE_COLOR)));
 
             return;
         }
 
-        try {
-            int value = Integer.parseInt(argument);
-
-            if (value >= 52) {
-                Chat.send(mc(), Chat.unknownRoute());
-            } else {
-                Chat.send(mc(), Chat.invalidNumber());
-            }
-        } catch (NumberFormatException e) {
-            Chat.send(mc(), Chat.invalidNumber());
-        }
+        Chat.send(mc, Chat.unknownRoute());
     }
 
     private void sendReallyWorldNumberError(String argument) {

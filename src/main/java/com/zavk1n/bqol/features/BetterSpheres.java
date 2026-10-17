@@ -1841,12 +1841,12 @@ public class BetterSpheres {
     }
 
     private void applyHWDefaultSphereParameters(List<Text> lines, Map<String, Integer> parameters, HWSphereInfo sphereInfo, HWDefaultSphereMatch defaultMatch) {
-        if (sphereInfo == null) {
+        if (defaultMatch != null) {
+            replaceParameterLines(lines, defaultMatch.targetLines, defaultMatch.colors);
             return;
         }
 
-        if (defaultMatch != null) {
-            replaceParameterLines(lines, defaultMatch.targetLines, defaultMatch.colors);
+        if (sphereInfo == null) {
             return;
         }
 
@@ -1862,11 +1862,7 @@ public class BetterSpheres {
 
             int level = parameters.get(parameter);
 
-            orderedLines.add(
-                parameter.equals(VANISHING)
-                    ? parameter
-                    : parameter + " " + level
-            );
+            orderedLines.add(parameter.equals(VANISHING) ? parameter : parameter + " " + level);
 
             orderedColors.add(sphereInfo.gradient().get(colorIndex % sphereInfo.gradient().size()));
 

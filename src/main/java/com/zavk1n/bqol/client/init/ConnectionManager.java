@@ -1,7 +1,7 @@
 package com.zavk1n.bqol.client.init;
 
 import com.zavk1n.bqol.BQoL;
-import com.zavk1n.bqol.features.CustomHealth;
+import com.zavk1n.bqol.features.BetterHealth;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.fabricmc.api.EnvType;
@@ -22,7 +22,7 @@ public final class ConnectionManager {
     }
 
     private static void onJoin(MinecraftClient client) {
-        CustomHealth.resetDisplay();
+        BetterHealth.resetDisplay();
 
         LiteApiManager.sendRequest()
             .thenAcceptAsync(response -> {
@@ -35,11 +35,7 @@ public final class ConnectionManager {
                     LiteApiManager.updateBlocklist(new HashSet<>(response.blocklist()));
                     refreshAllModulesBlockedStatus();
                 } else {
-                    BQoL.LOGGER.warn(
-                        "LiteApi error response: {} ({})",
-                        response.error(),
-                        response.message()
-                    );
+                    BQoL.LOGGER.warn("LiteApi error response: {} ({})", response.error(), response.message());
                 }
             }, client)
             .exceptionally(throwable -> {
@@ -49,7 +45,7 @@ public final class ConnectionManager {
     }
 
     private static void onDisconnect(MinecraftClient client) {
-        CustomHealth.resetDisplay();
+        BetterHealth.resetDisplay();
         LiteApiManager.reset();
         refreshAllModulesBlockedStatus();
     }

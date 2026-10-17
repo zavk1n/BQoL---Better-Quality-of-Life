@@ -92,7 +92,7 @@ public class HolyWorldMineConfigScreen extends MainConfigScreen {
 
         if (!LiteApiManager.isFeatureBlocked("better_mine_holyworld_mine_helper")) {
             renderLabel(context, leftX, 60, mouseX, mouseY,
-                "Mine Helper", "Analyze the current mine and rate it."
+                "Mine Helper", "Analyzes the current mine and rate it."
             );
         }
     }

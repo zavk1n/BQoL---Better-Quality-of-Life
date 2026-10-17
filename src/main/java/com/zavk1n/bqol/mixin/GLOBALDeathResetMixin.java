@@ -1,6 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.features.CustomHealth;
+import com.zavk1n.bqol.features.BetterHealth;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
@@ -25,8 +25,8 @@ public class GLOBALDeathResetMixin {
             return;
         }
 
-        if (player == client.player || player.equals(CustomHealth.getLastAttackedPlayer())) {
-            CustomHealth.resetDisplay();
+        if (player == client.player || player.equals(BetterHealth.getLastAttackedPlayer())) {
+            BetterHealth.resetDisplay();
         }
     }
 }

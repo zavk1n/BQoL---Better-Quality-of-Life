@@ -3,6 +3,7 @@ package com.zavk1n.bqol.utils.rct;
 import com.zavk1n.bqol.features.BetterRCT;
 import com.zavk1n.bqol.utils.chat.Chat;
 
+import com.zavk1n.bqol.utils.liteapi.restapi.HWServers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -21,7 +22,7 @@ public class HolyWorldController {
     private static final String MENU_COMMAND = "menu";
 
     private static final int HUB_TIMEOUT_TICKS = 50;
-    private static final int SUCCESS_DELAY_TICKS = 60;
+    private static final int SUCCESS_DELAY_TICKS = 30;
 
     public int operationTimeoutTicks = 500;
 
@@ -52,14 +53,17 @@ public class HolyWorldController {
     public String lastNumber;
 
     public enum LiteMode {
+
         SOLO("СолоЛайт", 1, 9, 1),
         DUO("ДуоЛайт", 10, 19, 2),
         TRIO("ТриоЛайт", 20, 29, 3),
         CLAN("КланЛайт", 30, 36, 64);
 
         public final String displayName;
+
         public final int min;
         public final int max;
+
         public final int armorStandCount;
 
         LiteMode(
@@ -74,7 +78,28 @@ public class HolyWorldController {
             this.armorStandCount = armorStandCount;
         }
 
-        public static LiteMode forNumber(int number) {
+        public static LiteMode fromName(String name) {
+            if (name == null) {
+                return null;
+            }
+
+            String normalized = BetterRCT.normalize(name)
+                .replaceAll("\\s+", "");
+
+            for (LiteMode mode : values()) {
+                String expected = BetterRCT
+                    .normalize(mode.displayName)
+                    .replaceAll("\\s+", "");
+
+                if (normalized.startsWith(expected + "#")) {
+                    return mode;
+                }
+            }
+
+            return null;
+        }
+
+        public static LiteMode fallbackForNumber(int number) {
             for (LiteMode mode : values()) {
                 if (number >= mode.min && number <= mode.max) {
                     return mode;
@@ -82,6 +107,10 @@ public class HolyWorldController {
             }
 
             return null;
+        }
+
+        public static LiteMode forNumber(int number) {
+            return HWServers.getInstance().getMode(number);
         }
     }
 
@@ -108,11 +137,17 @@ public class HolyWorldController {
             return;
         }
 
-        LiteMode mode = LiteMode.forNumber(value);
+        HWServers servers = HWServers.getInstance();
+
+        if (!servers.exists(value)) {
+            Chat.send(mc, Chat.invalidNumber());
+            return;
+        }
+
+        LiteMode mode = servers.getMode(value);
 
         if (mode == null) {
-            Chat.send(mc, Chat.invalidNumber());
-
+            Chat.send(mc, Chat.unknownRoute());
             return;
         }
 
@@ -300,7 +335,13 @@ public class HolyWorldController {
 
         Text message = Text.literal("Я успешно зашел на сервер - ")
             .styled(style -> style.withColor(BetterRCT.getInstance().MESSAGE_COLOR))
-            .append(Text.literal(targetMode.displayName + " #" + targetNumber).styled(style -> style.withColor(BetterRCT.getInstance().MESSAGE_COLOR).withBold(true)));
+            .append(Text.literal(HWServers.getInstance()
+                .getDisplayName(Integer.parseInt(targetNumber)))
+                .styled(style -> style
+                .withColor(BetterRCT.getInstance().MESSAGE_COLOR)
+                .withBold(true)
+            )
+        );
 
         closeMenu(mc);
 

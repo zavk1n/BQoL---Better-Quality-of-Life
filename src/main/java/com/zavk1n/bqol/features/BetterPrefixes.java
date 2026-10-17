@@ -245,21 +245,21 @@ public final class BetterPrefixes {
         return switch (value.toUpperCase(java.util.Locale.ROOT)) {
             case
                 "GRIEFER",
-                 "MUSTANG",
-                 "GHAST",
-                 "WITHER",
-                 "KRAKEN",
-                 "DRAGON",
-                 "STINGER",
-                 "ETERNITY",
-                 "HOLY",
-                 "PALADIN",
-                 "MASTER",
-                 "GLADIATOR",
-                 "OVERLORD",
-                 "ELDER",
-                 "PHANTOM",
-                 "KING" -> true;
+                "MUSTANG",
+                "GHAST",
+                "WITHER",
+                "KRAKEN",
+                "DRAGON",
+                "STINGER",
+                "ETERNITY",
+                "HOLY",
+                "PALADIN",
+                "MASTER",
+                "GLADIATOR",
+                "OVERLORD",
+                "ELDER",
+                "PHANTOM",
+                "KING" -> true;
 
             default -> false;
         };
@@ -515,129 +515,51 @@ public final class BetterPrefixes {
     }
 
     public Text formatMessage(Text originalMessage) {
-        if (originalMessage == null || !isEnabledInternal()) {
-            return originalMessage;
-        }
-
-        String plain = getPlainText(originalMessage);
-
-        if (plain == null || plain.isEmpty()) {
-            return originalMessage;
-        }
-
+        if (originalMessage == null || !isEnabledInternal()) return originalMessage;
         MinecraftClient minecraft = mc();
-
-        if (minecraft.player == null) {
-            return originalMessage;
-        }
-
+        if (minecraft.player == null) return originalMessage;
         String realName = minecraft.player.getGameProfile().getName();
+        String plain = originalMessage.getString();
+        if (realName == null || realName.isBlank()) return originalMessage;
 
-        if (realName == null || realName.isBlank()) {
-            return originalMessage;
-        }
-
-        java.util.regex.Matcher prefixMatcher = Pattern
-            .compile("^\\s*([GgɢＧ]|[LlʟＬ])\\s*\\|\\s*")
-            .matcher(plain);
-
-        boolean specialChat = prefixMatcher.find();
-
-        int prefixEnd = specialChat ? prefixMatcher.end() : 0;
-
-        Pattern namePattern = Pattern.compile("(?i)(?<![a-zA-Z0-9_])" + Pattern.quote(realName) + "(?![a-zA-Z0-9_])");
-
-        java.util.regex.Matcher nameMatcher = namePattern.matcher(plain);
-
-        if (!nameMatcher.find(prefixEnd)) {
-            return originalMessage;
-        }
-
-        int nameStart = nameMatcher.start();
-        int nameEnd = nameMatcher.end();
-
-        List<Replacement> replacements = new ArrayList<>();
-
-        if (!specialChat) {
-            MutableText formatted = Text.empty();
-
-            if (starEnabled()) {
-                formatted.append(makeStar(Style.EMPTY));
-                formatted.append(Text.literal(" "));
-            }
-
-            if (isDonateEnabledInternal() && !getDonateText().isBlank()) {
-                formatted.append(makePart(getDonateText() + " ", isDonateColorEnabledInternal(), config.betterPrefixesDonateColorRgb, config.betterPrefixesDonateBold, getStyleAt(originalMessage, nameStart)));
-            }
-
-            String displayedName = isNameProtectEnabledInternal() ? getProtectedName(realName) : realName;
-
-            formatted.append(makePart(displayedName, isNameColorEnabledInternal(), config.betterPrefixesNameColorRgb, config.betterPrefixesNameBold, getStyleAt(originalMessage, nameStart)));
-
-            if (isTitleEnabledInternal() && !getTitleText().isBlank()) {
-                formatted.append(Text.literal(" "));
-                formatted.append(makePart(getTitleText(), isTitleColorEnabledInternal(), config.betterPrefixesTitleColorRgb, config.betterPrefixesTitleBold, getStyleAt(originalMessage, nameStart)));
-            }
-
-            return replaceRangeWithText(originalMessage, nameStart, nameEnd, formatted);
-        }
-
-        if (isDonateEnabledInternal() && !getDonateText().isBlank()) {
-            Pattern donatePattern = Pattern.compile(
-                "(?i)«\\s*(GRIEFER|MUSTANG|GHAST|WITHER|KRAKEN|"
-                    + "DRAGON|STINGER|ETERNITY|HOLY|PALADIN|"
-                    + "MASTER|GLADIATOR|OVERLORD|ELDER|PHANTOM|KING)\\s*»"
-            );
-
-            java.util.regex.Matcher donateMatcher = donatePattern.matcher(plain);
-
-            if (donateMatcher.find(prefixEnd) && donateMatcher.end() <= nameStart) {
-                Style donateStyle = replacementStyle(originalMessage, donateMatcher.start(), isDonateColorEnabledInternal(), config.betterPrefixesDonateColorRgb, config.betterPrefixesDonateBold);
-
-                replacements.add(new Replacement(donateMatcher.start(), donateMatcher.end(), "«" + getDonateText() + "»", donateStyle));
+        java.util.regex.Matcher prefix = Pattern.compile("^\\s*[GgɢＧLlʟＬ]\\s*\\|\\s*").matcher(plain);
+        int prefixEnd = prefix.find() ? prefix.end() : 0;
+        java.util.regex.Matcher name = Pattern.compile("(?i)(?<![a-zA-Z0-9_])" + Pattern.quote(realName) + "(?![a-zA-Z0-9_])").matcher(plain);
+        if (!name.find(prefixEnd)) return originalMessage;
+        int ns = name.start(), ne = name.end();
+        // Only modify the sender's header, never a nickname mentioned in message body.
+        int colon = plain.indexOf(':', ne);
+        if (colon < 0 || colon - ne > 100) return originalMessage;
+        List<Replacement> changes = new ArrayList<>();
+        String donate = getDonateText().trim();
+        if (isDonateEnabledInternal() && !donate.isEmpty()) {
+            java.util.regex.Matcher rank = Pattern.compile("(?iu)[«\\[({]?\\s*(GRIEFER|MUSTANG|GHAST|WITHER|KRAKEN|DRAGON|STINGER|ETERNITY|HOLY|PALADIN|MASTER|GLADIATOR|OVERLORD|ELDER|PHANTOM|KING|ɢʀɪᴇꜰᴇʀ|ᴍᴜsᴛᴀɴɢ|ɢʜᴀsᴛ|ᴡɪᴛʜᴇʀ|ᴋʀᴀᴋᴇɴ|ᴅʀᴀɢᴏɴ|sᴛɪɴɢᴇʀ|ᴇᴛᴇʀɴɪᴛʏ|ʜᴏʟʏ|ᴘᴀʟᴀᴅɪɴ|ᴍᴀsᴛᴇʀ|ɢʟᴀᴅɪᴀᴛᴏʀ|ᴏᴠᴇʀʟᴏʀᴅ|ᴇʟᴅᴇʀ|ᴘʜᴀɴᴛᴏᴍ|ᴋɪɴɢ)\\s*[»\\])}]?").matcher(plain);
+            if (rank.find(prefixEnd) && rank.end() <= ns) {
+                String old = plain.substring(rank.start(), rank.end());
+                String replacement = old.startsWith("«") ? "«" + donate + "»" : donate;
+                changes.add(new Replacement(rank.start(), rank.end(), replacement,
+                    replacementStyle(originalMessage, rank.start(), isDonateColorEnabledInternal(), config.betterPrefixesDonateColorRgb, config.betterPrefixesDonateBold)));
+            } else {
+                changes.add(new Replacement(ns, ns, donate + " ",
+                    replacementStyle(originalMessage, ns, isDonateColorEnabledInternal(), config.betterPrefixesDonateColorRgb, config.betterPrefixesDonateBold)));
             }
         }
-
-        if (isNameProtectEnabledInternal()
-            || isNameColorEnabledInternal()
-            || config.betterPrefixesNameBold) {
-            String displayedName = isNameProtectEnabledInternal() ? getProtectedName(realName) : realName;
-
-            Style nameStyle = replacementStyle(originalMessage, nameStart, isNameColorEnabledInternal(), config.betterPrefixesNameColorRgb, config.betterPrefixesNameBold);
-
-            replacements.add(new Replacement(nameStart, nameEnd, displayedName, nameStyle));
+        if (starEnabled()) changes.add(new Replacement(prefixEnd, prefixEnd, "★ ",
+            Style.EMPTY.withColor(TextColor.fromRgb(config.betterPrefixesStarColorRgb & 0xFFFFFF)).withBold(true)));
+        if (isNameProtectEnabledInternal() || isNameColorEnabledInternal() || config.betterPrefixesNameBold) {
+            changes.add(new Replacement(ns, ne, isNameProtectEnabledInternal() ? getProtectedName(realName) : realName,
+                replacementStyle(originalMessage, ns, isNameColorEnabledInternal(), config.betterPrefixesNameColorRgb, config.betterPrefixesNameBold)));
         }
-
-        int colonIndex = plain.indexOf(':', nameEnd);
-
-        if (colonIndex >= nameEnd
-            && isTitleEnabledInternal()
-            && !getTitleText().isBlank()) {
-            int titleStart = nameEnd;
-            int titleEnd = colonIndex;
-
-            while (titleStart < titleEnd && Character.isWhitespace(plain.charAt(titleStart))) {
-                titleStart++;
-            }
-
-            while (titleEnd > titleStart && Character.isWhitespace(plain.charAt(titleEnd - 1))) {
-                titleEnd--;
-            }
-
-            if (titleStart < titleEnd) {
-                Style titleStyle = replacementStyle(originalMessage, titleStart, isTitleColorEnabledInternal(), config.betterPrefixesTitleColorRgb, config.betterPrefixesTitleBold);
-
-                replacements.add(new Replacement(titleStart, titleEnd, getTitleText(), titleStyle));
-            }
+        if (isTitleEnabledInternal() && !getTitleText().isBlank()) {
+            int ts = ne, te = colon;
+            while (ts < te && Character.isWhitespace(plain.charAt(ts))) ts++;
+            while (te > ts && Character.isWhitespace(plain.charAt(te - 1))) te--;
+            Style style = replacementStyle(originalMessage, ts < te ? ts : ns, isTitleColorEnabledInternal(), config.betterPrefixesTitleColorRgb, config.betterPrefixesTitleBold);
+            if (ts < te) changes.add(new Replacement(ts, te, getTitleText(), style));
+            else changes.add(new Replacement(ne, ne, " " + getTitleText(), style));
         }
-
-        if (replacements.isEmpty()) {
-            return originalMessage;
-        }
-
-        return replaceRangesWithInsertions(originalMessage, replacements);
+        return replaceRangesWithInsertions(originalMessage, changes);
     }
-
 
     private Text replaceRangeWithText(Text original, int start, int end, Text replacement) {
         List<StyledPart> parts = collectParts(original);
@@ -724,7 +646,7 @@ public final class BetterPrefixes {
             String customDonate = getDonateText();
 
             if (customDonate != null && !customDonate.isBlank()) {
-                Pattern groupPattern = Pattern.compile("(?i)Группа\\s*:\\s*(\\S+)");
+                Pattern groupPattern = Pattern.compile("(?iu)(?:Группа|Ранг)\\s*:\\s*(\\S+)");
 
                 java.util.regex.Matcher matcher = groupPattern.matcher(plain);
 

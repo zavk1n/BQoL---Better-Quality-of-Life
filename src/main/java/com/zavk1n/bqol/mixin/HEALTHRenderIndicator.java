@@ -2,7 +2,7 @@ package com.zavk1n.bqol.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import com.zavk1n.bqol.features.CustomHealth;
+import com.zavk1n.bqol.features.BetterHealth;
 
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -28,11 +28,11 @@ public class HEALTHRenderIndicator {
         require = 0
     )
     private void onRenderLabel(LivingEntity entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci, @Local(argsOnly = true) LocalRef<Text> localText) {
-        if (!CustomHealth.isEnabled() || !(entity instanceof PlayerEntity player)) {
+        if (!BetterHealth.isEnabled() || !(entity instanceof PlayerEntity player)) {
             return;
         }
 
-        String indicator = CustomHealth.getColoredIndicatorString(player);
+        String indicator = BetterHealth.getColoredIndicatorString(player);
 
         if (indicator.isEmpty()) {
             return;

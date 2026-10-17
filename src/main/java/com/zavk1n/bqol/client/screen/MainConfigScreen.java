@@ -26,7 +26,7 @@ public abstract class MainConfigScreen extends Screen {
     protected static final int CONTENT_TOP = 50;
     protected static final int CONTENT_BOTTOM_PADDING = 55;
 
-    private static final float SCROLL_SPEED = 15F;
+    private static final float SCROLL_SPEED = 25F;
     private static final float SCROLL_SMOOTHING = 0.18F;
 
     protected float scrollOffset = 0F;

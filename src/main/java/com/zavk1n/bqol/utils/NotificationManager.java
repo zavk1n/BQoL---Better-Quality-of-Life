@@ -166,6 +166,14 @@ public final class NotificationManager {
         showFeatureNotification("Better Tnt", enabled);
     }
 
+    public static void showBetterTPNotification(boolean enabled) {
+        showFeatureNotification("Better TP", enabled);
+    }
+
+    public static void showBetterRRLSNotification(boolean enabled) {
+        showFeatureNotification("Better RRLS", enabled);
+    }
+
     public static void showBetterPrefixesNotification (boolean enabled) { showFeatureNotification("Better Prefixes", enabled);}
 
     public static void showBetterHologramsNotification(boolean enabled) {
@@ -188,8 +196,8 @@ public final class NotificationManager {
         showFeatureNotification("Better Fog", enabled);
     }
 
-    public static void showCustomHealthNotification(boolean enabled) {
-        showFeatureNotification("Custom Health", enabled);
+    public static void showBetterHealthNotification(boolean enabled) {
+        showFeatureNotification("Better Health", enabled);
     }
 
     public static void showNoRenderNotification(boolean enabled) {

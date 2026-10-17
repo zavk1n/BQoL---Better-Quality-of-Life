@@ -33,6 +33,16 @@ public enum FeatureRegistry {
         () -> {},
         BetterTnt::refreshBlockedStatus
     ),
+    BETTER_TP (
+        BetterTP::initialize,
+        () -> {},
+        BetterTP::refreshBlockedStatus
+    ),
+    BETTER_RRLS (
+        BetterRRLS::initialize,
+        () -> {},
+        BetterRRLS::refreshBlockedStatus
+    ),
     BETTER_PREFIXES (
         BetterPrefixes::initialize,
         () -> {},
@@ -53,20 +63,20 @@ public enum FeatureRegistry {
         () -> {},
         BetterSky::refreshBlockedStatus
     ),
-    SHULKER_PARTICLES(
-        ShulkerParticles::initialize,
-        ShulkerParticles::onTick,
-        ShulkerParticles::refreshBlockedStatus
+    BETTER_PARTICLES(
+        BetterParticles::initialize,
+        BetterParticles::onTick,
+        BetterParticles::refreshBlockedStatus
     ),
-    CUSTOM_FOG(
+    BETTER_FOG(
         BetterFog::initialize,
         () -> {},
         BetterFog::refreshBlockedStatus
     ),
-    CUSTOM_HEALTH(
-        CustomHealth::initialize,
+    BETTER_HEALTH(
+        BetterHealth::initialize,
         () -> {},
-        CustomHealth::refreshBlockedStatus
+        BetterHealth::refreshBlockedStatus
     ),
     NO_RENDER(
         NoRender::initialize,

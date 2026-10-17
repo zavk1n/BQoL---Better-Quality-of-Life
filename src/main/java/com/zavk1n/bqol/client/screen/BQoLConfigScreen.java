@@ -232,6 +232,28 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
+                "Better TP",
+                "Automatic scripts for /tp.",
+                "better_tp",
+                config.isBetterTPEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better RRLS",
+                "Remove Reloading Screen.",
+                "better_rrls",
+                config.isBetterRRLSEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                false
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
                 "Better Prefixes",
                 "Customize your nickname.",
                 "better_prefixes",
@@ -276,10 +298,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
-                "Shulker Particles",
-                "Custom particles for shulkers.",
-                "shulker_particles",
-                config.isShulkerParticlesEnabled(),
+                "Better Particles",
+                "Custom particles for items.",
+                "better_particles",
+                config.isBetterParticlesEnabled(),
                 getTextColumnX(),
                 PANEL_START_Y,
                 true
@@ -298,10 +320,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
-                "Custom Health",
+                "Better Health",
                 "Custom indicator displaying players health.",
-                "custom_health",
-                config.isCustomHealthEnabled(),
+                "better_health",
+                config.isBetterHealthEnabled(),
                 getTextColumnX(),
                 PANEL_START_Y,
                 true
@@ -460,13 +482,14 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_sounds" -> client.setScreen(new SoundsConfigScreen(this));
             case "better_interact" -> client.setScreen(new InteractConfigScreen(this));
             case "better_tnt" -> client.setScreen(new TNTConfigScreen(this));
+            case "better_tp" -> client.setScreen(new TPConfigScreen(this));
             case "better_prefixes" -> client.setScreen(new PrefixesConfigScreen(this));
             case "better_holograms" -> client.setScreen(new HologramsConfigScreen(this));
             case "better_spheres" -> client.setScreen(new SpheresConfigScreen(this));
             case "better_sky" -> client.setScreen(new SkyConfigScreen(this));
-            case "shulker_particles" -> client.setScreen(new ShulkerParticlesConfigScreen(this));
+            case "better_particles" -> client.setScreen(new ParticlesConfigScreen(this));
             case "better_fog" -> client.setScreen(new FogConfigScreen(this));
-            case "custom_health" -> client.setScreen(new CustomHealthConfigScreen(this));
+            case "better_health" -> client.setScreen(new HealthConfigScreen(this));
             case "no_render" -> client.setScreen(new NoRenderConfigScreen(this));
             case "better_mine" -> client.setScreen(new MineConfigScreen(this));
         }
@@ -480,13 +503,15 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_sounds" -> "better_sounds";
             case "better_interact" -> "better_interact";
             case "better_tnt" -> "better_tnt";
+            case "better_tp" -> "better_tp";
+            case "better_rrls" -> "better_rrls";
             case "better_prefixes" -> "better_prefixes";
             case "better_holograms" -> "better_holograms";
             case "better_spheres" -> "better_spheres";
             case "better_sky" -> "better_sky";
-            case "shulker_particles" -> "shulker_particles";
+            case "better_particles" -> "better_particles";
             case "better_fog" -> "better_fog";
-            case "custom_health" -> "custom_health";
+            case "better_health" -> "better_health";
             case "no_render" -> "no_render";
             case "better_mine" -> "better_mine";
 
@@ -564,6 +589,18 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterTnt.setEnabled(panel.enabled);
             }
 
+            case "better_tp" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterTPEnabled(panel.enabled);
+                BetterTP.setEnabled(panel.enabled);
+            }
+
+            case "better_rrls" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterRRLSEnabled(panel.enabled);
+                BetterRRLS.setEnabled(panel.enabled);
+            }
+
             case "better_prefixes" -> {
                 panel.enabled = !panel.enabled;
                 config.setBetterPrefixesEnabled(panel.enabled);
@@ -588,10 +625,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterSky.setEnabled(panel.enabled);
             }
 
-            case "shulker_particles" -> {
+            case "better_particles" -> {
                 panel.enabled = !panel.enabled;
-                config.setShulkerParticlesEnabled(panel.enabled);
-                ShulkerParticles.setEnabled(panel.enabled);
+                config.setBetterParticlesEnabled(panel.enabled);
+                BetterParticles.setEnabled(panel.enabled);
             }
 
             case "better_fog" -> {
@@ -600,13 +637,13 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterFog.setEnabled(panel.enabled);
             }
 
-            case "custom_health" -> {
+            case "better_health" -> {
                 panel.enabled = !panel.enabled;
-                config.setCustomHealthEnabled(panel.enabled);
-                CustomHealth.setEnabled(panel.enabled);
+                config.setBetterHealthEnabled(panel.enabled);
+                BetterHealth.setEnabled(panel.enabled);
 
                 if (!panel.enabled) {
-                    CustomHealth.resetDisplay();
+                    BetterHealth.resetDisplay();
                 }
             }
 

@@ -533,84 +533,84 @@ public class NoRenderConfigScreen extends MainConfigScreen {
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Totem Overlay",
-            "Hide or reduce the totem overlay."
+            "Hides or reduce the totem overlay."
         );
         y += SPACING;
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Fire Overlay",
-            "Hide or reduce the fire overlay."
+            "Hides or reduce the fire overlay."
         );
         y += SPACING;
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Totem Particles",
-            "Hide or reduce the totem particles."
+            "Hides or reduce the totem particles."
         );
         y += SPACING;
 
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Potion Particles",
-            "Hide or reduce the potion particles."
+            "Hides or reduce the potion particles."
         );
         y += SPACING;
 
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Explosion",
-            "Hide explosion."
+            "Hides explosion."
         );
         y += SPACING;
 
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Smoke",
-            "Hide smoke."
+            "Hides smoke."
         );
         y += SPACING;
 
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Bubbles",
-            "Hide bubbles particles."
+            "Hides bubbles particles."
         );
         y += SPACING;
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Weather",
-            "Hide rain, snow and water splashes."
+            "Hides rain, snow and water splashes."
         );
         y += SPACING;
 
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Arrows",
-            "Hide arrows on players."
+            "Hides arrows on players."
         );
         y += SPACING;
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Fireworks",
-            "Hide fireworks particles."
+            "Hides fireworks particles."
         );
         y += SPACING;
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Names",
-            "Hide players names."
+            "Hides players names."
         );
         y += SPACING;
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Hand",
-            "Hide client player's hand."
+            "Hides client player's hand."
         );
         y += SPACING;
 
         renderLabel(context, leftX, y, mouseX, mouseY,
             "Players",
-            "Hide players."
+            "Hides players."
         );
     }
 

@@ -6,6 +6,7 @@ import com.zavk1n.bqol.features.BetterRCT;
 import com.zavk1n.bqol.features.BetterTnt;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 
 public final class TickManager {

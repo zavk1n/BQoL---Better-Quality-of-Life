@@ -1,3 +1,4 @@
+
 {
   "required": true,
   "minVersion": "0.8",
@@ -35,8 +36,10 @@
     "GLOBALAttackEntityMixin",
     "GLOBALDamageEntityMixin",
     "GLOBALDeathResetMixin",
-    "SHULKERBlockVanillaParticles",
-    "SHULKERSpawnBreakingParticles",
+    "PARTICLESShulkerBlockVanillaParticles",
+    "PARTICLESShulkerSpawnBreakingParticles",
+    "PARTICLESTotemsColorParticles",
+    "PARTICLESTotemsCountParticles",
     "SOUNDSPlaySound",
     "INTERACTClickThrough",
     "INTERACTSigns",
@@ -52,6 +55,8 @@
     "TNTInGameHud",
     "TNTEntityRenderer",
     "TNTExplosionAreaRenderer",
+    "RRLSMinecraftClient",
+    "RRLSLoadingOverlay",
     "PREFIXESGetName",
     "PREFIXESAddName",
     "PREFIXESScoreboard"

@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 import java.util.function.BooleanSupplier;
 
 public class SprintConfigScreen extends MainConfigScreen {
-    private ButtonWidget defaultModeBtn, pvpModeBtn, stairupBtn, watersprintBtn;
+    private ButtonWidget defaultModeBtn, pvpModeBtn, stairupBtn, watersprintBtn, scaffoldBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
@@ -44,6 +44,7 @@ public class SprintConfigScreen extends MainConfigScreen {
         pvpModeBtn = null;
         stairupBtn = null;
         watersprintBtn = null;
+        scaffoldBtn = null;
 
         int rightX = width / 2 + 50;
         int y = 60;
@@ -97,6 +98,23 @@ public class SprintConfigScreen extends MainConfigScreen {
                 .build();
 
             addDrawableChild(watersprintBtn);
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("better_sprint_scaffold")) {
+            scaffoldBtn = ButtonWidget.builder(
+                    Text.literal(config.isBetterSprintScaffold() ? "Enabled" : "Disabled"),
+                    button -> {
+                        boolean state = !config.isBetterSprintScaffold();
+                        config.setBetterSprintScaffold(state);
+                        changed = true;
+                        updateButton(scaffoldBtn, state);
+                        save();
+                    })
+                .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+                .build();
+
+            addDrawableChild(scaffoldBtn);
         }
 
         addDrawableChild(
@@ -163,6 +181,10 @@ public class SprintConfigScreen extends MainConfigScreen {
         if (watersprintBtn != null) {
             updateButton(watersprintBtn, config.isBetterSprintWaterSprint());
         }
+
+        if (scaffoldBtn != null) {
+            updateButton(scaffoldBtn, config.isBetterSprintScaffold());
+        }
     }
 
     private void updateButton(ButtonWidget btn, boolean enabled) {
@@ -205,6 +227,14 @@ public class SprintConfigScreen extends MainConfigScreen {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Water Sprint",
                 "Auto-sprint forward in water."
+            );
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("better_sprint_scaffold")) {
+            renderLabel(context, leftX, y, mouseX, mouseY,
+                "Scaffold",
+                "Auto-walking almost on air!"
             );
         }
     }

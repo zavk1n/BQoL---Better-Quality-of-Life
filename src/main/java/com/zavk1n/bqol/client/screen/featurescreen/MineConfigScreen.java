@@ -94,7 +94,7 @@ public class MineConfigScreen extends MainConfigScreen {
         int leftX = width / 4;
 
         if (!LiteApiManager.isFeatureBlocked("better_mine_holyworld")) {
-            renderLabel(context, leftX, 60, mouseX, mouseY, "HolyWorld", "Smart assistants for auto-mines on servers.");
+            renderLabel(context, leftX, 60, mouseX, mouseY, "HolyWorld", "Smart assistant for auto-mines on servers.");
         }
     }
 

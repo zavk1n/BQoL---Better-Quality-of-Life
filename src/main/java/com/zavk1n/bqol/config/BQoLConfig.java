@@ -27,6 +27,7 @@ public class BQoLConfig {
     public boolean betterSprintPvPMode = false;
     public boolean betterSprintStairUp = false;
     public boolean betterSprintWaterSprint = false;
+    public boolean betterSprintScaffold = false;
 
     /// Better RCT
     public boolean betterRCTEnabled = false;
@@ -87,6 +88,15 @@ public class BQoLConfig {
     public boolean betterTntAlertShowXYZ = false;
     public boolean betterTntAlertShowBlocks = false;
     public boolean betterTntExplosionArea = false;
+
+    /// Better TP
+    public boolean betterTPEnabled = false;
+
+    public boolean betterTPAutoAccept = false;
+    public boolean betterTPAutoDeny = false;
+
+    /// Better RRLS
+    public boolean betterRRLSEnabled = false;
 
     /// Better Prefixes
     public boolean betterPrefixesEnabled = false;
@@ -193,15 +203,24 @@ public class BQoLConfig {
     public long betterSkyTime = 6000;
 
     /// Shulker Particles
-    public boolean shulkerParticlesEnabled = false;
+    public boolean betterParticlesEnabled = false;
 
-    public boolean shulkerParticlesConstant = false;
-    public boolean shulkerParticlesBreaking = false;
-    public boolean shulkerParticlesVanillaBreaking = false;
-    public boolean shulkerParticlesConstantDependence = false;
-    public boolean shulkerParticlesBreakingDependence = false;
-    public int shulkerParticlesConstantColor = 0xFFFFFF;
-    public int shulkerParticlesBreakingColor = 0xFFFFFF;
+    public boolean betterParticlesShulkersEnabled = false;
+    public boolean betterParticlesShulkersConstantEnabled = false;
+    public boolean betterParticlesShulkersBreakingEnabled = false;
+    public boolean betterParticlesShulkersVanillaBreakingEnabled = false;
+    public boolean betterParticlesShulkersConstantDependenceEnabled = false;
+    public boolean betterParticlesShulkersBreakingDependenceEnabled = false;
+    public int betterParticlesShulkersConstantColor = 0xFFFFFF;
+    public int betterParticlesShulkersBreakingColor = 0xFFFFFF;
+
+    public boolean betterParticlesTotemsEnabled = false;
+
+    private boolean betterParticlesTotemsColorEnabled = false;
+    private int betterParticlesTotemsColor = 0x00FF00;
+
+    private boolean betterParticlesTotemsCountEnabled = false;
+    private int betterParticlesTotemsCountMode = 1;
 
     /// Better Fog
     public boolean betterFogEnabled = false;
@@ -214,17 +233,17 @@ public class BQoLConfig {
     public boolean betterFognoFog = false;
     public boolean betterFognightVision = false;
 
-    /// Custom Health
-    public boolean customHealthEnabled = false;
+    /// Better Health
+    public boolean betterHealthEnabled = false;
 
-    public int customHealthDuration = 5000;
-    public int customHealthPosition = 0;
-    public boolean customHealthScaling = false;
-    public boolean customHealthHovering = false;
-    public boolean customHealthPvPMode = false;
-    public boolean customHealthDecimal = false;
-    public boolean customHealthGoldenHearts = false;
-    public boolean customHealthGoldenHeartsPlus = false;
+    public int betterHealthDuration = 5000;
+    public int betterHealthPosition = 0;
+    public boolean betterHealthScaling = false;
+    public boolean betterHealthHovering = false;
+    public boolean betterHealthPvPMode = false;
+    public boolean betterHealthDecimal = false;
+    public boolean betterHealthGoldenHearts = false;
+    public boolean betterHealthGoldenHeartsPlus = false;
 
     /// No Render
     public enum RenderMode {
@@ -323,8 +342,8 @@ public class BQoLConfig {
     private void validateSettings() {
         betterTntAlertPosition = Math.max(0, Math.min(4, betterTntAlertPosition));
 
-        customHealthDuration = Math.max(3000, Math.min(30000, customHealthDuration));
-        customHealthPosition = Math.max(0, Math.min(3, customHealthPosition));
+        betterHealthDuration = Math.max(3000, Math.min(30000, betterHealthDuration));
+        betterHealthPosition = Math.max(0, Math.min(3, betterHealthPosition));
 
         pvpTimerDuration = Math.max(5000, Math.min(60000, pvpTimerDuration));
 
@@ -338,8 +357,8 @@ public class BQoLConfig {
         betterPrefixesTitleColorRgb &= 0xFFFFFF;
         betterPrefixesStarColorRgb &= 0xFFFFFF;
 
-        shulkerParticlesConstantColor &= 0xFFFFFF;
-        shulkerParticlesBreakingColor &= 0xFFFFFF;
+        betterParticlesShulkersConstantColor &= 0xFFFFFF;
+        betterParticlesShulkersBreakingColor &= 0xFFFFFF;
 
         betterSkyTime = Math.max(1000L, Math.min(24000L, betterSkyTime));
 
@@ -411,8 +430,8 @@ public class BQoLConfig {
             noRenderHand = RenderMode.FULL;
         }
 
-        if (customHealthGoldenHeartsPlus && !customHealthGoldenHearts) {
-            customHealthGoldenHeartsPlus = false;
+        if (betterHealthGoldenHeartsPlus && !betterHealthGoldenHearts) {
+            betterHealthGoldenHeartsPlus = false;
         }
 
         if (betterSprintDefaultMode && betterSprintPvPMode) {
@@ -444,6 +463,8 @@ public class BQoLConfig {
     public void setBetterSprintStairUp(boolean enabled) { this.betterSprintStairUp = enabled; save(); }
     public boolean isBetterSprintWaterSprint() { return betterSprintWaterSprint; }
     public void setBetterSprintWaterSprint(boolean enabled) { this.betterSprintWaterSprint = enabled; save(); }
+    public boolean isBetterSprintScaffold() { return betterSprintScaffold; }
+    public void setBetterSprintScaffold(boolean enabled) { this.betterSprintScaffold = enabled; save(); }
 
     /// Better RCT
     public boolean isBetterRCTEnabled() { return betterRCTEnabled; }
@@ -553,6 +574,31 @@ public class BQoLConfig {
     public void setBetterTntAlertShowBlocks(boolean enabled) { this.betterTntAlertShowBlocks = enabled; save(); }
     public boolean isBetterTntExplosionArea() { return betterTntExplosionArea; }
     public void setBetterTntExplosionArea(boolean enabled) { this.betterTntExplosionArea = enabled; save(); }
+
+    /// Better TP
+    public boolean isBetterTPEnabled() { return betterTPEnabled; }
+    public void setBetterTPEnabled(boolean enabled) { this.betterTPEnabled = enabled; save(); }
+
+    public boolean isBetterTPAutoAccept() { return betterTPAutoAccept; }
+    public void setBetterTPAutoAccept(boolean enabled) {
+        this.betterTPAutoAccept = enabled;
+        if (enabled) {
+            this.betterTPAutoDeny = false;
+        }
+        save();
+    }
+    public boolean isBetterTPAutoDeny() { return betterTPAutoDeny; }
+    public void setBetterTPAutoDeny(boolean enabled) {
+        this.betterTPAutoDeny = enabled;
+        if (enabled) {
+            this.betterTPAutoAccept = false;
+        }
+        save();
+    }
+
+    /// Better RRLS
+    public boolean isBetterRRLSEnabled() { return betterRRLSEnabled; }
+    public void setBetterRRLSEnabled(boolean enabled) { this.betterRRLSEnabled = enabled; save(); }
 
     /// BetterPrefixes
     public boolean isBetterPrefixesEnabled() { return betterPrefixesEnabled; }
@@ -703,23 +749,38 @@ public class BQoLConfig {
     public void setBetterSkyTime(long time) { this.betterSkyTime = Math.max(1000L, Math.min(24000L, time)); save(); }
 
     /// Shulker Paricles
-    public boolean isShulkerParticlesEnabled() { return shulkerParticlesEnabled; }
-    public void setShulkerParticlesEnabled(boolean enabled) { this.shulkerParticlesEnabled = enabled; save(); }
+    public boolean isBetterParticlesEnabled() { return betterParticlesEnabled; }
+    public void setBetterParticlesEnabled(boolean enabled) { this.betterParticlesEnabled = enabled; save(); }
 
-    public boolean isShulkerParticlesConstant() { return shulkerParticlesConstant; }
-    public void setShulkerParticlesConstant(boolean enabled) { this.shulkerParticlesConstant = enabled; save(); }
-    public boolean isShulkerParticlesBreaking() { return shulkerParticlesBreaking; }
-    public void setShulkerParticlesBreaking(boolean enabled) { this.shulkerParticlesBreaking = enabled; save(); }
-    public boolean isShulkerParticlesVanillaBreaking() { return shulkerParticlesVanillaBreaking; }
-    public void setShulkerParticlesVanillaBreaking(boolean enabled) { this.shulkerParticlesVanillaBreaking = enabled; save(); }
-    public boolean isShulkerParticlesConstantDependence() { return shulkerParticlesConstantDependence; }
-    public void setShulkerParticlesConstantDependence(boolean enabled) { this.shulkerParticlesConstantDependence = enabled; save(); }
-    public boolean isShulkerParticlesBreakingDependence() { return shulkerParticlesBreakingDependence; }
-    public void setShulkerParticlesBreakingDependence(boolean enabled) { this.shulkerParticlesBreakingDependence = enabled; save(); }
-    public int getShulkerParticlesConstantColor() { return shulkerParticlesConstantColor; }
-    public void setShulkerParticlesConstantColor(int color) { this.shulkerParticlesConstantColor = color; save(); }
-    public int getShulkerParticlesBreakingColor() { return shulkerParticlesBreakingColor; }
-    public void setShulkerParticlesBreakingColor(int color) { this.shulkerParticlesBreakingColor = color; save(); }
+    public boolean isBetterParticlesShulkersEnabled() { return betterParticlesShulkersEnabled; }
+    public void setBetterParticlesShulkersEnabled(boolean enabled) { this.betterParticlesShulkersEnabled = enabled; save(); }
+
+    public boolean isBetterParticlesShulkersConstantEnabled() { return betterParticlesShulkersConstantEnabled; }
+    public void setBetterParticlesShulkersConstantEnabled(boolean enabled) { this.betterParticlesShulkersConstantEnabled = enabled; save(); }
+    public boolean isBetterParticlesShulkersBreakingEnabled() { return betterParticlesShulkersBreakingEnabled; }
+    public void setBetterParticlesShulkersBreakingEnabled(boolean enabled) { this.betterParticlesShulkersBreakingEnabled = enabled; save(); }
+    public boolean isBetterParticlesShulkersVanillaBreakingEnabled() { return betterParticlesShulkersVanillaBreakingEnabled; }
+    public void setBetterParticlesShulkersVanillaBreakingEnabled(boolean enabled) { this.betterParticlesShulkersVanillaBreakingEnabled = enabled; save(); }
+    public boolean isBetterParticlesShulkersConstantDependenceEnabled() { return betterParticlesShulkersConstantDependenceEnabled; }
+    public void setBetterParticlesShulkersConstantDependenceEnabled(boolean enabled) { this.betterParticlesShulkersConstantDependenceEnabled = enabled; save(); }
+    public boolean isBetterParticlesShulkersBreakingDependenceEnabled() { return betterParticlesShulkersBreakingDependenceEnabled; }
+    public void setBetterParticlesShulkersBreakingDependenceEnabled(boolean enabled) { this.betterParticlesShulkersBreakingDependenceEnabled = enabled; save(); }
+    public int getBetterParticlesShulkersConstantColor() { return betterParticlesShulkersConstantColor; }
+    public void setBetterParticlesShulkersConstantColor(int color) { this.betterParticlesShulkersConstantColor = color; save(); }
+    public int getBetterParticlesShulkersBreakingColor() { return betterParticlesShulkersBreakingColor; }
+    public void setBetterParticlesShulkersBreakingColor(int color) { this.betterParticlesShulkersBreakingColor = color; save(); }
+
+    public boolean isBetterParticlesTotemsEnabled() { return betterParticlesTotemsEnabled; }
+    public void setBetterParticlesTotemsEnabled(boolean enabled) { this.betterParticlesTotemsEnabled = enabled; save(); }
+
+    public boolean isBetterParticlesTotemsColorEnabled() { return betterParticlesTotemsColorEnabled; }
+    public void setBetterParticlesTotemsColorEnabled(boolean enabled) { this.betterParticlesTotemsColorEnabled = enabled; }
+    public int getBetterParticlesTotemsColor() { return betterParticlesTotemsColor; }
+    public void setBetterParticlesTotemsColor(int color) { this.betterParticlesTotemsColor = color & 0xFFFFFF; }
+    public boolean isBetterParticlesTotemsCountEnabled() { return betterParticlesTotemsCountEnabled; }
+    public void setBetterParticlesTotemsCountEnabled(boolean enabled) { this.betterParticlesTotemsCountEnabled = enabled; }
+    public int getBetterParticlesTotemsCountMode() { return Math.max(0, Math.min(2, betterParticlesTotemsCountMode)); }
+    public void setBetterParticlesTotemsCountMode(int mode) { this.betterParticlesTotemsCountMode = Math.max(0, Math.min(2, mode)); }
 
     /// Better Fog
     public boolean isBetterFogEnabled() { return betterFogEnabled; }
@@ -739,26 +800,26 @@ public class BQoLConfig {
     public boolean isBetterFogNoBlindness() { return betterFognoBlindness; }
     public void setBetterFogNoBlindness(boolean enabled) { this.betterFognoBlindness = enabled; save(); }
 
-    /// Custom Health
-    public boolean isCustomHealthEnabled() { return customHealthEnabled; }
-    public void setCustomHealthEnabled(boolean enabled) { this.customHealthEnabled = enabled; save(); }
+    /// Better Health
+    public boolean isBetterHealthEnabled() { return betterHealthEnabled; }
+    public void setBetterHealthEnabled(boolean enabled) { this.betterHealthEnabled = enabled; save(); }
 
-    public int getCustomHealthDuration() { return customHealthDuration; }
-    public void setCustomHealthDuration(int duration) { this.customHealthDuration = Math.max(3000, Math.min(30000, duration)); save(); }
-    public int getCustomHealthPosition() { return customHealthPosition; }
-    public void setCustomHealthPosition(int loc) { this.customHealthPosition = Math.max(0, Math.min(3, loc)); save(); }
-    public boolean isCustomHealthScaling() { return customHealthScaling; }
-    public void setCustomHealthScaling(boolean scaling) { this.customHealthScaling = scaling; save(); }
-    public boolean isCustomHealthHovering() { return customHealthHovering; }
-    public void setCustomHealthHovering(boolean hover) { this.customHealthHovering = hover; save(); }
-    public boolean isCustomHealthPvPMode() { return customHealthPvPMode; }
-    public void setCustomHealthPvPMode(boolean enabled) { this.customHealthPvPMode = enabled; save(); }
-    public boolean isCustomHealthDecimal() { return customHealthDecimal; }
-    public void setCustomHealthDecimal(boolean decimal) { this.customHealthDecimal = decimal; save(); }
-    public boolean isCustomHealthGoldenHearts() { return customHealthGoldenHearts; }
-    public void setCustomHealthGoldenHearts(boolean enabled) { this.customHealthGoldenHearts = enabled; if (!enabled) { this.customHealthGoldenHeartsPlus = false; } save(); }
-    public boolean isCustomHealthGoldenHeartsPlus() { return customHealthGoldenHeartsPlus; }
-    public void setCustomHealthGoldenHeartsPlus(boolean enabled) { this.customHealthGoldenHeartsPlus = enabled && this.customHealthGoldenHearts; save(); }
+    public int getBetterHealthDuration() { return betterHealthDuration; }
+    public void setBetterHealthDuration(int duration) { this.betterHealthDuration = Math.max(3000, Math.min(30000, duration)); save(); }
+    public int getBetterHealthPosition() { return betterHealthPosition; }
+    public void setBetterHealthPosition(int loc) { this.betterHealthPosition = Math.max(0, Math.min(3, loc)); save(); }
+    public boolean isBetterHealthScaling() { return betterHealthScaling; }
+    public void setBetterHealthScaling(boolean scaling) { this.betterHealthScaling = scaling; save(); }
+    public boolean isBetterHealthHovering() { return betterHealthHovering; }
+    public void setBetterHealthHovering(boolean hover) { this.betterHealthHovering = hover; save(); }
+    public boolean isBetterHealthPvPMode() { return betterHealthPvPMode; }
+    public void setBetterHealthPvPMode(boolean enabled) { this.betterHealthPvPMode = enabled; save(); }
+    public boolean isBetterHealthDecimal() { return betterHealthDecimal; }
+    public void setBetterHealthDecimal(boolean decimal) { this.betterHealthDecimal = decimal; save(); }
+    public boolean isBetterHealthGoldenHearts() { return betterHealthGoldenHearts; }
+    public void setBetterHealthGoldenHearts(boolean enabled) { this.betterHealthGoldenHearts = enabled; if (!enabled) { this.betterHealthGoldenHeartsPlus = false; } save(); }
+    public boolean isBetterHealthGoldenHeartsPlus() { return betterHealthGoldenHeartsPlus; }
+    public void setBetterHealthGoldenHeartsPlus(boolean enabled) { this.betterHealthGoldenHeartsPlus = enabled && this.betterHealthGoldenHearts; save(); }
 
     /// No Render
     public boolean isNoRenderEnabled() { return noRenderEnabled; }
@@ -858,6 +919,7 @@ public class BQoLConfig {
         this.betterSprintPvPMode = defaults.betterSprintPvPMode;
         this.betterSprintStairUp = defaults.betterSprintStairUp;
         this.betterSprintWaterSprint = defaults.betterSprintWaterSprint;
+        this.betterSprintScaffold = defaults.betterSprintScaffold;
 
         /// BetterRCT
         this.betterRCTEnabled = defaults.betterRCTEnabled;
@@ -911,6 +973,7 @@ public class BQoLConfig {
 
         /// Better Tnt
         this.betterTntEnabled = defaults.betterTntEnabled;
+
         this.betterTntTimer = defaults.betterTntTimer;
         this.betterTntAlert = defaults.betterTntAlert;
         this.betterTntAlertPosition = defaults.betterTntAlertPosition;
@@ -918,8 +981,18 @@ public class BQoLConfig {
         this.betterTntAlertShowBlocks = defaults.betterTntAlertShowBlocks;
         this.betterTntExplosionArea = defaults.betterTntExplosionArea;
 
+        /// Better TP
+        this.betterTPEnabled = defaults.betterTPEnabled;
+
+        this.betterTPAutoAccept = defaults.betterTPAutoAccept;
+        this.betterTPAutoDeny = defaults.betterTPAutoDeny;
+
+        /// Better RRLS
+        this.betterRRLSEnabled = defaults.betterRRLSEnabled;
+
         /// Better Prefixes
         this.betterPrefixesEnabled = defaults.betterPrefixesEnabled;
+
         this.betterPrefixesNameProtect = defaults.betterPrefixesNameProtect;
         this.betterPrefixesDonate = defaults.betterPrefixesDonate;
         this.betterPrefixesTitle = defaults.betterPrefixesTitle;
@@ -945,6 +1018,7 @@ public class BQoLConfig {
 
         /// Better Holograms
         this.betterHologramsEnabled = defaults.betterHologramsEnabled;
+
         this.betterHologramsVisibleArmorStand = defaults.betterHologramsVisibleArmorStand;
         this.betterHologramsAntiHolograms = defaults.betterHologramsAntiHolograms;
 
@@ -1021,18 +1095,27 @@ public class BQoLConfig {
         this.betterSkyTime = defaults.betterSkyTime;
 
         /// Shulker Particles
-        this.shulkerParticlesEnabled = defaults.shulkerParticlesEnabled;
+        this.betterParticlesEnabled = defaults.betterParticlesEnabled;
 
-        this.shulkerParticlesConstant = defaults.shulkerParticlesConstant;
-        this.shulkerParticlesBreaking = defaults.shulkerParticlesBreaking;
-        this.shulkerParticlesVanillaBreaking = defaults.shulkerParticlesVanillaBreaking;
-        this.shulkerParticlesConstantDependence = defaults.shulkerParticlesConstantDependence;
-        this.shulkerParticlesBreakingDependence = defaults.shulkerParticlesBreakingDependence;
-        this.shulkerParticlesConstantColor = defaults.shulkerParticlesConstantColor;
-        this.shulkerParticlesBreakingColor = defaults.shulkerParticlesBreakingColor;
+        this.betterParticlesShulkersEnabled = defaults.betterParticlesShulkersEnabled;
+
+        this.betterParticlesShulkersConstantEnabled = defaults.betterParticlesShulkersConstantEnabled;
+        this.betterParticlesShulkersBreakingEnabled = defaults.betterParticlesShulkersBreakingEnabled;
+        this.betterParticlesShulkersVanillaBreakingEnabled = defaults.betterParticlesShulkersVanillaBreakingEnabled;
+        this.betterParticlesShulkersConstantDependenceEnabled = defaults.betterParticlesShulkersConstantDependenceEnabled;
+        this.betterParticlesShulkersBreakingDependenceEnabled = defaults.betterParticlesShulkersBreakingDependenceEnabled;
+        this.betterParticlesShulkersConstantColor = defaults.betterParticlesShulkersConstantColor;
+        this.betterParticlesShulkersBreakingColor = defaults.betterParticlesShulkersBreakingColor;
+
+        this.betterParticlesTotemsColorEnabled = defaults.betterParticlesTotemsColorEnabled;
+
+        this.betterParticlesTotemsColor = defaults.betterParticlesTotemsColor;
+        this.betterParticlesTotemsCountEnabled = defaults.betterParticlesTotemsCountEnabled;
+        this.betterParticlesTotemsCountMode = defaults.betterParticlesTotemsCountMode;
 
         /// Better Fog
         this.betterFogEnabled = defaults.betterFogEnabled;
+
         this.betterFogColorEnabled = defaults.betterFogColorEnabled;
         this.betterFogColor = defaults.betterFogColor;
         this.betterFogDistance = defaults.betterFogDistance;
@@ -1040,20 +1123,21 @@ public class BQoLConfig {
         this.betterFognoFog = defaults.betterFognoFog;
         this.betterFognoBlindness = defaults.betterFognoBlindness;
 
-        /// Custom Health
-        this.customHealthEnabled = defaults.customHealthEnabled;
+        /// Better Health
+        this.betterHealthEnabled = defaults.betterHealthEnabled;
 
-        this.customHealthDuration = defaults.customHealthDuration;
-        this.customHealthPosition = defaults.customHealthPosition;
-        this.customHealthScaling = defaults.customHealthScaling;
-        this.customHealthHovering = defaults.customHealthHovering;
-        this.customHealthPvPMode = defaults.customHealthPvPMode;
-        this.customHealthDecimal = defaults.customHealthDecimal;
-        this.customHealthGoldenHearts = defaults.customHealthGoldenHearts;
-        this.customHealthGoldenHeartsPlus = defaults.customHealthGoldenHeartsPlus;
+        this.betterHealthDuration = defaults.betterHealthDuration;
+        this.betterHealthPosition = defaults.betterHealthPosition;
+        this.betterHealthScaling = defaults.betterHealthScaling;
+        this.betterHealthHovering = defaults.betterHealthHovering;
+        this.betterHealthPvPMode = defaults.betterHealthPvPMode;
+        this.betterHealthDecimal = defaults.betterHealthDecimal;
+        this.betterHealthGoldenHearts = defaults.betterHealthGoldenHearts;
+        this.betterHealthGoldenHeartsPlus = defaults.betterHealthGoldenHeartsPlus;
 
         /// No Render
         this.noRenderTotemOverlayEnabled = defaults.noRenderTotemOverlayEnabled;
+
         this.noRenderFireOverlayEnabled = defaults.noRenderFireOverlayEnabled;
         this.noRenderTotemParticlesEnabled = defaults.noRenderTotemParticlesEnabled;
         this.noRenderPotionParticlesEnabled = defaults.noRenderPotionParticlesEnabled;

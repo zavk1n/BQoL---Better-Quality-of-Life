@@ -72,7 +72,11 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
 
         createSphereGrid();
         createControlButtons();
-        createFooter();
+
+        addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
+            .dimensions(width / 2 - 50, height - 40, 100, 25)
+            .build()
+        );
 
         updateAllButtons();
     }
@@ -182,13 +186,6 @@ public class HolyWorldSpheresConfigScreen extends MainConfigScreen {
         addDrawableChild(button);
 
         return button;
-    }
-
-    private void createFooter() {
-        addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
-                .dimensions(width / 2 - 50, height - 40, 100, 25)
-                .build()
-        );
     }
 
     private void updateButton(ButtonWidget btn, boolean enabled) {

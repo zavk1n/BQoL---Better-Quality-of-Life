@@ -1,7 +1,7 @@
 package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterSprint;
-import com.zavk1n.bqol.features.CustomHealth;
+import com.zavk1n.bqol.features.BetterHealth;
 
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.Entity;
@@ -22,6 +22,6 @@ public class GLOBALAttackEntityMixin {
         }
 
         BetterSprint.onAttack(victim);
-        CustomHealth.onAttack(victim);
+        BetterHealth.onAttack(victim);
     }
 }
