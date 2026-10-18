@@ -1,6 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.features.BetterSprint;
+import com.zavk1n.bqol.features.BetterMovement;
 import com.zavk1n.bqol.features.BetterHealth;
 
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -25,7 +25,7 @@ public class GLOBALDamageEntityMixin {
         float currentHealth = player.getHealth() + player.getAbsorptionAmount();
 
         if (bqol$lastHealth >= 0.0F && currentHealth < bqol$lastHealth) {
-            BetterSprint.onDamaged();
+            BetterMovement.onDamaged();
             BetterHealth.onDamaged();
         }
 

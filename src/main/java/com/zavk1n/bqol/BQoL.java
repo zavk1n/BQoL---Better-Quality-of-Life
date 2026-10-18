@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 public class BQoL implements ModInitializer {
     public static final String MOD_NAME = "BQoL";
-    public static final String MOD_VERSION = "1.0.0";
+    public static final String MOD_VERSION = "1.0.9";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(BQoL.class);
 

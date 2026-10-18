@@ -28,22 +28,24 @@ public final class KeybindManager {
 
     private static final BQoLConfig config = BQoLConfig.getInstance();
 
-    private static final String BETTER_SPRINT_TOGGLE = "1_better_sprint_toggle";
+    private static final String BETTER_MOVEMENT_TOGGLE = "1_better_movement_toggle";
     private static final String BETTER_RCT_TOGGLE = "2_better_rct_toggle";
     private static final String BETTER_SOUNDS_TOGGLE = "3_better_sounds_toggle";
     private static final String BETTER_INTERACT_TOGGLE = "4_better_interact_toggle";
-    private static final String BETTER_TNT_TOGGLE = "5_better_tnt_toggle";
-    private static final String BETTER_TP_TOGGLE = "6_better_tp_toggle";
-    private static final String BETTER_RRLS_TOGGLE = "7_better_rrls_toggle";
-    private static final String BETTER_PREFIXES_TOGGLE = "8_better_prefixes_toggle";
-    private static final String BETTER_HOLOGRAMS_TOGGLE = "9_better_holograms_toggle";
-    private static final String BETTER_SPHERES_TOGGLE = "10_better_spheres_toggle";
-    private static final String BETTER_SKY_TOGGLE = "11_better_sky_toggle";
-    private static final String SHULKER_PARTICLES_TOGGLE = "12_shulker_particles_toggle";
-    private static final String BETTER_FOG_TOGGLE = "13_better_fog_toggle";
-    private static final String BETTER_HEALTH_TOGGLE = "14_better_health_toggle";
-    private static final String NO_RENDER_TOGGLE = "15_no_render_toggle";
-    private static final String BETTER_MINE_TOGGLE = "16_better_mine_toggle";
+    private static final String BETTER_HURT_CAM_TOGGLE = "5_better_interact_toggle";
+    private static final String BETTER_THIRD_PERSON_TOGGLE = "6_better_interact_toggle";
+    private static final String BETTER_TNT_TOGGLE = "7_better_tnt_toggle";
+    private static final String BETTER_TP_TOGGLE = "8_better_tp_toggle";
+    private static final String BETTER_RRLS_TOGGLE = "9_better_rrls_toggle";
+    private static final String BETTER_PREFIXES_TOGGLE = "10_better_prefixes_toggle";
+    private static final String BETTER_HOLOGRAMS_TOGGLE = "11_better_holograms_toggle";
+    private static final String BETTER_SPHERES_TOGGLE = "12_better_spheres_toggle";
+    private static final String BETTER_SKY_TOGGLE = "13_better_sky_toggle";
+    private static final String BETTER_PARTICLES_TOGGLE = "14_better_particles_toggle";
+    private static final String BETTER_FOG_TOGGLE = "15_better_fog_toggle";
+    private static final String BETTER_HEALTH_TOGGLE = "16_better_health_toggle";
+    private static final String NO_RENDER_TOGGLE = "17_no_render_toggle";
+    private static final String BETTER_MINE_TOGGLE = "18_better_mine_toggle";
 
     private static final long TOGGLE_COOLDOWN = 200L;
 
@@ -59,10 +61,12 @@ public final class KeybindManager {
         registerKeybinding(menu, GLFW.GLFW_KEY_RIGHT_SHIFT);
 
         String[] toggles = {
-            BETTER_SPRINT_TOGGLE,
+            BETTER_MOVEMENT_TOGGLE,
             BETTER_RCT_TOGGLE,
             BETTER_SOUNDS_TOGGLE,
             BETTER_INTERACT_TOGGLE,
+            BETTER_HURT_CAM_TOGGLE,
+            BETTER_THIRD_PERSON_TOGGLE,
             BETTER_TNT_TOGGLE,
             BETTER_TP_TOGGLE,
             BETTER_RRLS_TOGGLE,
@@ -70,7 +74,7 @@ public final class KeybindManager {
             BETTER_HOLOGRAMS_TOGGLE,
             BETTER_SPHERES_TOGGLE,
             BETTER_SKY_TOGGLE,
-            SHULKER_PARTICLES_TOGGLE,
+            BETTER_PARTICLES_TOGGLE,
             BETTER_FOG_TOGGLE,
             BETTER_HEALTH_TOGGLE,
             NO_RENDER_TOGGLE,
@@ -148,7 +152,7 @@ public final class KeybindManager {
         switch (keyName) {
             case menu -> openConfigScreen(client);
 
-            case BETTER_SPRINT_TOGGLE -> {
+            case BETTER_MOVEMENT_TOGGLE -> {
                 if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
                     return;
                 }
@@ -156,10 +160,10 @@ public final class KeybindManager {
                 toggleTime = currentTime;
 
                 toggleFeature(
-                    !config.isBetterSprintEnabled(),
-                    BetterSprint::setEnabled,
-                    config::setBetterSprintEnabled,
-                    NotificationManager::showBetterSprintNotification
+                    !config.isBetterMovementEnabled(),
+                    BetterMovement::setEnabled,
+                    config::setBetterMovementEnabled,
+                    NotificationManager::showBetterMovementNotification
                 );
             }
 
@@ -205,6 +209,36 @@ public final class KeybindManager {
                     BetterInteract::setEnabled,
                     config::setBetterInteractEnabled,
                     NotificationManager::showBetterInteractNotification
+                );
+            }
+
+            case BETTER_HURT_CAM_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
+                toggleFeature(
+                    !config.isBetterHurtCamEnabled(),
+                    BetterHurtCam::setEnabled,
+                    config::setBetterHurtCamEnabled,
+                    NotificationManager::showBetterHurtCamNotification
+                );
+            }
+
+            case BETTER_THIRD_PERSON_TOGGLE -> {
+                if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
+                    return;
+                }
+
+                toggleTime = currentTime;
+
+                toggleFeature(
+                    !config.isBetterThirdPersonEnabled(),
+                    BetterThirdPerson::setEnabled,
+                    config::setBetterThirdPersonEnabled,
+                    NotificationManager::showBetterThirdPersonNotification
                 );
             }
 
@@ -313,7 +347,7 @@ public final class KeybindManager {
                 );
             }
 
-            case SHULKER_PARTICLES_TOGGLE -> {
+            case BETTER_PARTICLES_TOGGLE -> {
                 if (currentTime - toggleTime < TOGGLE_COOLDOWN) {
                     return;
                 }
@@ -324,7 +358,7 @@ public final class KeybindManager {
                     !config.isBetterParticlesEnabled(),
                     BetterParticles::setEnabled,
                     config::setBetterParticlesEnabled,
-                    NotificationManager::showShulkerParticlesNotification
+                    NotificationManager::showBetterParticlesNotification
                 );
             }
 
@@ -422,10 +456,12 @@ public final class KeybindManager {
     public static KeyBinding getFeatureKeyBinding(String featureId) {
         return switch (featureId) {
 
-            case "better_sprint" -> keybindings.get(BETTER_SPRINT_TOGGLE);
+            case "better_movement" -> keybindings.get(BETTER_MOVEMENT_TOGGLE);
             case "better_rct" -> keybindings.get(BETTER_RCT_TOGGLE);
             case "better_sounds" -> keybindings.get(BETTER_SOUNDS_TOGGLE);
             case "better_interact" -> keybindings.get(BETTER_INTERACT_TOGGLE);
+            case "better_hurt_cam" -> keybindings.get(BETTER_HURT_CAM_TOGGLE);
+            case "better_third_person" -> keybindings.get(BETTER_THIRD_PERSON_TOGGLE);
             case "better_tnt" -> keybindings.get(BETTER_TNT_TOGGLE);
             case "better_tp" -> keybindings.get(BETTER_TP_TOGGLE);
             case "better_rrls" -> keybindings.get(BETTER_RRLS_TOGGLE);
@@ -433,7 +469,7 @@ public final class KeybindManager {
             case "better_holograms" -> keybindings.get(BETTER_HOLOGRAMS_TOGGLE);
             case "better_spheres" -> keybindings.get(BETTER_SPHERES_TOGGLE);
             case "better_sky" -> keybindings.get(BETTER_SKY_TOGGLE);
-            case "shulker_particles" -> keybindings.get(SHULKER_PARTICLES_TOGGLE);
+            case "better_particles" -> keybindings.get(BETTER_PARTICLES_TOGGLE);
             case "better_fog" -> keybindings.get(BETTER_FOG_TOGGLE);
             case "better_health" -> keybindings.get(BETTER_HEALTH_TOGGLE);
             case "no_render" -> keybindings.get(NO_RENDER_TOGGLE);

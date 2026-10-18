@@ -33,14 +33,14 @@ public final class LiteApiManager {
     private static final Set<String> manuallyBlockedFeatures = ConcurrentHashMap.newKeySet();
 
     private static final List<String> FEATURES = List.of(
-            /// Better Sprint
-            "better_sprint",
+            /// Better Movement
+            "better_movement",
 
-            "better_sprint_default",
-            "better_sprint_pvp",
-            "better_sprint_stair_up",
-            "better_sprint_water_sprint",
-            "better_sprint_scaffold",
+            "better_movement_default",
+            "better_movement_pvp",
+            "better_movement_stair_up",
+            "better_movement_water_sprint",
+            "better_movement_scaffold",
 
             /// BetterRCT
             "better_rct",
@@ -58,6 +58,12 @@ public final class LiteApiManager {
             "better_interact_auto_signs",
             "better_interact_anti_signs",
             "better_interact_safe_harvest",
+
+            /// Better Hurt Cam
+            "better_hurt_cam",
+
+            /// Better Third Person
+            "better_third_person",
 
             /// Better Tnt
             "better_tnt",
@@ -322,16 +328,16 @@ public final class LiteApiManager {
         BQoLConfig config = BQoLConfig.getInstance();
         MinecraftClient client = MinecraftClient.getInstance();
 
-        /// Better Sprint
-        if (isFeatureBlocked("better_sprint")) config.setBetterSprintEnabled(false);
+        /// Better Movement
+        if (isFeatureBlocked("better_movement")) config.setBetterMovementEnabled(false);
 
-        if (isFeatureBlocked("better_sprint_default")) config.setBetterSprintDefaultMode(false);
-        if (isFeatureBlocked("better_sprint_pvp")) config.setBetterSprintPvPMode(false);
-        if (isFeatureBlocked("better_sprint_stair_up")) config.setBetterSprintStairUp(false);
-        if (isFeatureBlocked("better_sprint_water_sprint")) config.setBetterSprintWaterSprint(false);
-        if (isFeatureBlocked("better_sprint_scaffold")) config.setBetterSprintScaffold(false);
+        if (isFeatureBlocked("better_movement_default")) config.setBetterMovementDefaultMode(false);
+        if (isFeatureBlocked("better_movement_pvp")) config.setBetterMovementPvPMode(false);
+        if (isFeatureBlocked("better_movement_stair_up")) config.setBetterMovementStairUp(false);
+        if (isFeatureBlocked("better_movement_water_sprint")) config.setBetterMovementWaterSprint(false);
+        if (isFeatureBlocked("better_movement_scaffold")) config.setBetterMovementScaffold(false);
 
-        BetterSprint.refreshBlockedStatus();
+        BetterMovement.refreshBlockedStatus();
 
         /// Better RCT
         if (isFeatureBlocked("better_rct")) config.setBetterRCTEnabled(false);
@@ -355,6 +361,16 @@ public final class LiteApiManager {
         if (isFeatureBlocked("better_interact_safe_harvest")) config.setBetterInteractSafeHarvest(false);
 
         BetterInteract.refreshBlockedStatus();
+
+        /// Better Hurt Cam
+        if (isFeatureBlocked("better_hurt_cam")) config.setBetterHurtCamEnabled(false);
+
+        BetterHurtCam.refreshBlockedStatus();
+
+        /// Better Third Person
+        if (isFeatureBlocked("better_third_person")) config.setBetterThirdPersonEnabled(false);
+
+        BetterThirdPerson.refreshBlockedStatus();
 
         /// Better Tnt
         if (isFeatureBlocked("better_tnt")) config.setBetterTntEnabled(false);

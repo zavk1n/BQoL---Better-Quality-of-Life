@@ -20,14 +20,14 @@ public class BQoLConfig {
     public boolean debug = false;
     public int pvpTimerDuration = 30000;
 
-    /// Better Sprint
-    public boolean betterSprintEnabled = false;
+    /// Better Movement
+    public boolean betterMovementEnabled = false;
 
-    public boolean betterSprintDefaultMode = false;
-    public boolean betterSprintPvPMode = false;
-    public boolean betterSprintStairUp = false;
-    public boolean betterSprintWaterSprint = false;
-    public boolean betterSprintScaffold = false;
+    public boolean betterMovementDefaultMode = false;
+    public boolean betterMovementPvPMode = false;
+    public boolean betterMovementStairUp = false;
+    public boolean betterMovementWaterSprint = false;
+    public boolean betterMovementScaffold = false;
 
     /// Better RCT
     public boolean betterRCTEnabled = false;
@@ -78,6 +78,12 @@ public class BQoLConfig {
     public boolean betterInteractAutoSigns = false;
     public String betterInteractAutoSignsText = "";
     public boolean betterInteractSafeHarvest = false;
+
+    /// Better Hurt Cam
+    public boolean betterHurtCamEnabled = false;
+
+    /// Better Third Person
+    public boolean betterThirdPersonEnabled = false;
 
     /// Better Tnt
     public boolean betterTntEnabled = false;
@@ -434,37 +440,37 @@ public class BQoLConfig {
             betterHealthGoldenHeartsPlus = false;
         }
 
-        if (betterSprintDefaultMode && betterSprintPvPMode) {
-            betterSprintPvPMode = false;
+        if (betterMovementDefaultMode && betterMovementPvPMode) {
+            betterMovementPvPMode = false;
         }
     }
 
     /// BetterSprint
-    public boolean isBetterSprintEnabled() { return betterSprintEnabled; }
-    public void setBetterSprintEnabled(boolean enabled) { this.betterSprintEnabled = enabled; save(); }
+    public boolean isBetterMovementEnabled() { return betterMovementEnabled; }
+    public void setBetterMovementEnabled(boolean enabled) { this.betterMovementEnabled = enabled; save(); }
 
-    public boolean isBetterSprintDefaultMode() { return betterSprintDefaultMode; }
-    public void setBetterSprintDefaultMode(boolean enabled) {
-        this.betterSprintDefaultMode = enabled;
+    public boolean isBetterMovementDefaultMode() { return betterMovementDefaultMode; }
+    public void setBetterMovementDefaultMode(boolean enabled) {
+        this.betterMovementDefaultMode = enabled;
         if (enabled) {
-            this.betterSprintPvPMode = false;
+            this.betterMovementPvPMode = false;
         }
         save();
     }
-    public boolean isBetterSprintPvPMode() { return betterSprintPvPMode; }
-    public void setBetterSprintPvPMode(boolean enabled) {
-        this.betterSprintPvPMode = enabled;
+    public boolean isBetterMovementPvPMode() { return betterMovementPvPMode; }
+    public void setBetterMovementPvPMode(boolean enabled) {
+        this.betterMovementPvPMode = enabled;
         if (enabled) {
-            this.betterSprintDefaultMode = false;
+            this.betterMovementDefaultMode = false;
         }
         save();
     }
-    public boolean isBetterSprintStairUp() { return betterSprintStairUp; }
-    public void setBetterSprintStairUp(boolean enabled) { this.betterSprintStairUp = enabled; save(); }
-    public boolean isBetterSprintWaterSprint() { return betterSprintWaterSprint; }
-    public void setBetterSprintWaterSprint(boolean enabled) { this.betterSprintWaterSprint = enabled; save(); }
-    public boolean isBetterSprintScaffold() { return betterSprintScaffold; }
-    public void setBetterSprintScaffold(boolean enabled) { this.betterSprintScaffold = enabled; save(); }
+    public boolean isBetterMovementStairUp() { return betterMovementStairUp; }
+    public void setBetterMovementStairUp(boolean enabled) { this.betterMovementStairUp = enabled; save(); }
+    public boolean isBetterMovementWaterSprint() { return betterMovementWaterSprint; }
+    public void setBetterMovementWaterSprint(boolean enabled) { this.betterMovementWaterSprint = enabled; save(); }
+    public boolean isBetterMovementScaffold() { return betterMovementScaffold; }
+    public void setBetterMovementScaffold(boolean enabled) { this.betterMovementScaffold = enabled; save(); }
 
     /// Better RCT
     public boolean isBetterRCTEnabled() { return betterRCTEnabled; }
@@ -557,6 +563,14 @@ public class BQoLConfig {
     public void setBetterInteractAntiSigns(boolean enabled) { this.betterInteractAntiSigns = enabled; save(); }
     public boolean isBetterInteractSafeHarvest() { return betterInteractSafeHarvest; }
     public void setBetterInteractSafeHarvest(boolean enabled) { this.betterInteractSafeHarvest = enabled; save(); }
+
+    /// Better Hurt Cam
+    public boolean isBetterHurtCamEnabled() { return betterHurtCamEnabled; }
+    public void setBetterHurtCamEnabled(boolean enabled) { this.betterHurtCamEnabled = enabled; save(); }
+
+    /// Better Third Person
+    public boolean isBetterThirdPersonEnabled() { return betterThirdPersonEnabled; }
+    public void setBetterThirdPersonEnabled(boolean enabled) { this.betterThirdPersonEnabled = enabled; save(); }
 
     /// Better Tnt
     public boolean isBetterTntEnabled() { return betterTntEnabled; }
@@ -913,13 +927,13 @@ public class BQoLConfig {
         this.pvpTimerDuration = defaults.pvpTimerDuration;
 
         /// BetterSprint
-        this.betterSprintEnabled = defaults.betterSprintEnabled;
+        this.betterMovementEnabled = defaults.betterMovementEnabled;
 
-        this.betterSprintDefaultMode = defaults.betterSprintDefaultMode;
-        this.betterSprintPvPMode = defaults.betterSprintPvPMode;
-        this.betterSprintStairUp = defaults.betterSprintStairUp;
-        this.betterSprintWaterSprint = defaults.betterSprintWaterSprint;
-        this.betterSprintScaffold = defaults.betterSprintScaffold;
+        this.betterMovementDefaultMode = defaults.betterMovementDefaultMode;
+        this.betterMovementPvPMode = defaults.betterMovementPvPMode;
+        this.betterMovementStairUp = defaults.betterMovementStairUp;
+        this.betterMovementWaterSprint = defaults.betterMovementWaterSprint;
+        this.betterMovementScaffold = defaults.betterMovementScaffold;
 
         /// BetterRCT
         this.betterRCTEnabled = defaults.betterRCTEnabled;
@@ -970,6 +984,12 @@ public class BQoLConfig {
         this.betterInteractAutoSigns = defaults.betterInteractAutoSigns;
         this.betterInteractAutoSignsText = defaults.betterInteractAutoSignsText;
         this.betterInteractSafeHarvest = defaults.betterInteractSafeHarvest;
+
+        /// Better Hurt Cam
+        this.betterHurtCamEnabled = defaults.betterHurtCamEnabled;
+
+        /// Better Third Person
+        this.betterThirdPersonEnabled = defaults.betterThirdPersonEnabled;
 
         /// Better Tnt
         this.betterTntEnabled = defaults.betterTntEnabled;

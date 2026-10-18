@@ -146,8 +146,8 @@ public final class NotificationManager {
         showNotification(featureName, message);
     }
 
-    public static void showBetterSprintNotification(boolean enabled) {
-        showFeatureNotification("Better Sprint", enabled);
+    public static void showBetterMovementNotification(boolean enabled) {
+        showFeatureNotification("Better Movement", enabled);
     }
 
     public static void showBetterRCTNotification(boolean enabled) {
@@ -160,6 +160,14 @@ public final class NotificationManager {
 
     public static void showBetterInteractNotification(boolean enabled) {
         showFeatureNotification("Better Interact", enabled);
+    }
+
+    public static void showBetterHurtCamNotification(boolean enabled) {
+        showFeatureNotification("Better Hurt Cam", enabled);
+    }
+
+    public static void showBetterThirdPersonNotification(boolean enabled) {
+        showFeatureNotification("Better Third Person", enabled);
     }
 
     public static void showBetterTntNotification(boolean enabled) {
@@ -188,8 +196,8 @@ public final class NotificationManager {
         showFeatureNotification("Better Sky", enabled);
     }
 
-    public static void showShulkerParticlesNotification(boolean enabled) {
-        showFeatureNotification("Shulker Particles", enabled);
+    public static void showBetterParticlesNotification(boolean enabled) {
+        showFeatureNotification("Better Particles", enabled);
     }
 
     public static void showBetterFogNotification(boolean enabled) {

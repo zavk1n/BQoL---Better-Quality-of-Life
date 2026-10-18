@@ -177,10 +177,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
     private void createFeaturePanels() {
         featurePanels.add(new FeaturePanel(
-                "Better Sprint",
-                "Advanced Auto-sprint.",
-                "better_sprint",
-                config.isBetterSprintEnabled(),
+                "Better Movement",
+                "Advanced Movement modes.",
+                "better_movement",
+                config.isBetterMovementEnabled(),
                 getTextColumnX(),
                 PANEL_START_Y,
                 true
@@ -217,6 +217,28 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 getTextColumnX(),
                 PANEL_START_Y,
                 true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better Hurt Cam",
+                "Disables camera shakng.",
+                "better_hurt_cam",
+                config.isBetterHurtCamEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                false
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better Third Person",
+                "Improved third-person camera.",
+                "better_third_person",
+                config.isBetterThirdPersonEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                false
             )
         );
 
@@ -477,7 +499,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
         }
 
         switch (panel.configKey) {
-            case "better_sprint" -> client.setScreen(new SprintConfigScreen(this));
+            case "better_movement" -> client.setScreen(new MovementConfigScreen(this));
             case "better_rct" -> client.setScreen(new RCTConfigScreen(this));
             case "better_sounds" -> client.setScreen(new SoundsConfigScreen(this));
             case "better_interact" -> client.setScreen(new InteractConfigScreen(this));
@@ -498,10 +520,12 @@ public class BQoLConfigScreen extends MainConfigScreen {
     private boolean isModuleBlocked(String configKey) {
         String liteId = switch (configKey) {
 
-            case "better_sprint" -> "better_sprint";
+            case "better_movement" -> "better_movement";
             case "better_rct" -> "better_rct";
             case "better_sounds" -> "better_sounds";
             case "better_interact" -> "better_interact";
+            case "better_hurt_cam" -> "better_hurt_cam";
+            case "better_third_person" -> "better_third_person";
             case "better_tnt" -> "better_tnt";
             case "better_tp" -> "better_tp";
             case "better_rrls" -> "better_rrls";
@@ -559,10 +583,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
     private void toggleFeature(FeaturePanel panel) {
         switch (panel.configKey) {
 
-            case "better_sprint" -> {
+            case "better_movement" -> {
                 panel.enabled = !panel.enabled;
-                config.setBetterSprintEnabled(panel.enabled);
-                BetterSprint.setEnabled(panel.enabled);
+                config.setBetterMovementEnabled(panel.enabled);
+                BetterMovement.setEnabled(panel.enabled);
             }
 
             case "better_rct" -> {
@@ -581,6 +605,18 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 panel.enabled = !panel.enabled;
                 config.setBetterInteractEnabled(panel.enabled);
                 BetterInteract.setEnabled(panel.enabled);
+            }
+
+            case "better_hurt_cam" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterHurtCamEnabled(panel.enabled);
+                BetterHurtCam.setEnabled(panel.enabled);
+            }
+
+            case "better_third_person" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterThirdPersonEnabled(panel.enabled);
+                BetterThirdPerson.setEnabled(panel.enabled);
             }
 
             case "better_tnt" -> {

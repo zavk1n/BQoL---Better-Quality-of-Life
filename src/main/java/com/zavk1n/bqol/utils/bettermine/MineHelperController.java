@@ -290,18 +290,30 @@ public class MineHelperController {
         int rarityScore = mine.rarity().getScore();
         double timeScore = getTimeScore(timeSeconds);
 
-        double scoreMultiplier;
+        double timeMultiplier;
 
         if (timeSeconds < 15) {
-            scoreMultiplier = 1.0D / 3.0D;
+            timeMultiplier = 1.0D / 3.0D;
         } else if (timeSeconds < 30) {
-            scoreMultiplier = 1.0D / 2.0D;
+            timeMultiplier = 1.0D / 2.0D;
         } else {
-            scoreMultiplier = 1.0D;
+            timeMultiplier = 1.0D;
         }
 
-        competitionScore *= scoreMultiplier;
-        rarityScore = (int) Math.round(rarityScore * scoreMultiplier);
+        double fillMultiplier;
+
+        if (filledPercent < 20.0D) {
+            fillMultiplier = 1.0D / 3.0D;
+        } else if (filledPercent < 50.0D) {
+            fillMultiplier = 1.0D / 2.0D;
+        } else {
+            fillMultiplier = 1.0D;
+        }
+
+        double finalMultiplier = timeMultiplier * fillMultiplier;
+
+        competitionScore *= finalMultiplier;
+        rarityScore = (int) Math.round(rarityScore * finalMultiplier);
 
         double score = competitionScore + filledScore + rarityScore + timeScore;
 

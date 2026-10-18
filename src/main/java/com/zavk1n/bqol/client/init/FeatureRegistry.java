@@ -8,10 +8,10 @@ import net.fabricmc.api.Environment;
 @Environment(EnvType.CLIENT)
 public enum FeatureRegistry {
 
-    BETTER_SPRINT(
-        BetterSprint::initialize,
-        BetterSprint::update,
-        BetterSprint::refreshBlockedStatus
+    BETTER_MOVEMENT(
+        BetterMovement::initialize,
+        BetterMovement::update,
+        BetterMovement::refreshBlockedStatus
     ),
     BETTER_RCT(
         BetterRCT::initialize,
@@ -27,6 +27,16 @@ public enum FeatureRegistry {
         BetterInteract::initialize,
         () -> {},
         BetterInteract::refreshBlockedStatus
+    ),
+    BETTER_HURT_CAM(
+        BetterHurtCam::initialize,
+        () -> {},
+        BetterHurtCam::refreshBlockedStatus
+    ),
+    BETTER_THIRD_PERSON(
+        BetterThirdPerson::initialize,
+        () -> {},
+        BetterThirdPerson::refreshBlockedStatus
     ),
     BETTER_TNT(
         BetterTnt::initialize,
