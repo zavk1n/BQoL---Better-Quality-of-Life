@@ -32,8 +32,8 @@ public final class KeybindManager {
     private static final String BETTER_RCT_TOGGLE = "2_better_rct_toggle";
     private static final String BETTER_SOUNDS_TOGGLE = "3_better_sounds_toggle";
     private static final String BETTER_INTERACT_TOGGLE = "4_better_interact_toggle";
-    private static final String BETTER_HURT_CAM_TOGGLE = "5_better_interact_toggle";
-    private static final String BETTER_THIRD_PERSON_TOGGLE = "6_better_interact_toggle";
+    private static final String BETTER_HURT_CAM_TOGGLE = "5_better_hurt_cam_toggle";
+    private static final String BETTER_THIRD_PERSON_TOGGLE = "6_better_third_person_toggle";
     private static final String BETTER_TNT_TOGGLE = "7_better_tnt_toggle";
     private static final String BETTER_CHAT_TOGGLE = "8_better_chat_toggle";
     private static final String BETTER_TP_TOGGLE = "9_better_tp_toggle";
@@ -48,7 +48,7 @@ public final class KeybindManager {
     private static final String BETTER_HEALTH_TOGGLE = "18_better_health_toggle";
     private static final String NO_RENDER_TOGGLE = "19_no_render_toggle";
     private static final String BETTER_MINE_TOGGLE = "20_better_mine_toggle";
-    private static final String BETTER_HIT_COUNTER_TOGGLE = "21_better_mine_toggle";
+    private static final String BETTER_HIT_COUNTER_TOGGLE = "21_better_hit_counter_toggle";
 
     private static final long TOGGLE_COOLDOWN = 200L;
 
