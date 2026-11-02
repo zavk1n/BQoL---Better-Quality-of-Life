@@ -63,7 +63,18 @@
     "HURTCAMGameRenderer",
     "THIRDPERSONCamera",
     "THIRDPERSONCameraSmooth",
-    "THIRDPERSONPlayer"
+    "THIRDPERSONPlayer",
+    "HITCOUNTERAttackDetect",
+    "CHATHud",
+    "CHATScreen",
+    "CHATAnimation",
+    "CHATHeads",
+    "CHATPing",
+    "CHATTransliteration",
+    "CHATStackMessages",
+    "TOTEMCounter",
+    "TOTEMCounterHud",
+    "TOTEMCounterName"
   ],
   "client": [],
   "injectors": {

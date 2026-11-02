@@ -3,15 +3,39 @@ package com.zavk1n.bqol.mixin;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zavk1n.bqol.features.BetterTnt;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.PlantBlock;
+import net.minecraft.block.TallPlantBlock;
+import net.minecraft.block.FlowerBlock;
+import net.minecraft.block.SeagrassBlock;
+import net.minecraft.block.TallSeagrassBlock;
+import net.minecraft.block.KelpBlock;
+import net.minecraft.block.KelpPlantBlock;
+import net.minecraft.block.LadderBlock;
+import net.minecraft.block.CarpetBlock;
+import net.minecraft.block.PressurePlateBlock;
+
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BufferRenderer;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+
 import net.minecraft.entity.TntEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 
 import org.joml.Matrix4f;
 
@@ -21,25 +45,61 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Mixin(WorldRenderer.class)
 public abstract class TNTExplosionAreaRenderer {
 
-    @Unique private static final float RED = 1.0F;
-    @Unique private static final float GREEN = 0.0F;
-    @Unique private static final float BLUE = 0.0F;
+    @Unique
+    private static final float BQOL_RED = 1.0F;
 
-    @Unique private static final float FILL_ALPHA = 0.08F;
+    @Unique
+    private static final float BQOL_GREEN = 0.0F;
 
-    @Unique private static final double SURFACE_OFFSET = 0.002D;
+    @Unique
+    private static final float BQOL_BLUE = 0.0F;
 
-    @Unique private static final int MAX_NORMAL_TNT_IN_NEARBY_CHUNKS = 100;
-    @Unique private static final int MAX_TNT_A_IN_NEARBY_CHUNKS = 20;
-    @Unique private static final int MAX_TNT_B_IN_NEARBY_CHUNKS = 8;
-    @Unique private static final int MAX_TNT_B2_IN_NEARBY_CHUNKS = 8;
+    @Unique
+    private static final float BQOL_FILL_ALPHA = 0.08F;
 
-    @Unique private static final int CHUNK_CHECK_RADIUS = 1;
+    @Unique
+    private static final double BQOL_SURFACE_OFFSET = 0.002D;
+
+    @Unique
+    private static final int BQOL_MAX_NORMAL_TNT = 100;
+
+    @Unique
+    private static final int BQOL_MAX_TNT_A = 20;
+
+    @Unique
+    private static final int BQOL_MAX_TNT_B = 8;
+
+    @Unique
+    private static final int BQOL_MAX_TNT_B2 = 8;
+
+    @Unique
+    private static final int BQOL_CHUNK_CHECK_RADIUS = 1;
+
+    @Unique
+    private static World bqol$cachedWorld;
+
+    @Unique
+    private static long bqol$cachedWorldTime = Long.MIN_VALUE;
+
+    @Unique
+    private static ChunkPos bqol$cachedChunk;
+
+    @Unique
+    private static Set<BlockPos> bqol$cachedBlocks = Collections.emptySet();
+
+    @Unique
+    private static final BlockPos.Mutable BQOL_NEIGHBOR =
+        new BlockPos.Mutable();
 
     @Inject(method = "render", at = @At("TAIL"))
     private void bqol$renderExplosionArea(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
@@ -51,35 +111,9 @@ public abstract class TNTExplosionAreaRenderer {
             return;
         }
 
-        List<TntEntity> nearbyTnts = getNearbyTnts(mc);
+        Set<BlockPos> blocks = bqol$getCachedBlocks(mc);
 
-        if (nearbyTnts.isEmpty()) {
-            return;
-        }
-
-        Map<BetterTnt.TntType, Integer> renderedCounts = new EnumMap<>(BetterTnt.TntType.class);
-
-        Set<BlockPos> blocksToRender = new HashSet<>();
-
-        for (TntEntity tnt : nearbyTnts) {
-            BetterTnt.TntType type = BetterTnt.getTntType(tnt);
-
-            if (type == null) {
-                continue;
-            }
-
-            int rendered = renderedCounts.getOrDefault(type, 0);
-
-            if (rendered >= getMaxTntForType(type)) {
-                continue;
-            }
-
-            renderedCounts.put(type, rendered + 1);
-
-            collectBlocksInExplosionRadius(blocksToRender, tnt);
-        }
-
-        if (blocksToRender.isEmpty()) {
+        if (blocks.isEmpty()) {
             return;
         }
 
@@ -104,8 +138,8 @@ public abstract class TNTExplosionAreaRenderer {
         try {
             Matrix4f matrix = matrices.peek().getPositionMatrix();
 
-            for (BlockPos pos : blocksToRender) {
-                renderBlockFaces(matrix, buffer, pos, blocksToRender, cameraX, cameraY, cameraZ);
+            for (BlockPos pos : blocks) {
+                bqol$renderBlockFaces(matrix, buffer, pos, blocks, cameraX, cameraY, cameraZ);
             }
 
             BufferRenderer.drawWithGlobalProgram(buffer.end());
@@ -120,36 +154,107 @@ public abstract class TNTExplosionAreaRenderer {
     }
 
     @Unique
-    private static List<TntEntity> getNearbyTnts(MinecraftClient mc) {
+    private static Set<BlockPos> bqol$getCachedBlocks(MinecraftClient mc) {
+        World world = mc.world;
+
+        if (world == null || mc.player == null) {
+            bqol$invalidateCache();
+            return Collections.emptySet();
+        }
+
+        long worldTime = world.getTime();
+        ChunkPos playerChunk = mc.player.getChunkPos();
+
+        boolean cacheInvalid = bqol$cachedWorld != world
+            || bqol$cachedWorldTime != worldTime
+            || bqol$cachedChunk == null
+            || !bqol$cachedChunk.equals(playerChunk);
+
+        if (!cacheInvalid) {
+            return bqol$cachedBlocks;
+        }
+
+        bqol$cachedWorld = world;
+        bqol$cachedWorldTime = worldTime;
+        bqol$cachedChunk = playerChunk;
+
+        bqol$cachedBlocks = bqol$calculateExplosionBlocks(mc);
+
+        return bqol$cachedBlocks;
+    }
+
+    @Unique
+    private static void bqol$invalidateCache() {
+        bqol$cachedWorld = null;
+        bqol$cachedWorldTime = Long.MIN_VALUE;
+        bqol$cachedChunk = null;
+        bqol$cachedBlocks = Collections.emptySet();
+    }
+
+    @Unique
+    private static Set<BlockPos> bqol$calculateExplosionBlocks(MinecraftClient mc) {
+        List<TntEntity> nearbyTnts = bqol$getNearbyTnts(mc);
+
+        if (nearbyTnts.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Map<BetterTnt.TntType, Integer> counts = new EnumMap<>(BetterTnt.TntType.class);
+
+        Set<BlockPos> blocks = new HashSet<>();
+
+        for (TntEntity tnt : nearbyTnts) {
+            BetterTnt.TntType type = BetterTnt.getTntType(tnt);
+
+            if (type == null) {
+                continue;
+            }
+
+            int count = counts.getOrDefault(type, 0);
+
+            if (count >= bqol$getMaxTntForType(type)) {
+                continue;
+            }
+
+            counts.put(type, count + 1);
+
+            bqol$collectBlocksInExplosionRadius(blocks, tnt);
+        }
+
+        return blocks.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(blocks);
+    }
+
+    @Unique
+    private static List<TntEntity> bqol$getNearbyTnts(MinecraftClient mc) {
         if (mc.world == null || mc.player == null) {
             return Collections.emptyList();
         }
 
         ChunkPos chunk = mc.player.getChunkPos();
 
-        int minX = (chunk.x - CHUNK_CHECK_RADIUS) << 4;
-        int minZ = (chunk.z - CHUNK_CHECK_RADIUS) << 4;
+        int minX = (chunk.x - BQOL_CHUNK_CHECK_RADIUS) << 4;
+        int minZ = (chunk.z - BQOL_CHUNK_CHECK_RADIUS) << 4;
 
-        int maxX = (chunk.x + CHUNK_CHECK_RADIUS + 1) << 4;
-        int maxZ = (chunk.z + CHUNK_CHECK_RADIUS + 1) << 4;
+        int maxX = (chunk.x + BQOL_CHUNK_CHECK_RADIUS + 1) << 4;
+        int maxZ = (chunk.z + BQOL_CHUNK_CHECK_RADIUS + 1) << 4;
 
-        Box box = new Box(minX, mc.world.getBottomY(), minZ, maxX, mc.world.getTopY(), maxZ);
+        Box searchBox = new Box(minX, mc.world.getBottomY(), minZ, maxX, mc.world.getTopY(), maxZ);
 
-        return mc.world.getEntitiesByClass(TntEntity.class, box, entity -> entity.isAlive() && entity.getFuse() > 0);
+        return mc.world.getEntitiesByClass(TntEntity.class, searchBox, entity -> entity.isAlive() && entity.getFuse() > 0);
     }
 
     @Unique
-    private static int getMaxTntForType(BetterTnt.TntType type) {
+    private static int bqol$getMaxTntForType(BetterTnt.TntType type) {
         return switch (type) {
-            case A -> MAX_TNT_A_IN_NEARBY_CHUNKS;
-            case B -> MAX_TNT_B_IN_NEARBY_CHUNKS;
-            case B2 -> MAX_TNT_B2_IN_NEARBY_CHUNKS;
-            case NORMAL, C4, ICE_WAVE, EXPLOSIVE_WAVE -> MAX_NORMAL_TNT_IN_NEARBY_CHUNKS;
+            case A -> BQOL_MAX_TNT_A;
+            case B -> BQOL_MAX_TNT_B;
+            case B2 -> BQOL_MAX_TNT_B2;
+            case NORMAL, C4, ICE_WAVE, EXPLOSIVE_WAVE -> BQOL_MAX_NORMAL_TNT;
         };
     }
 
     @Unique
-    private static void collectBlocksInExplosionRadius(Set<BlockPos> blocks, TntEntity tnt) {
+    private static void bqol$collectBlocksInExplosionRadius(Set<BlockPos> blocks, TntEntity tnt) {
         MinecraftClient mc = MinecraftClient.getInstance();
 
         if (mc.world == null) {
@@ -180,14 +285,25 @@ public abstract class TNTExplosionAreaRenderer {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
 
         for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                for (int z = minZ; z <= maxZ; z++) {
+            double dx = x + 0.5D - cx;
+            double dxSquared = dx * dx;
 
-                    double dx = x + 0.5D - cx;
-                    double dy = y + 0.5D - cy;
+            if (dxSquared > radiusSquared) {
+                continue;
+            }
+
+            for (int y = minY; y <= maxY; y++) {
+                double dy = y + 0.5D - cy;
+                double horizontalSquared = dxSquared + dy * dy;
+
+                if (horizontalSquared > radiusSquared) {
+                    continue;
+                }
+
+                for (int z = minZ; z <= maxZ; z++) {
                     double dz = z + 0.5D - cz;
 
-                    if (dx * dx + dy * dy + dz * dz > radiusSquared) {
+                    if (horizontalSquared + dz * dz > radiusSquared) {
                         continue;
                     }
 
@@ -201,7 +317,7 @@ public abstract class TNTExplosionAreaRenderer {
 
                     if (state.isAir()
                         || !state.getFluidState().isEmpty()
-                        || isIgnoredBlock(state)) {
+                        || bqol$isIgnoredBlock(state)) {
                         continue;
                     }
 
@@ -212,7 +328,7 @@ public abstract class TNTExplosionAreaRenderer {
     }
 
     @Unique
-    private static void renderBlockFaces(Matrix4f matrix, VertexConsumer consumer, BlockPos pos, Set<BlockPos> blocks, double cameraX, double cameraY, double cameraZ) {
+    private static void bqol$renderBlockFaces(Matrix4f matrix, VertexConsumer consumer, BlockPos pos, Set<BlockPos> blocks, double cameraX, double cameraY, double cameraZ) {
         double x1 = pos.getX() - cameraX;
         double y1 = pos.getY() - cameraY;
         double z1 = pos.getZ() - cameraZ;
@@ -221,41 +337,84 @@ public abstract class TNTExplosionAreaRenderer {
         double y2 = y1 + 1.0D;
         double z2 = z1 + 1.0D;
 
+        double offset = BQOL_SURFACE_OFFSET;
+
         for (Direction direction : Direction.values()) {
-            if (blocks.contains(pos.offset(direction))) {
+            BQOL_NEIGHBOR.set(pos.getX() + direction.getOffsetX(), pos.getY() + direction.getOffsetY(), pos.getZ() + direction.getOffsetZ());
+
+            if (blocks.contains(BQOL_NEIGHBOR)) {
                 continue;
             }
 
-            double o = SURFACE_OFFSET;
-
             switch (direction) {
-                case UP -> quad(matrix, consumer, x1, y2 + o, z1, x1, y2 + o, z2, x2, y2 + o, z2, x2, y2 + o, z1);
-                case DOWN -> quad(matrix, consumer, x1, y1 - o, z2, x1, y1 - o, z1, x2, y1 - o, z1, x2, y1 - o, z2);
-                case NORTH -> quad(matrix, consumer, x2, y1, z1 - o, x1, y1, z1 - o, x1, y2, z1 - o, x2, y2, z1 - o);
-                case SOUTH -> quad(matrix, consumer, x1, y1, z2 + o, x2, y1, z2 + o, x2, y2, z2 + o, x1, y2, z2 + o);
-                case WEST -> quad(matrix, consumer, x1 - o, y1, z1, x1 - o, y1, z2, x1 - o, y2, z2, x1 - o, y2, z1);
-                case EAST -> quad(matrix, consumer, x2 + o, y1, z2, x2 + o, y1, z1, x2 + o, y2, z1, x2 + o, y2, z2);
+                case UP -> bqol$quad(
+                    matrix, consumer,
+                    x1, y2 + offset, z1,
+                    x1, y2 + offset, z2,
+                    x2, y2 + offset, z2,
+                    x2, y2 + offset, z1
+                );
+
+                case DOWN -> bqol$quad(
+                    matrix, consumer,
+                    x1, y1 - offset, z2,
+                    x1, y1 - offset, z1,
+                    x2, y1 - offset, z1,
+                    x2, y1 - offset, z2
+                );
+
+                case NORTH -> bqol$quad(
+                    matrix, consumer,
+                    x2, y1, z1 - offset,
+                    x1, y1, z1 - offset,
+                    x1, y2, z1 - offset,
+                    x2, y2, z1 - offset
+                );
+
+                case SOUTH -> bqol$quad(
+                    matrix, consumer,
+                    x1, y1, z2 + offset,
+                    x2, y1, z2 + offset,
+                    x2, y2, z2 + offset,
+                    x1, y2, z2 + offset
+                );
+
+                case WEST -> bqol$quad(
+                    matrix, consumer,
+                    x1 - offset, y1, z1,
+                    x1 - offset, y1, z2,
+                    x1 - offset, y2, z2,
+                    x1 - offset, y2, z1
+                );
+
+                case EAST -> bqol$quad(
+                    matrix, consumer,
+                    x2 + offset, y1, z2,
+                    x2 + offset, y1, z1,
+                    x2 + offset, y2, z1,
+                    x2 + offset, y2, z2
+                );
             }
         }
     }
 
     @Unique
-    private static void quad(Matrix4f matrix, VertexConsumer consumer, double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3, double x4, double y4, double z4) {
-        vertex(matrix, consumer, x1, y1, z1);
-        vertex(matrix, consumer, x2, y2, z2);
-        vertex(matrix, consumer, x3, y3, z3);
-        vertex(matrix, consumer, x4, y4, z4);
+    private static void bqol$quad(Matrix4f matrix, VertexConsumer consumer, double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3, double x4, double y4, double z4) {
+        bqol$vertex(matrix, consumer, x1, y1, z1);
+        bqol$vertex(matrix, consumer, x2, y2, z2);
+        bqol$vertex(matrix, consumer, x3, y3, z3);
+        bqol$vertex(matrix, consumer, x4, y4, z4);
     }
 
     @Unique
-    private static void vertex(Matrix4f matrix, VertexConsumer consumer, double x, double y, double z) {
+    private static void bqol$vertex(Matrix4f matrix, VertexConsumer consumer, double x, double y, double z) {
         consumer.vertex(matrix, (float) x, (float) y, (float) z)
-            .color(RED, GREEN, BLUE, FILL_ALPHA)
+            .color(BQOL_RED, BQOL_GREEN, BQOL_BLUE, BQOL_FILL_ALPHA)
             .next();
     }
 
     @Unique
-    private static boolean isIgnoredBlock(BlockState state) {
+    private static boolean bqol$isIgnoredBlock(BlockState state) {
         Block block = state.getBlock();
 
         return block instanceof PlantBlock

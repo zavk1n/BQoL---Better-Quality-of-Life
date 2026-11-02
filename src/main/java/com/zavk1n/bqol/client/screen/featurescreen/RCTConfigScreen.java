@@ -10,7 +10,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
 public class RCTConfigScreen extends MainConfigScreen{
-    private ButtonWidget holyWorldRCTBtn, reallyWorldBtn;
+    private ButtonWidget holyWorldRCTBtn, reallyWorldBtn, fakeTimeBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
@@ -35,6 +35,7 @@ public class RCTConfigScreen extends MainConfigScreen{
 
         holyWorldRCTBtn = null;
         reallyWorldBtn = null;
+        fakeTimeBtn = null;
 
         int rightX = width / 2 + 50;
         int y = 60;
@@ -69,11 +70,28 @@ public class RCTConfigScreen extends MainConfigScreen{
                 .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build();
             addDrawableChild(reallyWorldBtn);
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("better_rct_faketime")) {
+            fakeTimeBtn = ButtonWidget.builder(
+                    Text.literal(config.isBetterRCTFakeTime() ? "Enabled" : "Disabled"),
+                    button -> {
+                        boolean state = !config.isBetterRCTFakeTime();
+                        config.setBetterRCTFakeTime(state);
+                        changed = true;
+                        updateButton(fakeTimeBtn, state);
+                        save();
+                    })
+                .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+                .build();
+
+            addDrawableChild(fakeTimeBtn);
         }
 
         addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
-                .dimensions(width / 2 - 50, height - 40, 100, 25)
-                .build()
+            .dimensions(width / 2 - 50, height - 40, 100, 25)
+            .build()
         );
 
         updateAllButtons();
@@ -86,6 +104,10 @@ public class RCTConfigScreen extends MainConfigScreen{
 
         if (reallyWorldBtn != null) {
             updateButton(reallyWorldBtn, config.isBetterRCTReallyWorld());
+        }
+
+        if (fakeTimeBtn != null) {
+            updateButton(fakeTimeBtn, config.isBetterRCTFakeTime());
         }
     }
 
@@ -103,7 +125,7 @@ public class RCTConfigScreen extends MainConfigScreen{
 
         if (!LiteApiManager.isFeatureBlocked("better_rct_holyworld")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
-                "RCT HolyWorld ",
+                "RCT HolyWorld",
                 "Fast switching between anarchy servers on HolyWorld."
             );
             y += SPACING;
@@ -111,8 +133,16 @@ public class RCTConfigScreen extends MainConfigScreen{
 
         if (!LiteApiManager.isFeatureBlocked("better_rct_reallyworld")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
-                "RCT ReallyWorld ",
+                "RCT ReallyWorld",
                 "Fast switching between anarchy servers on ReallyWorld."
+            );
+            y += SPACING;
+        }
+
+        if (!LiteApiManager.isFeatureBlocked("better_rct_faketime")) {
+            renderLabel(context, leftX, y, mouseX, mouseY,
+                "RCT FakeTime",
+                "Fast switching between anarchy servers on FakeTime."
             );
         }
     }

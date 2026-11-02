@@ -34,6 +34,7 @@ public class BQoLConfig {
 
     public boolean betterRCTHolyWorld = false;
     public boolean betterRCTReallyWorld = false;
+    public boolean betterRCTFakeTime = false;
 
     /// Better Sounds
     public boolean betterSoundsEnabled = false;
@@ -101,6 +102,18 @@ public class BQoLConfig {
     public boolean betterTPAutoAccept = false;
     public boolean betterTPAutoDeny = false;
 
+    /// Better Chat
+    public boolean betterChatEnabled = false;
+
+    public boolean betterChatStackMessages = false;
+    public boolean betterChatAnimation = false;
+    public boolean betterChatMoreHistory = false;
+    public boolean betterChatHeads = false;
+    public boolean betterChatPing = false;
+    public boolean betterChatTransliteration = false;
+    public boolean betterChatKillMessage = false;
+    public String betterChatKillMessageText = "";
+
     /// Better RRLS
     public boolean betterRRLSEnabled = false;
 
@@ -127,7 +140,7 @@ public class BQoLConfig {
     public boolean betterPrefixesDonateBold = false;
     public boolean betterPrefixesTitleBold = false;
 
-    public boolean betterPrefixesStarEnabled = false;
+    public boolean betterPrefixesStar = false;
     public int betterPrefixesStarColorRgb = 0xFFFF00;
 
     /// Better Holograms
@@ -135,6 +148,24 @@ public class BQoLConfig {
 
     public boolean betterHologramsVisibleArmorStand = false;
     public boolean betterHologramsAntiHolograms = false;
+
+    /// Better Totems
+    public boolean betterTotemsEnabled = false;
+    public boolean betterTotemsCounterEnabled = false;
+
+    // HolyWorld
+    public boolean holyWorldTotemsEnabled = false;
+
+    public boolean totemInfinity = false;
+    public boolean totemEternity = false;
+    public boolean totemStinger = false;
+    public boolean totemSatires = false;
+
+    // ReallyWorld
+    public boolean reallyWorldTotemsEnabled = false;
+
+    public boolean totemDrakonid = false;
+    public boolean totemWitch = false;
 
     /// Better Spheres
     public boolean betterSpheresEnabled = false;
@@ -208,7 +239,7 @@ public class BQoLConfig {
     public int betterSkyColor = 0xFFFFFF;
     public long betterSkyTime = 6000;
 
-    /// Shulker Particles
+    /// Better Particles
     public boolean betterParticlesEnabled = false;
 
     public boolean betterParticlesShulkersEnabled = false;
@@ -231,11 +262,11 @@ public class BQoLConfig {
     /// Better Fog
     public boolean betterFogEnabled = false;
 
-    public boolean betterFogColorEnabled;
+    public boolean betterFogColorEnabled = false;
     public int betterFogColor = 0xFFFFFF;
     public int betterFogDistance = 16;
 
-    public boolean betterFognoBlindness;
+    public boolean betterFognoBlindness = false;
     public boolean betterFognoFog = false;
     public boolean betterFognightVision = false;
 
@@ -291,8 +322,11 @@ public class BQoLConfig {
     /// Better Mine
     public boolean betterMineEnabled = false;
 
-    public boolean betterMineHolyWorldEnabled = false;
-    public boolean betterMineHolyWorldMineHelperEnabled = false;
+    public boolean betterMineHolyWorld = false;
+    public boolean betterMineHolyWorldMineHelper = false;
+
+    /// Better Hit Counter
+    public boolean betterHitCounterEnabled = false;
 
     private BQoLConfig() {
         validateSettings();
@@ -372,6 +406,10 @@ public class BQoLConfig {
             betterInteractAutoSignsText = "";
         }
 
+        if (betterChatKillMessageText == null) {
+            betterChatKillMessageText = "";
+        }
+
         if (betterPrefixesProtectedName == null) {
             betterPrefixesProtectedName = "";
         }
@@ -445,7 +483,7 @@ public class BQoLConfig {
         }
     }
 
-    /// BetterSprint
+    /// Better Movement
     public boolean isBetterMovementEnabled() { return betterMovementEnabled; }
     public void setBetterMovementEnabled(boolean enabled) { this.betterMovementEnabled = enabled; save(); }
 
@@ -480,6 +518,8 @@ public class BQoLConfig {
     public void setBetterRCTHolyWorld(boolean enabled) { this.betterRCTHolyWorld = enabled; save(); }
     public boolean isBetterRCTReallyWorld() { return betterRCTReallyWorld; }
     public void setBetterRCTReallyWorld(boolean enabled) { this.betterRCTReallyWorld = enabled; save(); }
+    public boolean isBetterRCTFakeTime() { return betterRCTFakeTime; }
+    public void setBetterRCTFakeTime(boolean enabled) { this.betterRCTFakeTime = enabled; save(); }
 
     /// Better Sounds
     public boolean isBetterSoundsEnabled() { return betterSoundsEnabled; }
@@ -589,6 +629,29 @@ public class BQoLConfig {
     public boolean isBetterTntExplosionArea() { return betterTntExplosionArea; }
     public void setBetterTntExplosionArea(boolean enabled) { this.betterTntExplosionArea = enabled; save(); }
 
+    /// Better Chat
+    public boolean isBetterChatEnabled() { return betterChatEnabled; }
+    public void setBetterChatEnabled(boolean enabled) { this.betterChatEnabled = enabled; save(); }
+
+    public boolean isBetterChatStackMessages() { return betterChatStackMessages; }
+    public void setBetterChatStackMessages(boolean enabled) { this.betterChatStackMessages = enabled; save(); }
+    public boolean isBetterChatAnimation() { return betterChatAnimation; }
+    public void setBetterChatAnimation(boolean enabled) { this.betterChatAnimation = enabled; save(); }
+    public boolean isBetterChatMoreHistory() { return betterChatMoreHistory; }
+    public void setBetterChatMoreHistory(boolean enabled) { this.betterChatMoreHistory = enabled; save(); }
+    public boolean isBetterChatHeads() { return betterChatHeads; }
+    public void setBetterChatHeads(boolean enabled) { this.betterChatHeads = enabled; save(); }
+    public boolean isBetterChatPing() { return betterChatPing; }
+    public void setBetterChatPing(boolean enabled) { this.betterChatPing = enabled; save(); }
+    public boolean isBetterChatTransliteration() { return betterChatTransliteration; }
+    public void setBetterChatTransliteration(boolean enabled) { this.betterChatTransliteration = enabled; save(); }
+    public boolean isBetterChatKillMessage() { return betterChatKillMessage; }
+    public void setBetterChatKillMessage(boolean enabled) { this.betterChatKillMessage = enabled; save(); }
+    public String getBetterChatKillMessageText() {
+        return betterChatKillMessageText;
+    }
+    public void setBetterChatKillMessageText(String text) { this.betterChatKillMessageText = text == null ? "" : text; save(); }
+
     /// Better TP
     public boolean isBetterTPEnabled() { return betterTPEnabled; }
     public void setBetterTPEnabled(boolean enabled) { this.betterTPEnabled = enabled; save(); }
@@ -614,7 +677,7 @@ public class BQoLConfig {
     public boolean isBetterRRLSEnabled() { return betterRRLSEnabled; }
     public void setBetterRRLSEnabled(boolean enabled) { this.betterRRLSEnabled = enabled; save(); }
 
-    /// BetterPrefixes
+    /// Better Prefixes
     public boolean isBetterPrefixesEnabled() { return betterPrefixesEnabled; }
     public void setBetterPrefixesEnabled(boolean enabled) { this.betterPrefixesEnabled = enabled; save(); }
 
@@ -632,6 +695,35 @@ public class BQoLConfig {
     public void setBetterHologramsVisibleArmorStand(boolean enabled) { this.betterHologramsVisibleArmorStand = enabled; save(); }
     public boolean isBetterHologramsAntiHolograms() { return betterHologramsAntiHolograms; }
     public void setBetterHologramsAntiHolograms(boolean enabled) { this.betterHologramsAntiHolograms = enabled; save(); }
+
+    /// Better Totems
+    public boolean isBetterTotemsEnabled() { return betterTotemsEnabled; }
+    public void setBetterTotemsEnabled(boolean enabled) { this.betterTotemsEnabled = enabled; save(); }
+
+    public boolean isBetterTotemsCounterEnabled() { return betterTotemsCounterEnabled; }
+    public void setBetterTotemsCounterEnabled(boolean enabled) { this.betterTotemsCounterEnabled = enabled; save(); }
+
+    // Holyworld
+    public boolean isHolyWorldTotemsEnabled() { return holyWorldTotemsEnabled; }
+    public void setHolyWorldTotemsEnabled(boolean enabled) { this.holyWorldTotemsEnabled = enabled; save(); }
+
+    public boolean isTotemInfinity() { return totemInfinity; }
+    public void setTotemInfinity(boolean enabled) { this.totemInfinity = enabled; save(); }
+    public boolean isTotemEternity() { return totemEternity; }
+    public void setTotemEternity(boolean enabled) { this.totemEternity = enabled; save(); }
+    public boolean isTotemStinger() { return totemStinger; }
+    public void setTotemStinger(boolean enabled) { this.totemStinger = enabled; save(); }
+    public boolean isTotemSatires() { return totemSatires; }
+    public void setTotemSatires(boolean enabled) { this.totemSatires = enabled; save(); }
+
+    // ReallyWorld
+    public boolean isReallyWorldTotemsEnabled() { return reallyWorldTotemsEnabled; }
+    public void setReallyWorldTotemsEnabled(boolean enabled) { this.reallyWorldTotemsEnabled = enabled; save(); }
+
+    public boolean isTotemDrakonid() { return totemDrakonid; }
+    public void setTotemDrakonid(boolean enabled) { this.totemDrakonid = enabled; save(); }
+    public boolean isTotemWitch() { return totemWitch; }
+    public void setTotemWitch(boolean enabled) { this.totemWitch = enabled; save(); }
 
     /// Better Spheres
     public boolean isBetterSpheresEnabled() { return betterSpheresEnabled; }
@@ -788,13 +880,13 @@ public class BQoLConfig {
     public void setBetterParticlesTotemsEnabled(boolean enabled) { this.betterParticlesTotemsEnabled = enabled; save(); }
 
     public boolean isBetterParticlesTotemsColorEnabled() { return betterParticlesTotemsColorEnabled; }
-    public void setBetterParticlesTotemsColorEnabled(boolean enabled) { this.betterParticlesTotemsColorEnabled = enabled; }
+    public void setBetterParticlesTotemsColorEnabled(boolean enabled) { this.betterParticlesTotemsColorEnabled = enabled; save();}
     public int getBetterParticlesTotemsColor() { return betterParticlesTotemsColor; }
-    public void setBetterParticlesTotemsColor(int color) { this.betterParticlesTotemsColor = color & 0xFFFFFF; }
+    public void setBetterParticlesTotemsColor(int color) { this.betterParticlesTotemsColor = color & 0xFFFFFF; save();}
     public boolean isBetterParticlesTotemsCountEnabled() { return betterParticlesTotemsCountEnabled; }
-    public void setBetterParticlesTotemsCountEnabled(boolean enabled) { this.betterParticlesTotemsCountEnabled = enabled; }
+    public void setBetterParticlesTotemsCountEnabled(boolean enabled) { this.betterParticlesTotemsCountEnabled = enabled; save();}
     public int getBetterParticlesTotemsCountMode() { return Math.max(0, Math.min(2, betterParticlesTotemsCountMode)); }
-    public void setBetterParticlesTotemsCountMode(int mode) { this.betterParticlesTotemsCountMode = Math.max(0, Math.min(2, mode)); }
+    public void setBetterParticlesTotemsCountMode(int mode) { this.betterParticlesTotemsCountMode = Math.max(0, Math.min(2, mode)); save();}
 
     /// Better Fog
     public boolean isBetterFogEnabled() { return betterFogEnabled; }
@@ -896,10 +988,14 @@ public class BQoLConfig {
     public boolean isBetterMineEnabled() { return betterMineEnabled; }
     public void setBetterMineEnabled(boolean enabled) { this.betterMineEnabled = enabled; save(); }
 
-    public boolean isBetterMineHolyWorldEnabled() { return betterMineHolyWorldEnabled; }
-    public void setBetterMineHolyWorldEnabled(boolean enabled) { this.betterMineHolyWorldEnabled = enabled; save(); }
-    public boolean isHolyWorldMineHelperEnabled() { return betterMineHolyWorldMineHelperEnabled; }
-    public void setHolyWorldMineHelperEnabled(boolean enabled) { this.betterMineHolyWorldMineHelperEnabled = enabled; save(); }
+    public boolean isBetterMineHolyWorldEnabled() { return betterMineHolyWorld; }
+    public void setBetterMineHolyWorldEnabled(boolean enabled) { this.betterMineHolyWorld = enabled; save(); }
+    public boolean isHolyWorldMineHelperEnabled() { return betterMineHolyWorldMineHelper; }
+    public void setHolyWorldMineHelperEnabled(boolean enabled) { this.betterMineHolyWorldMineHelper = enabled; save(); }
+
+    /// Better Hit Counter
+    public boolean isBetterHitCounterEnabled() { return betterHitCounterEnabled; }
+    public void setBetterHitCounterEnabled(boolean enabled) { this.betterHitCounterEnabled = enabled; save(); }
 
     public int getPvpTimerDuration() { return pvpTimerDuration; }
     public void setPvpTimerDuration(int duration) { this.pvpTimerDuration = Math.max(5000, Math.min(60000, duration)); save(); }
@@ -926,7 +1022,7 @@ public class BQoLConfig {
         this.debug = defaults.debug;
         this.pvpTimerDuration = defaults.pvpTimerDuration;
 
-        /// BetterSprint
+        /// Better Movement
         this.betterMovementEnabled = defaults.betterMovementEnabled;
 
         this.betterMovementDefaultMode = defaults.betterMovementDefaultMode;
@@ -935,11 +1031,12 @@ public class BQoLConfig {
         this.betterMovementWaterSprint = defaults.betterMovementWaterSprint;
         this.betterMovementScaffold = defaults.betterMovementScaffold;
 
-        /// BetterRCT
+        /// Better RCT
         this.betterRCTEnabled = defaults.betterRCTEnabled;
 
         this.betterRCTHolyWorld = defaults.betterRCTHolyWorld;
         this.betterRCTReallyWorld = defaults.betterRCTReallyWorld;
+        this.betterRCTFakeTime = defaults.betterRCTFakeTime;
 
         /// Better Sounds
         this.betterSoundsEnabled = defaults.betterSoundsEnabled;
@@ -1001,6 +1098,19 @@ public class BQoLConfig {
         this.betterTntAlertShowBlocks = defaults.betterTntAlertShowBlocks;
         this.betterTntExplosionArea = defaults.betterTntExplosionArea;
 
+        /// Better Chat
+        this.betterChatEnabled = false;
+
+        this.betterChatStackMessages = defaults.betterChatStackMessages;
+        this.betterChatAnimation = defaults.betterChatAnimation;
+        this.betterChatMoreHistory = defaults.betterChatMoreHistory;
+        this.betterChatHeads = defaults.betterChatHeads;
+        this.betterChatPing = defaults.betterChatPing;
+
+        this.betterChatTransliteration = defaults.betterChatTransliteration;
+        this.betterChatKillMessage = defaults.betterChatKillMessage;
+        this.betterChatKillMessageText = defaults.betterChatKillMessageText;
+
         /// Better TP
         this.betterTPEnabled = defaults.betterTPEnabled;
 
@@ -1033,7 +1143,7 @@ public class BQoLConfig {
         this.betterPrefixesDonateBold = defaults.betterPrefixesDonateBold;
         this.betterPrefixesTitleBold = defaults.betterPrefixesTitleBold;
 
-        this.betterPrefixesStarEnabled = defaults.betterPrefixesStarEnabled;
+        this.betterPrefixesStar = defaults.betterPrefixesStar;
         this.betterPrefixesStarColorRgb = defaults.betterPrefixesStarColorRgb;
 
         /// Better Holograms
@@ -1041,6 +1151,24 @@ public class BQoLConfig {
 
         this.betterHologramsVisibleArmorStand = defaults.betterHologramsVisibleArmorStand;
         this.betterHologramsAntiHolograms = defaults.betterHologramsAntiHolograms;
+
+        /// Better Totems
+        this.betterTotemsEnabled = defaults.betterTotemsEnabled;
+        this.betterTotemsCounterEnabled = defaults.betterTotemsCounterEnabled;
+
+        // HolyWorld
+        this.holyWorldTotemsEnabled = defaults.holyWorldTotemsEnabled;
+
+        this.totemInfinity = defaults.totemInfinity;
+        this.totemEternity = defaults.totemEternity;
+        this.totemStinger = defaults.totemStinger;
+        this.totemSatires = defaults.totemSatires;
+
+        // ReallyWorld
+        this.reallyWorldTotemsEnabled = defaults.reallyWorldTotemsEnabled;
+
+        this.totemDrakonid = defaults.totemDrakonid;
+        this.totemWitch = defaults.totemWitch;
 
         /// Better Spheres
         this.betterSpheresEnabled = defaults.betterSpheresEnabled;
@@ -1189,8 +1317,11 @@ public class BQoLConfig {
         /// Better Mine
         this.betterMineEnabled = defaults.betterMineEnabled;
 
-        this.betterMineHolyWorldEnabled = defaults.betterMineHolyWorldEnabled;
-        this.betterMineHolyWorldMineHelperEnabled = defaults.betterMineHolyWorldMineHelperEnabled;
+        this.betterMineHolyWorld = defaults.betterMineHolyWorld;
+        this.betterMineHolyWorldMineHelper = defaults.betterMineHolyWorldMineHelper;
+
+        /// Better Hit Counter
+        this.betterHitCounterEnabled = defaults.betterHitCounterEnabled;
 
         validateSettings();
         save();

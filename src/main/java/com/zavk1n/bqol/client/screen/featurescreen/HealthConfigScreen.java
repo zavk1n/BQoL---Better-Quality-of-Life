@@ -93,61 +93,50 @@ public class HealthConfigScreen extends MainConfigScreen {
 
         addDrawableChild(positionBtn);
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_hovering")) {
-            hoveringBtn = createButton(
-                controlX,
-                startY + SPACING * 2,
-                config::isBetterHealthHovering,
-                config::setBetterHealthHovering
-            );
-        }
+        hoveringBtn = createButton(
+            controlX,
+            startY + SPACING * 2,
+            config::isBetterHealthHovering,
+            config::setBetterHealthHovering
+        );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_scaling")) {
-            scalingBtn = createButton(
-                controlX,
-                startY + SPACING * 3,
-                config::isBetterHealthScaling,
-                config::setBetterHealthScaling
-            );
-        }
+        scalingBtn = createButton(
+            controlX,
+            startY + SPACING * 3,
+            config::isBetterHealthScaling,
+            config::setBetterHealthScaling
+        );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_pvp")) {
-            pvpModeBtn = createButton(
-                controlX,
-                startY + SPACING * 4,
-                config::isBetterHealthPvPMode,
-                config::setBetterHealthPvPMode
-            );
-        }
+        pvpModeBtn = createButton(
+            controlX,
+            startY + SPACING * 4,
+            config::isBetterHealthPvPMode,
+            config::setBetterHealthPvPMode
+        );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_decimal")) {
-            decimalBtn = createButton(
-                controlX,
-                startY + SPACING * 5,
-                config::isBetterHealthDecimal,
-                config::setBetterHealthDecimal
-            );
-        }
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_golden_hearts")) {
-            goldenHeartsBtn = createButton(
-                controlX,
-                startY + SPACING * 6,
-                config::isBetterHealthGoldenHearts,
-                value -> {
-                    config.setBetterHealthGoldenHearts(value);
-                    changed = true;
+        decimalBtn = createButton(
+            controlX,
+            startY + SPACING * 5,
+            config::isBetterHealthDecimal,
+            config::setBetterHealthDecimal
+        );
 
-                    updateGoldenHeartsPlusState();
-
-                    if (goldenHeartsPlusCheck != null) {
-                        goldenHeartsPlusCheck.setChecked(config.isBetterHealthGoldenHeartsPlus());
-                    }
+        goldenHeartsBtn = createButton(
+            controlX,
+            startY + SPACING * 6,
+            config::isBetterHealthGoldenHearts,
+            value -> {
+                config.setBetterHealthGoldenHearts(value);
+                changed = true;
+                updateGoldenHeartsPlusState();
+                if (goldenHeartsPlusCheck != null) {
+                    goldenHeartsPlusCheck.setChecked(config.isBetterHealthGoldenHeartsPlus());
                 }
-            );
-        }
+            }
+        );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_golden_plus") && goldenHeartsBtn != null) {
+        if (goldenHeartsBtn != null) {
             goldenHeartsPlusCheck = new ColorCheckbox(
                 controlX,
                 startY + SPACING * 7 + 6,
@@ -165,19 +154,16 @@ public class HealthConfigScreen extends MainConfigScreen {
             updateGoldenHeartsPlusState();
         }
 
-        addDrawableChild(
-            ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
-                .dimensions(width / 2 - 50, height - 40, 100, BUTTON_HEIGHT)
-                .build()
+        addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
+            .dimensions(width / 2 - 50, height - 40, 100, BUTTON_HEIGHT)
+            .build()
         );
 
         updateAllButtons();
     }
 
     private ButtonWidget createButton(int x, int y, BooleanSupplier getter, Consumer<Boolean> setter) {
-        ButtonWidget button = ButtonWidget.builder(
-                Text.empty(),
-                widget -> {
+        ButtonWidget button = ButtonWidget.builder(Text.empty(), widget -> {
                     boolean enabled = !getter.getAsBoolean();
                     setter.accept(enabled);
                     changed = true;
@@ -198,11 +184,25 @@ public class HealthConfigScreen extends MainConfigScreen {
     }
 
     private void updateAllButtons() {
-        if (hoveringBtn != null) updateButton(hoveringBtn, config.isBetterHealthHovering());
-        if (scalingBtn != null) updateButton(scalingBtn, config.isBetterHealthScaling());
-        if (pvpModeBtn != null) updateButton(pvpModeBtn, config.isBetterHealthPvPMode());
-        if (decimalBtn != null) updateButton(decimalBtn, config.isBetterHealthDecimal());
-        if (goldenHeartsBtn != null) updateButton(goldenHeartsBtn, config.isBetterHealthGoldenHearts());
+        if (hoveringBtn != null) {
+            updateButton(hoveringBtn, config.isBetterHealthHovering());
+        }
+
+        if (scalingBtn != null) {
+            updateButton(scalingBtn, config.isBetterHealthScaling());
+        }
+
+        if (pvpModeBtn != null) {
+            updateButton(pvpModeBtn, config.isBetterHealthPvPMode());
+        }
+
+        if (decimalBtn != null) {
+            updateButton(decimalBtn, config.isBetterHealthDecimal());
+        }
+
+        if (goldenHeartsBtn != null) {
+            updateButton(goldenHeartsBtn, config.isBetterHealthGoldenHearts());
+        }
     }
 
     private void updateGoldenHeartsPlusState() {
@@ -226,35 +226,29 @@ public class HealthConfigScreen extends MainConfigScreen {
             "Position", "Position of the indicator on the screen."
         );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_hovering"))
-            renderLabel(context, labelX, startY + SPACING * 2, mouseX, mouseY,
-                "Hovering", "Displaying indicator when aiming at player."
-            );
+        renderLabel(context, labelX, startY + SPACING * 2, mouseX, mouseY,
+            "Hovering", "Displaying indicator when aiming at player."
+        );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_scaling"))
-            renderLabel(context, labelX, startY + SPACING * 3, mouseX, mouseY,
-                "Scaling", "Displaying indicator with scaling effect."
-            );
+        renderLabel(context, labelX, startY + SPACING * 3, mouseX, mouseY,
+            "Scaling", "Displaying indicator with scaling effect."
+        );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_pvp"))
-            renderLabel(context, labelX, startY + SPACING * 4, mouseX, mouseY,
-                "PvP Mode", "Displaying indicator only in PvP."
-            );
+        renderLabel(context, labelX, startY + SPACING * 4, mouseX, mouseY,
+            "PvP Mode", "Displaying indicator only in PvP."
+        );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_decimal"))
-            renderLabel(context, labelX, startY + SPACING * 5, mouseX, mouseY,
-                "Decimal Format", "Displaying indicator with float part."
-            );
+        renderLabel(context, labelX, startY + SPACING * 5, mouseX, mouseY,
+            "Decimal Format", "Displaying indicator with float part."
+        );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_golden_hearts"))
-            renderLabel(context, labelX, startY + SPACING * 6, mouseX, mouseY,
-                "Golden Hearts", "Displaying indicator shows additional hearts."
-            );
+        renderLabel(context, labelX, startY + SPACING * 6, mouseX, mouseY,
+            "Golden Hearts", "Displaying indicator shows additional hearts."
+        );
 
-        if (!LiteApiManager.isFeatureBlocked("better_health_golden_plus"))
-            renderLabel(context, labelX, startY + SPACING * 7, mouseX, mouseY,
-                "Golden Hearts Plus", "Show golden hearts with a '+' sign."
-            );
+        renderLabel(context, labelX, startY + SPACING * 7, mouseX, mouseY,
+            "Golden Hearts Plus", "Show golden hearts with a '+' sign."
+        );
     }
 
     private void renderLabel(DrawContext ctx, int x, int y, int mousex, int mousey, String title, String desc) {

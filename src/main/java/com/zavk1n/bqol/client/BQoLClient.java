@@ -7,6 +7,7 @@ import com.zavk1n.bqol.client.init.TickManager;
 import com.zavk1n.bqol.utils.NotificationManager;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
+import com.zavk1n.bqol.utils.rct.MessageHandler;
 import net.fabricmc.api.ClientModInitializer;
 
 public class BQoLClient implements ClientModInitializer {
@@ -17,11 +18,13 @@ public class BQoLClient implements ClientModInitializer {
 
         try {
             LiteApiManager.register();
+
             NotificationManager.initialize();
+            KeybindManager.initialize();
+
+            MessageHandler.initialize();
 
             FeatureRegistry.initializeAll();
-
-            KeybindManager.initialize();
 
             ConnectionManager.register();
 

@@ -174,6 +174,10 @@ public final class NotificationManager {
         showFeatureNotification("Better Tnt", enabled);
     }
 
+    public static void showBetterChatNotification(boolean enabled) {
+        showFeatureNotification("Better Chat", enabled);
+    }
+
     public static void showBetterTPNotification(boolean enabled) {
         showFeatureNotification("Better TP", enabled);
     }
@@ -186,6 +190,10 @@ public final class NotificationManager {
 
     public static void showBetterHologramsNotification(boolean enabled) {
         showFeatureNotification("Better Holograms", enabled);
+    }
+
+    public static void showBetterTotemsNotification(boolean enabled) {
+        showFeatureNotification("Better Totems", enabled);
     }
 
     public static void showBetterSpheresNotification(boolean enabled) {
@@ -214,6 +222,10 @@ public final class NotificationManager {
 
     public static void showBetterMineNotification(boolean enabled) {
         showFeatureNotification("Better Mine", enabled);
+    }
+
+    public static void showBetterHitCounterNotification(boolean enabled) {
+        showFeatureNotification("Better Hit Counter", enabled);
     }
 
     private static void renderNotifications(DrawContext context) {

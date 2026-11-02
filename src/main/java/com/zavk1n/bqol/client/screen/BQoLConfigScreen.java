@@ -2,6 +2,10 @@ package com.zavk1n.bqol.client.screen;
 
 import com.zavk1n.bqol.client.KeybindManager;
 import com.zavk1n.bqol.client.screen.featurescreen.*;
+import com.zavk1n.bqol.client.screen.featurescreen.particles.ParticlesConfigScreen;
+import com.zavk1n.bqol.client.screen.featurescreen.sounds.SoundsConfigScreen;
+import com.zavk1n.bqol.client.screen.featurescreen.speheres.SpheresConfigScreen;
+import com.zavk1n.bqol.client.screen.featurescreen.totems.TotemsConfigScreen;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.features.*;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
@@ -189,7 +193,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
         featurePanels.add(new FeaturePanel(
                 "Better RCT",
-                "Auto Reconnect util",
+                "Auto Reconnect utility.",
                 "better_rct",
                 config.isBetterRCTEnabled(),
                 getTextColumnX(),
@@ -200,7 +204,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
         featurePanels.add(new FeaturePanel(
                 "Better Sounds",
-                "Sound management.",
+                "Sounds management.",
                 "better_sounds",
                 config.isBetterSoundsEnabled(),
                 getTextColumnX(),
@@ -254,6 +258,17 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
+                "Better Chat",
+                "Chat improvements.",
+                "better_chat",
+                config.isBetterChatEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
                 "Better TP",
                 "Automatic scripts for /tp.",
                 "better_tp",
@@ -298,8 +313,19 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
+                "Better Totems",
+                "Addons for totems.",
+                "better_totems",
+                config.isBetterTotemsEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
                 "Better Spheres",
-                "Customization of server spheres.",
+                "Customization for server spheres.",
                 "better_spheres",
                 config.isBetterSpheresEnabled(),
                 getTextColumnX(),
@@ -310,7 +336,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
         featurePanels.add(new FeaturePanel(
                 "Better Sky",
-                "Customization of sky.",
+                "Customization for sky.",
                 "better_sky",
                 config.isBetterSkyEnabled(),
                 getTextColumnX(),
@@ -371,6 +397,17 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 getTextColumnX(),
                 PANEL_START_Y,
                 true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better Hit Counter",
+                "Your personal combo hit counter.",
+                "better_hit_counter",
+                config.isBetterHitCounterEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                false
             )
         );
 
@@ -504,9 +541,11 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_sounds" -> client.setScreen(new SoundsConfigScreen(this));
             case "better_interact" -> client.setScreen(new InteractConfigScreen(this));
             case "better_tnt" -> client.setScreen(new TNTConfigScreen(this));
+            case "better_chat" -> client.setScreen(new ChatConfigScreen(this));
             case "better_tp" -> client.setScreen(new TPConfigScreen(this));
             case "better_prefixes" -> client.setScreen(new PrefixesConfigScreen(this));
             case "better_holograms" -> client.setScreen(new HologramsConfigScreen(this));
+            case "better_totems" -> client.setScreen(new TotemsConfigScreen(this));
             case "better_spheres" -> client.setScreen(new SpheresConfigScreen(this));
             case "better_sky" -> client.setScreen(new SkyConfigScreen(this));
             case "better_particles" -> client.setScreen(new ParticlesConfigScreen(this));
@@ -528,9 +567,11 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_third_person" -> "better_third_person";
             case "better_tnt" -> "better_tnt";
             case "better_tp" -> "better_tp";
+            case "better_chat" -> "better_chat";
             case "better_rrls" -> "better_rrls";
             case "better_prefixes" -> "better_prefixes";
             case "better_holograms" -> "better_holograms";
+            case "better_totems" -> "better_totems";
             case "better_spheres" -> "better_spheres";
             case "better_sky" -> "better_sky";
             case "better_particles" -> "better_particles";
@@ -538,6 +579,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_health" -> "better_health";
             case "no_render" -> "no_render";
             case "better_mine" -> "better_mine";
+            case "better_hit_counter" -> "better_hit_counter";
 
             default -> null;
         };
@@ -625,6 +667,12 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterTnt.setEnabled(panel.enabled);
             }
 
+            case "better_chat" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterChatEnabled(panel.enabled);
+                BetterChat.setEnabled(panel.enabled);
+            }
+
             case "better_tp" -> {
                 panel.enabled = !panel.enabled;
                 config.setBetterTPEnabled(panel.enabled);
@@ -647,6 +695,12 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 panel.enabled = !panel.enabled;
                 config.setBetterHologramsEnabled(panel.enabled);
                 BetterHolograms.setEnabled(panel.enabled);
+            }
+
+            case "better_totems" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterTotemsEnabled(panel.enabled);
+                BetterTotems.setEnabled(panel.enabled);
             }
 
             case "better_spheres" -> {
@@ -693,6 +747,12 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 panel.enabled = !panel.enabled;
                 config.setBetterMineEnabled(panel.enabled);
                 BetterMine.setEnabled(panel.enabled);
+            }
+
+            case "better_hit_counter" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterHitCounterEnabled(panel.enabled);
+                BetterHitCounter.setEnabled(panel.enabled);
             }
         }
 

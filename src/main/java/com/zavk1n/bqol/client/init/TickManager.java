@@ -1,12 +1,9 @@
 package com.zavk1n.bqol.client.init;
 
 import com.zavk1n.bqol.BQoL;
-import com.zavk1n.bqol.features.BetterMine;
-import com.zavk1n.bqol.features.BetterRCT;
-import com.zavk1n.bqol.features.BetterTnt;
+import com.zavk1n.bqol.features.*;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 
 public final class TickManager {
@@ -20,11 +17,7 @@ public final class TickManager {
                 try {
                     feature.tick();
                 } catch (Exception e) {
-                    BQoL.LOGGER.error(
-                        "Error in feature tick handler: {}",
-                        feature.name(),
-                        e
-                    );
+                    BQoL.LOGGER.error("Error in feature tick handler: {}", feature.name(), e);
                 }
             }
         });
@@ -48,6 +41,18 @@ public final class TickManager {
         ClientSendMessageEvents.ALLOW_CHAT.register(rct::onChat);
         ClientSendMessageEvents.ALLOW_COMMAND.register(rct::onCommand);
         ClientTickEvents.END_CLIENT_TICK.register(rct::onTick);
+
+        BetterTotems.initialize();
+
+        BetterTotems totems = BetterTotems.getInstance();
+
+        ClientSendMessageEvents.ALLOW_CHAT.register(totems::onChat);
+
+        BetterChat.initialize();
+
+        BetterChat chat = BetterChat.getInstance();
+
+        ClientTickEvents.END_CLIENT_TICK.register(chat::tick);
 
         BQoL.LOGGER.info("Registered all feature tick handlers");
     }

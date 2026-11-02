@@ -1,7 +1,9 @@
 package com.zavk1n.bqol.mixin;
 
+import com.zavk1n.bqol.features.BetterChat;
 import com.zavk1n.bqol.features.BetterHealth;
 
+import com.zavk1n.bqol.features.BetterHitCounter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -27,6 +29,13 @@ public class GLOBALDeathResetMixin {
 
         if (player == client.player || player.equals(BetterHealth.getLastAttackedPlayer())) {
             BetterHealth.resetDisplay();
+        }
+
+        if (player == client.player) {
+            BetterHitCounter.onDeath();
+            BetterChat.resetKillTarget();
+        } else {
+            BetterChat.onDeath(player);
         }
     }
 }

@@ -98,36 +98,36 @@ public class MineHelperController {
         double score
     ) {}
 
-    private static final int BIG_X1 = -184;
-    private static final int BIG_Y1 = 50;
+    private static final int BIG_X1 = -189;
+    private static final int BIG_Y1 = 63;
     private static final int BIG_Z1 = -195;
 
-    private static final int BIG_X2 = -115;
-    private static final int BIG_Y2 = 68;
-    private static final int BIG_Z2 = -109;
+    private static final int BIG_X2 = -117;
+    private static final int BIG_Y2 = 50;
+    private static final int BIG_Z2 = -120;
 
-    private static final int PLAYER_X1 = -179;
+    private static final int PLAYER_X1 = -189;
     private static final int PLAYER_Y1 = 62;
-    private static final int PLAYER_Z1 = -163;
+    private static final int PLAYER_Z1 = -195;
 
-    private static final int PLAYER_X2 = -152;
-    private static final int PLAYER_Y2 = 62;
-    private static final int PLAYER_Z2 = -151;
+    private static final int PLAYER_X2 = -117;
+    private static final int PLAYER_Y2 = 51;
+    private static final int PLAYER_Z2 = -123;
 
     private static final int DEFAULT_FILL_X1 = -174;
     private static final int DEFAULT_FILL_Y1 = 52;
-    private static final int DEFAULT_FILL_Z1 = -168;
+    private static final int DEFAULT_FILL_Z1 = -188;
 
     private static final int DEFAULT_FILL_X2 = -154;
     private static final int DEFAULT_FILL_Y2 = 61;
-    private static final int DEFAULT_FILL_Z2 = -188;
+    private static final int DEFAULT_FILL_Z2 = -168;
 
     private static final int NETHER_FILL_X1 = -147;
     private static final int NETHER_FILL_Y1 = 51;
     private static final int NETHER_FILL_Z1 = -161;
 
     private static final int NETHER_FILL_X2 = -127;
-    private static final int NETHER_FILL_Y2 = 62;
+    private static final int NETHER_FILL_Y2 = 61;
     private static final int NETHER_FILL_Z2 = -141;
 
     private static final double DEFAULT_HOLOGRAM_X = -172.0D;
@@ -189,7 +189,7 @@ public class MineHelperController {
         }
 
         if (!isPlayerInsideBigCube(mc.player)) {
-            Chat.info(mc, message("Mine Helper: игрок не находится в большом кубе."));
+            Chat.info(mc, message("Mine Helper: игрок не находится в нужном кубе."));
             return;
         }
 
@@ -353,12 +353,12 @@ public class MineHelperController {
         double y = player.getY();
         double z = player.getZ();
 
-        return x >= BIG_X1
-            && x <= BIG_X2
-            && y >= BIG_Y1
-            && y <= BIG_Y2
-            && z >= BIG_Z1
-            && z <= BIG_Z2;
+        return x >= Math.min(BIG_X1, BIG_X2)
+            && x <= Math.max(BIG_X1, BIG_X2) + 1
+            && y >= Math.min(BIG_Y1, BIG_Y2)
+            && y < Math.max(BIG_Y1, BIG_Y2) + 1
+            && z >= Math.min(BIG_Z1, BIG_Z2)
+            && z < Math.max(BIG_Z1, BIG_Z2) + 1;
     }
 
     private int countNetheritePickaxePlayers(MinecraftClient mc) {
@@ -366,10 +366,14 @@ public class MineHelperController {
             return 0;
         }
 
-        Box area = new Box(PLAYER_X1, PLAYER_Y1, PLAYER_Z1,
-            PLAYER_X2 + 1.0D,
-            PLAYER_Y2 + 1.0D,
-            PLAYER_Z2 + 1.0D
+        Box area = new Box(
+            Math.min(PLAYER_X1, PLAYER_X2),
+            Math.min(PLAYER_Y1, PLAYER_Y2),
+            Math.min(PLAYER_Z1, PLAYER_Z2),
+
+            Math.max(PLAYER_X1, PLAYER_X2) + 1.0D,
+            Math.max(PLAYER_Y1, PLAYER_Y2) + 1.0D,
+            Math.max(PLAYER_Z1, PLAYER_Z2) + 1.0D
         );
 
         int count = 0;

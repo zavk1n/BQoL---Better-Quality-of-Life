@@ -20,7 +20,8 @@ public final class Chat {
     private static final List<String> COMMANDS = List.of(
         ".an",
         ".rct",
-        ".minehelper"
+        ".minehelper",
+        ".totemcounter"
     );
 
     private static final List<String> MINEHELPER_MODES = List.of(
@@ -108,6 +109,18 @@ public final class Chat {
             }
         }
 
+        if (typed.startsWith(".totemcounter ")) {
+            String[] parts = typed.split(" ", -1);
+
+            if (parts.length == 2) {
+                String argument = parts[1];
+
+                return List.of("reset").stream()
+                    .filter(suggestion -> suggestion.startsWith(argument) && !suggestion.equals(argument))
+                    .toList();
+            }
+        }
+
         return List.of();
     }
 
@@ -125,6 +138,11 @@ public final class Chat {
         }
 
         if (typed.startsWith(".rct ")) {
+            int start = input.lastIndexOf(' ') + 1;
+            return StringRange.between(start, input.length());
+        }
+
+        if (typed.startsWith(".totemcounter ")) {
             int start = input.lastIndexOf(' ') + 1;
             return StringRange.between(start, input.length());
         }

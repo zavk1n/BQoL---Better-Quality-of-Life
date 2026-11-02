@@ -9,6 +9,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
@@ -20,14 +22,22 @@ import java.util.regex.Pattern;
 
 @Environment(EnvType.CLIENT)
 public class ReallyWorldController {
+    private static ReallyWorldController instance;
+
+    public ReallyWorldController() {
+        instance = this;
+    }
+
+    public static ReallyWorldController getInstance() {
+        return instance;
+    }
 
     private static final String HUB_COMMAND = "hub";
     private static final int HUB_TIMEOUT_TICKS = 50;
     private static final int MENU_TIMEOUT_TICKS = 50;
     private static final int SUCCESS_DELAY_TICKS = 60;
     private static final int MENU_CHANGE_DELAY_TICKS = 2;
-    private static final int FINISH_TIMEOUT_TICKS = 200;
-    private static final int MAX_ANARCHY = 32;
+    private static final int MAX_ANARCHY = 88;
 
     private static final Pattern GRIEF_NUMBER = Pattern.compile("#\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
 
@@ -236,7 +246,7 @@ public class ReallyWorldController {
         }
 
         ScreenHandler menu = screen.getScreenHandler();
-        OptionalInt slot = BetterRCT.workbenchSlot(menu);
+        OptionalInt slot = workbenchSlot(menu);
 
         if (slot.isEmpty()) {
             if (stateTicks >= MENU_TIMEOUT_TICKS) {
@@ -285,7 +295,7 @@ public class ReallyWorldController {
         }
 
         ScreenHandler menu = screen.getScreenHandler();
-        OptionalInt slot = BetterRCT.nextPageSlot(menu);
+        OptionalInt slot = nextPageSlot(menu);
 
         if (slot.isEmpty()) {
             if (stateTicks >= MENU_TIMEOUT_TICKS) {
@@ -334,7 +344,7 @@ public class ReallyWorldController {
         }
 
         ScreenHandler menu = screen.getScreenHandler();
-        OptionalInt slot = BetterRCT.nextPageSlot(menu);
+        OptionalInt slot = nextPageSlot(menu);
 
         if (slot.isEmpty()) {
             if (stateTicks >= MENU_TIMEOUT_TICKS) {
@@ -447,6 +457,26 @@ public class ReallyWorldController {
         return OptionalInt.empty();
     }
 
+    public static OptionalInt workbenchSlot(ScreenHandler menu) {
+        return BetterRCT.slotMatching(menu, stack -> {
+            if (stack.getItem() != Items.CRAFTING_TABLE) {
+                return false;
+            }
+
+            return BetterRCT.matches(stack.getName().getString(), "ГРИФ ВЫЖИВАНИЕ (1.16.5)");
+        });
+    }
+
+    public static OptionalInt nextPageSlot(ScreenHandler menu) {
+        return BetterRCT.slotMatching(menu, stack -> {
+            if (stack.getItem() != Items.ARROW) {
+                return false;
+            }
+
+            return BetterRCT.matches(stack.getName().getString(), "Следующая страница");
+        });
+    }
+
     private static int countFor(int number) {
         if (number <= 32) {
             return number;
@@ -485,7 +515,7 @@ public class ReallyWorldController {
         return mc != null
             && mc.world != null
             && targetNumber != null
-            && BetterRCT.getInstance().isOnReallyWorldServer(targetNumber);
+            && isOnReallyWorldServer(targetNumber);
     }
 
     public boolean scoreboardContains(String text) {
@@ -528,12 +558,8 @@ public class ReallyWorldController {
     }
 
     private void waitForFinish(MinecraftClient mc) {
-        if (!isTargetGriefOnScoreboard(mc)) {
+        if (!BetterRCT.getInstance().isOnServer(targetNumber)) {
             finishDelayTicks = 0;
-
-            if (stateTicks >= FINISH_TIMEOUT_TICKS) {
-                fail(mc, "Вход на гриф #" + targetNumber + " не подтверждён. Проверьте скорборд.");
-            }
 
             return;
         }
@@ -554,6 +580,24 @@ public class ReallyWorldController {
         closeMenu(mc);
         Chat.info(mc, message);
         reset();
+    }
+
+    public void handleIncomingMessageInternal(String message) {
+        if (message == null || !isBusy()) {
+            return;
+        }
+
+        if (message.contains("Не удалось подключиться к серверу")) {
+            stop();
+        }
+    }
+
+    public static void handleIncomingMessage(String message) {
+        if (instance == null) {
+            return;
+        }
+
+        instance.handleIncomingMessageInternal(message);
     }
 
     public void stop() {
@@ -634,6 +678,14 @@ public class ReallyWorldController {
     private void switchTo(State next) {
         state = next;
         stateTicks = 0;
+    }
+
+    public boolean isOnReallyWorldServer(String number) {
+        if (number == null || number.isBlank()) {
+            return false;
+        }
+
+        return scoreboardContains("ГРИФ #" + number);
     }
 
     private void fail(MinecraftClient mc, String message) {

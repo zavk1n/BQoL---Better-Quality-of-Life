@@ -41,12 +41,6 @@ public class BetterHealth {
     private final BlockedFeatures blocked = new BlockedFeatures();
     private static class BlockedFeatures {
         boolean main;
-        boolean scaling;
-        boolean hovering;
-        boolean pvp;
-        boolean decimal;
-        boolean goldenHearts;
-        boolean goldenPlus;
     }
 
     private static final EquipmentSlot[] ARMOR_SLOTS = {
@@ -270,12 +264,6 @@ public class BetterHealth {
 
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("better_health");
-        blocked.scaling = LiteApiManager.isFeatureBlocked("better_health_scaling");
-        blocked.hovering = LiteApiManager.isFeatureBlocked("better_health_hovering");
-        blocked.pvp = LiteApiManager.isFeatureBlocked("better_health_pvp");
-        blocked.decimal = LiteApiManager.isFeatureBlocked("better_health_decimal");
-        blocked.goldenHearts = LiteApiManager.isFeatureBlocked("better_health_golden_hearts");
-        blocked.goldenPlus = LiteApiManager.isFeatureBlocked("better_health_golden_plus");
     }
 
     private void reloadFromConfigInternal() {
@@ -348,8 +336,7 @@ public class BetterHealth {
         hidingIndicator = true;
 
         boolean scalingEnabled = isEnabledInternal()
-                && config.isBetterHealthScaling()
-                && !blocked.scaling;
+                && config.isBetterHealthScaling();
 
         animation.hide(scalingEnabled);
     }
@@ -391,7 +378,7 @@ public class BetterHealth {
 
         state.lastDamageTick = client.world.getTime();
 
-        boolean scalingEnabled = config.isBetterHealthScaling() && !blocked.scaling;
+        boolean scalingEnabled = config.isBetterHealthScaling();
 
         animation.show(scalingEnabled, false);
     }
@@ -450,9 +437,7 @@ public class BetterHealth {
             && state.target != null
             && !hidingIndicator) {
 
-            boolean scalingEnabled = isEnabledInternal()
-                && config.isBetterHealthScaling()
-                && !blocked.scaling;
+            boolean scalingEnabled = isEnabledInternal() && config.isBetterHealthScaling();
 
             animation.show(scalingEnabled, false);
         }
@@ -471,9 +456,7 @@ public class BetterHealth {
             startHideAnimation();
         }
 
-        boolean scalingEnabled = isEnabledInternal()
-            && config.isBetterHealthScaling()
-            && !blocked.scaling;
+        boolean scalingEnabled = isEnabledInternal() && config.isBetterHealthScaling();
 
         if (hidingIndicator) {
             cancelPendingAttack();
@@ -503,26 +486,11 @@ public class BetterHealth {
             || state.lastSettingsHash != settingsHash;
 
         if (rebuild) {
-            boolean useGoldenHearts = isEnabledInternal()
-                    && config.isBetterHealthGoldenHearts()
-                    && !blocked.goldenHearts;
+            boolean useGoldenHearts = isEnabledInternal() && config.isBetterHealthGoldenHearts();
+            boolean useGoldenPlus = isEnabledInternal() && config.isBetterHealthGoldenHeartsPlus();
+            boolean useDecimal = isEnabledInternal() && config.isBetterHealthDecimal();
 
-            boolean useGoldenPlus = isEnabledInternal()
-                    && config.isBetterHealthGoldenHeartsPlus()
-                    && !blocked.goldenPlus;
-
-            boolean useDecimal = isEnabledInternal()
-                    && config.isBetterHealthDecimal()
-                    && !blocked.decimal;
-
-            state.cachedRenderText = buildDisplayText(
-                    normalHealth,
-                    absorption,
-                    totalHealth,
-                    useDecimal,
-                    useGoldenHearts,
-                    useGoldenPlus
-                );
+            state.cachedRenderText = buildDisplayText(normalHealth, absorption, totalHealth, useDecimal, useGoldenHearts, useGoldenPlus);
 
             state.lastCachedHealth = normalHealth;
             state.lastCachedAbsorption = absorption;
@@ -535,7 +503,7 @@ public class BetterHealth {
         float baseScale = MathHelper.lerp(danger, 1.0f, 1.20f);
         float animationScale = 1.0f;
 
-        if (config.isBetterHealthScaling() && !blocked.scaling) {
+        if (config.isBetterHealthScaling()) {
             animationScale = animation.currentScale;
         }
 
@@ -635,8 +603,7 @@ public class BetterHealth {
         Formatting color = getIndicatorFormatting(totalHealth);
 
         boolean useDecimal = isEnabledInternal()
-                && config.isBetterHealthDecimal()
-                && !blocked.decimal;
+                && config.isBetterHealthDecimal();
 
         String healthValue = formatIndicatorString(totalHealth, useDecimal);
 
@@ -682,9 +649,7 @@ public class BetterHealth {
             return;
         }
 
-        boolean scalingEnabled = isEnabledInternal()
-            && config.isBetterHealthScaling()
-            && !blocked.scaling;
+        boolean scalingEnabled = isEnabledInternal() && config.isBetterHealthScaling();
 
         animation.update(tickDelta, scalingEnabled);
 
@@ -725,11 +690,11 @@ public class BetterHealth {
             return false;
         }
 
-        if (config.isBetterHealthPvPMode() && !blocked.pvp && shouldHideIndicator(state.target)) {
+        if (config.isBetterHealthPvPMode() && shouldHideIndicator(state.target)) {
             return false;
         }
 
-        if (config.isBetterHealthHovering() && !blocked.hovering) {
+        if (config.isBetterHealthHovering()) {
             return isHoverOnTarget(client);
         }
 
@@ -804,7 +769,7 @@ public class BetterHealth {
 
         hidingIndicator = false;
 
-        boolean scalingEnabled = config.isBetterHealthScaling() && !blocked.scaling;
+        boolean scalingEnabled = config.isBetterHealthScaling();
 
         if (newTarget || animation.currentAlpha <= 0.05f) {
             animation.show(scalingEnabled, false);
@@ -859,9 +824,6 @@ public class BetterHealth {
         hash = 31 * hash + (config.isBetterHealthDecimal() ? 1 : 0);
         hash = 31 * hash + (config.isBetterHealthGoldenHearts() ? 1 : 0);
         hash = 31 * hash + (config.isBetterHealthGoldenHeartsPlus() ? 1 : 0);
-        hash = 31 * hash + (blocked.decimal ? 1 : 0);
-        hash = 31 * hash + (blocked.goldenHearts ? 1 : 0);
-        hash = 31 * hash + (blocked.goldenPlus ? 1 : 0);
 
         return hash;
     }

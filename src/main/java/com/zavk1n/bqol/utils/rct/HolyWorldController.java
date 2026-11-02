@@ -18,6 +18,16 @@ import java.util.OptionalInt;
 
 @Environment(EnvType.CLIENT)
 public class HolyWorldController {
+    private static HolyWorldController instance;
+
+    public HolyWorldController() {
+        instance = this;
+    }
+
+    public static HolyWorldController getInstance() {
+        return instance;
+    }
+
     private static final String HUB_COMMAND = "hub";
     private static final String MENU_COMMAND = "menu";
 
@@ -241,7 +251,7 @@ public class HolyWorldController {
     }
 
     private void findAndClickSlot(MinecraftClient mc, HandledScreen<?> screen, ScreenHandler menu) {
-        OptionalInt slot = BetterRCT.liteAnarchySlot(menu);
+        OptionalInt slot = liteAnarchySlot(menu);
 
         if (slot.isEmpty()) {
             return;
@@ -257,7 +267,7 @@ public class HolyWorldController {
             return;
         }
 
-        OptionalInt slot = BetterRCT.armorStandSlot(menu, targetMode.armorStandCount);
+        OptionalInt slot = armorStandSlot(menu, targetMode.armorStandCount);
 
         if (slot.isEmpty()) {
             return;
@@ -350,6 +360,26 @@ public class HolyWorldController {
         reset();
     }
 
+    public void handleIncomingMessageInternal(String message) {
+        if (message == null || !isBusy()) {
+            return;
+        }
+
+        if (message.contains("Не удалось подключить вас к серверу")
+            || message.contains("Не удалось подключиться к серверу")
+            || message.contains("Вы уже подключаетесь к серверу")) {
+            stop();
+        }
+    }
+
+    public static void handleIncomingMessage(String message) {
+        if (instance == null) {
+            return;
+        }
+
+        instance.handleIncomingMessageInternal(message);
+    }
+
     public void stop() {
         MinecraftClient mc = MinecraftClient.getInstance();
 
@@ -372,6 +402,18 @@ public class HolyWorldController {
         mc.interactionManager.clickSlot(menu.syncId, slot, 0, SlotActionType.PICKUP, mc.player);
 
         return true;
+    }
+
+    public static OptionalInt liteAnarchySlot(ScreenHandler menu) {
+        return BetterRCT.slotMatching(menu, stack -> {
+            String text = BetterRCT.normalize(BetterRCT.combinedInfo(stack));
+
+            return text.contains("лайт") && text.contains("анархия") && text.contains("1.16");
+        });
+    }
+
+    public static OptionalInt armorStandSlot(ScreenHandler menu, int count) {
+        return BetterRCT.slotMatching(menu, stack -> stack.getItem() == Items.ARMOR_STAND && stack.getCount() == count);
     }
 
     private static void closeMenu(MinecraftClient mc) {

@@ -6,6 +6,7 @@ import com.zavk1n.bqol.mixin.ACCESSORBossHealthOverlay;
 import com.zavk1n.bqol.utils.chat.Chat;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 import com.zavk1n.bqol.utils.liteapi.restapi.HWServers;
+import com.zavk1n.bqol.utils.rct.FakeTimeController;
 import com.zavk1n.bqol.utils.rct.HolyWorldController;
 import com.zavk1n.bqol.utils.rct.ReallyWorldController;
 
@@ -51,6 +52,7 @@ public class BetterRCT {
     private BetterRCT() {
         this.holyWorldController = new HolyWorldController();
         this.reallyWorldController = new ReallyWorldController();
+        this.fakeTimeController = new FakeTimeController();
     }
 
     private static BetterRCT instance;
@@ -62,19 +64,26 @@ public class BetterRCT {
         boolean main;
         boolean holyworld;
         boolean reallyworld;
+        boolean faketime;
     }
 
     private final HolyWorldController holyWorldController;
     private final ReallyWorldController reallyWorldController;
+    private final FakeTimeController fakeTimeController;
 
     private String currentNumber;
     private String currentSidebarLine;
     private long pvpConfirmDeadline;
+
     public int MESSAGE_COLOR = 0xC7C2FF;
+
     private static final String[] COMMANDS = {".rct", ".an"};
 
     private static final int SIDEBAR_SLOT = 1;
-    private static final int MAX_REALLYWORLD_ANARCHIES = 32;
+
+    private static final int MAX_REALLYWORLD_ANARCHIES = 88;
+    private static final int MAX_FAKETIME_ANARCHIES = 3;
+
     private static final int INVENTORY_SLOTS = 36;
     private static final long PVP_CONFIRM_MS = 3000L;
 
@@ -136,6 +145,16 @@ public class BetterRCT {
         }
     }
 
+    public static boolean isFakeTimeRCTEnabled() {
+        return instance != null && instance.isFakeTimeRCTEnabledInternal();
+    }
+
+    public static void setFakeTimeRCTEnabled(boolean enabled) {
+        if (instance != null) {
+            instance.setFakeTimeRCTEnabledInternal(enabled);
+        }
+    }
+
     public static int getMaxHolyWorldAnarchies() {
         return HWServers.getInstance().getMaxAnarchy();
     }
@@ -144,6 +163,7 @@ public class BetterRCT {
         blocked.main = LiteApiManager.isFeatureBlocked("better_rct");
         blocked.holyworld = LiteApiManager.isFeatureBlocked("better_rct_holyworld");
         blocked.reallyworld = LiteApiManager.isFeatureBlocked("better_rct_reallyworld");
+        blocked.faketime = LiteApiManager.isFeatureBlocked("better_rct_faketime");
     }
 
     private boolean isEnabledInternal() {
@@ -175,14 +195,28 @@ public class BetterRCT {
     }
 
     private void setReallyWorldRCTEnabledInternal(boolean enabled) {
-        config.setBetterRCTReallyWorld(enabled);
+        config.setBetterRCTFakeTime(enabled);
+    }
+
+    private boolean isFakeTimeRCTEnabledInternal() {
+        return isEnabledInternal()
+            && config.isBetterRCTFakeTime()
+            && !blocked.faketime
+            && isFakeTime();
+    }
+
+    private void setFakeTimeRCTEnabledInternal(boolean enabled) {
+        config.setBetterRCTFakeTime(enabled);
     }
 
     public void onTick(MinecraftClient mc) {
         boolean holyWorld = isHolyWorldRCTEnabledInternal();
         boolean reallyWorld = isReallyWorldRCTEnabledInternal();
+        boolean fakeTime = isFakeTimeRCTEnabledInternal();
 
-        if (!holyWorld && !reallyWorld) {
+        if (!holyWorld
+            && !reallyWorld
+            && !fakeTime) {
             return;
         }
 
@@ -199,10 +233,16 @@ public class BetterRCT {
         if (reallyWorld) {
             reallyWorldController.tick(mc);
         }
+
+        if (fakeTime) {
+            fakeTimeController.tick(mc);
+        }
     }
 
     public boolean onChat(String message) {
-        if (!isHolyWorldRCTEnabledInternal() && !isReallyWorldRCTEnabledInternal()) {
+        if (!isHolyWorldRCTEnabledInternal()
+            && !isReallyWorldRCTEnabledInternal()
+            && !isFakeTimeRCTEnabledInternal()) {
             return true;
         }
 
@@ -210,7 +250,9 @@ public class BetterRCT {
     }
 
     public boolean onCommand(String command) {
-        if (!isHolyWorldRCTEnabledInternal() && !isReallyWorldRCTEnabledInternal()) {
+        if (!isHolyWorldRCTEnabledInternal()
+            && !isReallyWorldRCTEnabledInternal()
+            && !isFakeTimeRCTEnabledInternal()) {
             return true;
         }
 
@@ -231,6 +273,7 @@ public class BetterRCT {
         if (argument.equalsIgnoreCase("stop")) {
             holyWorldController.stop();
             reallyWorldController.stop();
+            fakeTimeController.stop();
 
             return false;
         }
@@ -241,6 +284,10 @@ public class BetterRCT {
 
         if (isReallyWorldRCTEnabledInternal()) {
             return handleReallyWorldCommand(argument);
+        }
+
+        if (isFakeTimeRCTEnabledInternal()) {
+            return handleFakeTimeCommand(argument);
         }
 
         return true;
@@ -278,6 +325,24 @@ public class BetterRCT {
         }
 
         reallyWorldController.start(number);
+
+        return false;
+    }
+
+    private boolean handleFakeTimeCommand(String argument) {
+        String number = requestedFakeTimeNumber(argument);
+
+        if (number == null) {
+            sendFakeTimeNumberError(argument);
+
+            return false;
+        }
+
+        if (!confirmedDuringPvp()) {
+            return false;
+        }
+
+        fakeTimeController.start(number);
 
         return false;
     }
@@ -345,6 +410,16 @@ public class BetterRCT {
         return Integer.toString(number);
     }
 
+    private static boolean isValidReallyWorldNumber(String number) {
+        try {
+            int value = Integer.parseInt(number);
+
+            return value >= 1 && value <= MAX_REALLYWORLD_ANARCHIES;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     private String requestedReallyWorldNumber(String argument) {
         if (argument.isEmpty()) {
             if (currentNumber != null && isValidReallyWorldNumber(currentNumber)) {
@@ -373,14 +448,42 @@ public class BetterRCT {
         return Integer.toString(number);
     }
 
-    private static boolean isValidReallyWorldNumber(String number) {
+    private static boolean isValidFakeTimeNumber(String number) {
         try {
             int value = Integer.parseInt(number);
 
-            return value >= 1 && value <= MAX_REALLYWORLD_ANARCHIES;
+            return value >= 1 && value <= MAX_FAKETIME_ANARCHIES;
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    private String requestedFakeTimeNumber(String argument) {
+        if (argument.isEmpty()) {
+            if (currentNumber != null && isValidFakeTimeNumber(currentNumber)) {
+                return currentNumber;
+            }
+
+            return fakeTimeController.lastNumber;
+        }
+
+        if (!argument.matches("-?\\d+")) {
+            return null;
+        }
+
+        int number;
+
+        try {
+            number = Integer.parseInt(argument);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+
+        if (number < 1 || number > MAX_FAKETIME_ANARCHIES) {
+            return null;
+        }
+
+        return Integer.toString(number);
     }
 
     private static String serverNumber(String text) {
@@ -437,7 +540,27 @@ public class BetterRCT {
         try {
             int value = Integer.parseInt(argument);
 
-            if (value >= 69) {
+            if (value >= 33) {
+                Chat.send(mc(), Chat.unknownRoute());
+            } else {
+                Chat.send(mc(), Chat.invalidNumber());
+            }
+        } catch (NumberFormatException e) {
+            Chat.send(mc(), Chat.invalidNumber());
+        }
+    }
+
+    private void sendFakeTimeNumberError(String argument) {
+        if (argument.isEmpty()) {
+            Chat.send(mc(), Chat.invalidNumber());
+
+            return;
+        }
+
+        try {
+            int value = Integer.parseInt(argument);
+
+            if (value >= 4) {
                 Chat.send(mc(), Chat.unknownRoute());
             } else {
                 Chat.send(mc(), Chat.invalidNumber());
@@ -666,40 +789,8 @@ public class BetterRCT {
         return OptionalInt.empty();
     }
 
-    public static OptionalInt liteAnarchySlot(ScreenHandler menu) {
-        return slotMatching(menu, stack -> {
-            String text = normalize(combinedInfo(stack));
-
-            return text.contains("лайт") && text.contains("анархия") && text.contains("1.16");
-        });
-    }
-
-    public static OptionalInt armorStandSlot(ScreenHandler menu, int count) {
-        return slotMatching(menu, stack -> stack.getItem() == Items.ARMOR_STAND && stack.getCount() == count);
-    }
-
     public static OptionalInt playerStackSlot(ScreenHandler menu, int count) {
-        return slotMatching(menu, stack -> stack.getItem() == Items.PLAYER_HEAD && stack.getCount() == count);
-    }
-
-    public static OptionalInt workbenchSlot(ScreenHandler menu) {
-        return slotMatching(menu, stack -> {
-            if (stack.getItem() != Items.CRAFTING_TABLE) {
-                return false;
-            }
-
-            return matches(stack.getName().getString(), "ГРИФ ВЫЖИВАНИЕ (1.16.5)");
-        });
-    }
-
-    public static OptionalInt nextPageSlot(ScreenHandler menu) {
-        return slotMatching(menu, stack -> {
-            if (stack.getItem() != Items.ARROW) {
-                return false;
-            }
-
-            return matches(stack.getName().getString(), "Следующая страница");
-        });
+        return BetterRCT.slotMatching(menu, stack -> stack.getItem() == Items.PLAYER_HEAD && stack.getCount() == count);
     }
 
     public static String snapshot(HandledScreen<?> screen) {
@@ -744,14 +835,6 @@ public class BetterRCT {
         return number != null && number.equals(currentNumber);
     }
 
-    public boolean isOnReallyWorldServer(String number) {
-        if (number == null || number.isBlank() || mc().world == null) {
-            return false;
-        }
-
-        return reallyWorldController.scoreboardContains("ГРИФ #" + number);
-    }
-
     private boolean isHolyWorld() {
         MinecraftClient client = mc();
 
@@ -786,5 +869,23 @@ public class BetterRCT {
         return server.address
             .toLowerCase(Locale.ROOT)
             .contains("reallyworld");
+    }
+
+    private boolean isFakeTime() {
+        MinecraftClient client = mc();
+
+        if (client == null) {
+            return false;
+        }
+
+        ServerInfo server = client.getCurrentServerEntry();
+
+        if (server == null || server.address == null) {
+            return false;
+        }
+
+        return server.address
+            .toLowerCase(Locale.ROOT)
+            .contains("faketime");
     }
 }

@@ -362,9 +362,9 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         starBtn = createButton(
             controlX,
             starY,
-            () -> config.betterPrefixesStarEnabled,
+            () -> config.betterPrefixesStar,
             value -> {
-                config.betterPrefixesStarEnabled = value;
+                config.betterPrefixesStar = value;
                 changed = true;
             }
         );
@@ -472,7 +472,7 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         updateButton(nameProtectBtn, config.isBetterPrefixesNameProtect());
         updateButton(donateBtn, config.isBetterPrefixesDonate());
         updateButton(titleBtn, config.isBetterPrefixesTitle());
-        updateButton(starBtn, config.betterPrefixesStarEnabled);
+        updateButton(starBtn, config.betterPrefixesStar);
 
         updateButton(nameColorBtn, config.betterPrefixesNameColor);
         updateButton(donateColorBtn, config.betterPrefixesDonateColor);

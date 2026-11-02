@@ -2,6 +2,7 @@ package com.zavk1n.bqol.client.init;
 
 import com.zavk1n.bqol.features.*;
 
+import com.zavk1n.bqol.utils.rct.MessageHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -43,6 +44,11 @@ public enum FeatureRegistry {
         () -> {},
         BetterTnt::refreshBlockedStatus
     ),
+    BETTER_CHAT(
+        BetterChat::initialize,
+        () -> {},
+        BetterChat::refreshBlockedStatus
+    ),
     BETTER_TP (
         BetterTP::initialize,
         () -> {},
@@ -62,6 +68,11 @@ public enum FeatureRegistry {
         BetterHolograms::initialize,
         () -> {},
         BetterHolograms::refreshBlockedStatus
+    ),
+    BETTER_TOTEMS(
+        BetterTotems::initialize,
+        () -> {},
+        BetterTotems::refreshBlockedStatus
     ),
     BETTER_SPHERES(
         BetterSpheres::initialize,
@@ -97,6 +108,11 @@ public enum FeatureRegistry {
         BetterMine::initialize,
         () -> {},
         BetterMine::refreshBlockedStatus
+    ),
+    BETTER_HIT_COUNTER(
+        BetterHitCounter::initialize,
+        () -> {},
+        BetterHitCounter::refreshBlockedStatus
     );
 
     private static final FeatureRegistry[] VALUES = values();

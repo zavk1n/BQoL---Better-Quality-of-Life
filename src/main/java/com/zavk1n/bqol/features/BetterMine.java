@@ -105,11 +105,11 @@ public class BetterMine {
     }
 
     private boolean isEnabledInternal() {
-        return config.isBetterRCTEnabled() && !blocked.main;
+        return config.isBetterMineEnabled() && !blocked.main;
     }
 
     private void setEnabledInternal(boolean enabled) {
-        config.setBetterRCTEnabled(enabled);
+        config.setBetterMineEnabled(enabled);
 
         refreshBlockedStatusInternal();
 
@@ -134,7 +134,7 @@ public class BetterMine {
     }
 
     private boolean isHolyWorldMineHelperEnabledInternal() {
-        return isEnabledInternal()
+        return isHolyWorldEnabledInternal()
             && config.isHolyWorldMineHelperEnabled()
             && !blocked.hwminehelper
             && isHolyWorld();
@@ -204,11 +204,6 @@ public class BetterMine {
 
         if (mode == null) {
             Chat.info(mc(), message("Доступные режимы: default, nether"));
-            return false;
-        }
-
-        if (!isHolyWorldEnabledInternal()) {
-            Chat.info(mc(), message("Mine Helper доступен только на HolyWorld."));
             return false;
         }
 

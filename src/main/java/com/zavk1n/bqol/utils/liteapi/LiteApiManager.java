@@ -42,11 +42,12 @@ public final class LiteApiManager {
             "better_movement_water_sprint",
             "better_movement_scaffold",
 
-            /// BetterRCT
+            /// Better RCT
             "better_rct",
 
             "better_rct_holyworld",
             "better_rct_reallyworld",
+            "betetr_rct_faketime",
 
             /// Better Sounds
             "better_sounds",
@@ -74,6 +75,15 @@ public final class LiteApiManager {
             "better_tnt_alert_show_blocks",
             "better_tnt_explosion_area",
 
+            /// Better Chat
+            "better_chat",
+
+            "better_chat_stack_messages",
+            "better_chat_animation",
+            "better_chat_more_history",
+            "better_chat_heads",
+            "better_chat_ping",
+
             /// Better TP
             "better_tp",
             "better_tp_auto_accept",
@@ -94,6 +104,13 @@ public final class LiteApiManager {
 
             "better_holograms_visible_armor_stand",
             "better_holograms_anti_holograms",
+
+            /// Better Totems
+            "better_totems",
+            "better_totems_counter",
+
+            "better_totems_holyworld",
+            "better_totems_reallyworld",
 
             /// Better Spheres
             "better_spheres",
@@ -124,20 +141,17 @@ public final class LiteApiManager {
             /// Better Health
             "better_health",
 
-            "better_health_hovering",
-            "better_health_scaling",
-            "better_health_pvp",
-            "better_health_decimal",
-            "better_health_golden_hearts",
-            "better_health_golden_plus",
-
             /// No Render
             "no_render",
 
             /// Better Mine
             "better_mine",
+
             "better_mine_holyworld",
-            "better_mine_holyworld_mine_helper"
+            "better_mine_holyworld_mine_helper",
+
+            /// Better Hit Counter
+            "better_hit_counter"
     );
 
     private static long lastRequestTime = 0;
@@ -344,6 +358,7 @@ public final class LiteApiManager {
 
         if (isFeatureBlocked("better_rct_holyworld")) config.setBetterRCTHolyWorld(false);
         if (isFeatureBlocked("better_rct_reallyworld")) config.setBetterRCTReallyWorld(false);
+        if (isFeatureBlocked("better_rct_faketime")) config.setBetterRCTFakeTime(false);
 
         BetterRCT.refreshBlockedStatus();
 
@@ -381,14 +396,31 @@ public final class LiteApiManager {
         if (isFeatureBlocked("better_tnt_alert_show_blocks")) config.setBetterTntAlertShowBlocks(false);
         if (isFeatureBlocked("better_tnt_explosion_area")) config.setBetterTntExplosionArea(false);
 
+        BetterTnt.refreshBlockedStatus();
+
+        /// Better Chat
+        if (isFeatureBlocked("better_chat")) config.setBetterChatEnabled(false);
+
+        if (isFeatureBlocked("better_chat_stack_messages")) config.setBetterChatStackMessages(false);
+        if (isFeatureBlocked("better_chat_animation")) config.setBetterChatAnimation(false);
+        if (isFeatureBlocked("better_chat_more_history")) config.setBetterChatMoreHistory(false);
+        if (isFeatureBlocked("better_chat_heads")) config.setBetterChatHeads(false);
+        if (isFeatureBlocked("better_chat_ping")) config.setBetterChatPing(false);
+
+        BetterChat.refreshBlockedStatus();
+
         /// Better TP
         if (isFeatureBlocked("better_tp")) config.setBetterTPEnabled(false);
 
         if (isFeatureBlocked("better_tp_auto_accept")) config.setBetterTPAutoAccept(false);
         if (isFeatureBlocked("better_tp_auto_deny")) config.setBetterTPAutoDeny(false);
 
+        BetterTP.refreshBlockedStatus();
+
         /// Better RRLS
         if (isFeatureBlocked("better_rrls")) config.setBetterRRLSEnabled(false);
+
+        BetterRRLS.refreshBlockedStatus();
 
         /// Better Prefixes
         if (isFeatureBlocked("better_prefixes")) config.setBetterPrefixesEnabled(false);
@@ -407,6 +439,15 @@ public final class LiteApiManager {
 
         BetterHolograms.refreshBlockedStatus();
 
+        /// Better Totems
+        if (isFeatureBlocked("better_totems")) config.setBetterTotemsEnabled(false);
+        if (isFeatureBlocked("better_totems_counter")) config.setBetterTotemsCounterEnabled(false);
+
+        if (isFeatureBlocked("better_totems_holyworld")) config.setHolyWorldTotemsEnabled(false);
+        if (isFeatureBlocked("better_totems_reallyworld")) config.setReallyWorldTotemsEnabled(false);
+
+        BetterTotems.refreshBlockedStatus();
+
         /// Better Spheres
         if (isFeatureBlocked("better_spheres")) config.setBetterSpheresEnabled(false);
 
@@ -415,9 +456,8 @@ public final class LiteApiManager {
             config.setHWGoldenSpheres(false);
         }
         if (isFeatureBlocked("better_spheres_holyworld_golden")) config.setHWGoldenSpheres(false);
-        if (isFeatureBlocked("better_spheres_reallyworld")) {
-            config.setReallyWorldSpheresEnabled(false);
-        }
+        if (isFeatureBlocked("better_spheres_reallyworld")) config.setReallyWorldSpheresEnabled(false);
+
 
         BetterSpheres.refreshBlockedStatus();
 
@@ -454,16 +494,6 @@ public final class LiteApiManager {
             BetterHealth.resetDisplay();
         }
 
-        if (isFeatureBlocked("better_health_hovering")) config.setBetterHealthHovering(false);
-        if (isFeatureBlocked("better_health_scaling")) config.setBetterHealthScaling(false);
-        if (isFeatureBlocked("better_health_pvp")) config.setBetterHealthPvPMode(false);
-        if (isFeatureBlocked("better_health_decimal")) config.setBetterHealthDecimal(false);
-        if (isFeatureBlocked("better_health_golden_hearts")) {
-            config.setBetterHealthGoldenHearts(false);
-            config.setBetterHealthGoldenHeartsPlus(false);
-        }
-        if (isFeatureBlocked("better_health_golden_plus")) config.setBetterHealthGoldenHeartsPlus(false);
-
         BetterHealth.refreshBlockedStatus();
 
         /// No Renders
@@ -473,8 +503,16 @@ public final class LiteApiManager {
 
         /// Better Mine
         if (isFeatureBlocked("better_mine")) config.setBetterMineEnabled(false);
+
         if (isFeatureBlocked("better_mine_holyworld")) config.setBetterMineHolyWorldEnabled(false);
         if (isFeatureBlocked("better_mine_holyworld_mine_helper")) config.setHolyWorldMineHelperEnabled(false);
+
+        BetterMine.refreshBlockedStatus();
+
+        /// Better Hit Counter
+        if (isFeatureBlocked("better_hit_counter")) config.setBetterHitCounterEnabled(false);
+
+        BetterHitCounter.refreshBlockedStatus();
     }
 
     public static boolean isFeatureBlocked(String feature) {
