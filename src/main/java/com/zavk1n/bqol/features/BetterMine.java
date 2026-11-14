@@ -180,11 +180,6 @@ public class BetterMine {
         }
 
         String[] parts = trimmed.split("\\s+");
-
-        if (parts.length == 0) {
-            return true;
-        }
-
         String command = parts[0].toLowerCase(Locale.ROOT);
 
         if (command.equals(".minehelper")) {
@@ -196,7 +191,7 @@ public class BetterMine {
 
     private boolean handleMineHelperCommand(String[] args) {
         if (args.length != 2) {
-            sendMineHelperUsage();
+            Chat.info(mc(), message("Использование: .minehelper <default/nether>"));
             return false;
         }
 
@@ -211,10 +206,6 @@ public class BetterMine {
         mineHelperController.start(mode);
 
         return false;
-    }
-
-    private void sendMineHelperUsage() {
-        Chat.info(mc(), message("Использование: .minehelper <default/nether>"));
     }
 
     private static Text message(String text) {

@@ -23,8 +23,7 @@ public class BQoLConfig {
     /// Better Movement
     public boolean betterMovementEnabled = false;
 
-    public boolean betterMovementDefaultMode = false;
-    public boolean betterMovementPvPMode = false;
+    public boolean betterMovementDefault = false;
     public boolean betterMovementStairUp = false;
     public boolean betterMovementWaterSprint = false;
     public boolean betterMovementScaffold = false;
@@ -143,6 +142,9 @@ public class BQoLConfig {
     public boolean betterPrefixesStar = false;
     public int betterPrefixesStarColorRgb = 0xFFFF00;
 
+    public boolean betterPrefixesLightning = false;
+    public int betterPrefixesLightningColorRgb = 0xFFFF00;
+
     /// Better Holograms
     public boolean betterHologramsEnabled = false;
 
@@ -212,6 +214,16 @@ public class BQoLConfig {
     public boolean sphereBUNNY = false;
     public boolean sphereDHELPER = false;
     public boolean sphereDiscipline = false;
+    public boolean sphereDark = false;
+    public boolean sphereBlood = false;
+    public boolean sphereLightning = false;
+    public boolean sphereIce = false;
+    public boolean sphereDiablo = false;
+    public boolean sphereWarden = false;
+    public boolean sphereModer = false;
+    public boolean sphereCheater = false;
+    public boolean sphereAdmin = false;
+    public boolean sphereTeacher = false;
 
     public boolean headBatman = false;
     public boolean headVampire = false;
@@ -230,6 +242,7 @@ public class BQoLConfig {
     public boolean headThor = false;
     public boolean headNutcracker = false;
     public boolean headElf = false;
+    public boolean headTiger = false;
     public boolean easterEgg = false;
 
     /// Better Sky
@@ -258,6 +271,22 @@ public class BQoLConfig {
 
     private boolean betterParticlesTotemsCountEnabled = false;
     private int betterParticlesTotemsCountMode = 1;
+
+    /// Better Liquid
+    public boolean betterLiquidEnabled = false;
+
+    public boolean betterLiquidWaterColorEnabled = false;
+    public int betterLiquidWaterColor = 0xFFFFFF;
+    public boolean betterLiquidLavaColorEnabled = false;
+    public int betterLiquidLavaColor = 0xFFFFFF;
+    public boolean betterLiquidWaterTransparencyEnabled = false;
+    public int betterLiquidWaterTransparency = 100;
+    public boolean betterLiquidWaterColorIntensityEnabled = false;
+    public int betterLiquidWaterColorIntensity = 100;
+    public boolean betterLiquidLavaTransparencyEnabled = false;
+    public int betterLiquidLavaTransparency = 100;
+    public boolean betterLiquidLavaColorIntensityEnabled = false;
+    public int betterLiquidLavaColorIntensity = 100;
 
     /// Better Fog
     public boolean betterFogEnabled = false;
@@ -378,7 +407,6 @@ public class BQoLConfig {
         }
     }
 
-
     private void validateSettings() {
         betterTntAlertPosition = Math.max(0, Math.min(4, betterTntAlertPosition));
 
@@ -390,12 +418,22 @@ public class BQoLConfig {
         betterFogDistance = Math.max(1, Math.min(32, betterFogDistance));
 
         betterFogColor &= 0xFFFFFF;
+
+        betterLiquidWaterColor &= 0xFFFFFF;
+        betterLiquidLavaColor &= 0xFFFFFF;
+        betterLiquidWaterTransparency = Math.max(0, Math.min(100, betterLiquidWaterTransparency));
+        betterLiquidLavaTransparency = Math.max(0, Math.min(100, betterLiquidLavaTransparency));
+
+        betterLiquidWaterColorIntensity = Math.max(0, Math.min(100, betterLiquidWaterColorIntensity));
+        betterLiquidLavaColorIntensity = Math.max(0, Math.min(100, betterLiquidLavaColorIntensity));
+
         betterSkyColor &= 0xFFFFFF;
 
         betterPrefixesNameColorRgb &= 0xFFFFFF;
         betterPrefixesDonateColorRgb &= 0xFFFFFF;
         betterPrefixesTitleColorRgb &= 0xFFFFFF;
         betterPrefixesStarColorRgb &= 0xFFFFFF;
+        betterPrefixesLightningColorRgb &= 0xFFFFFF;
 
         betterParticlesShulkersConstantColor &= 0xFFFFFF;
         betterParticlesShulkersBreakingColor &= 0xFFFFFF;
@@ -477,32 +515,14 @@ public class BQoLConfig {
         if (betterHealthGoldenHeartsPlus && !betterHealthGoldenHearts) {
             betterHealthGoldenHeartsPlus = false;
         }
-
-        if (betterMovementDefaultMode && betterMovementPvPMode) {
-            betterMovementPvPMode = false;
-        }
     }
 
     /// Better Movement
     public boolean isBetterMovementEnabled() { return betterMovementEnabled; }
     public void setBetterMovementEnabled(boolean enabled) { this.betterMovementEnabled = enabled; save(); }
 
-    public boolean isBetterMovementDefaultMode() { return betterMovementDefaultMode; }
-    public void setBetterMovementDefaultMode(boolean enabled) {
-        this.betterMovementDefaultMode = enabled;
-        if (enabled) {
-            this.betterMovementPvPMode = false;
-        }
-        save();
-    }
-    public boolean isBetterMovementPvPMode() { return betterMovementPvPMode; }
-    public void setBetterMovementPvPMode(boolean enabled) {
-        this.betterMovementPvPMode = enabled;
-        if (enabled) {
-            this.betterMovementDefaultMode = false;
-        }
-        save();
-    }
+    public boolean isBetterMovementDefault() { return betterMovementDefault; }
+    public void setBetterMovementDefault(boolean enabled) { this.betterMovementDefault = enabled; save(); }
     public boolean isBetterMovementStairUp() { return betterMovementStairUp; }
     public void setBetterMovementStairUp(boolean enabled) { this.betterMovementStairUp = enabled; save(); }
     public boolean isBetterMovementWaterSprint() { return betterMovementWaterSprint; }
@@ -803,8 +823,29 @@ public class BQoLConfig {
     public void setSphereBUNNY(boolean enabled) { this.sphereBUNNY = enabled; save(); }
     public boolean isSphereDHELPER() { return sphereDHELPER; }
     public void setSphereDHELPER(boolean enabled) { this.sphereDHELPER = enabled; save(); }
+    public boolean isSphereWarden() { return sphereWarden; }
+    public void setSphereWarden(boolean enabled) { this.sphereWarden = enabled; save(); }
+    public boolean isSphereModer() { return sphereModer; }
+    public void setSphereModer(boolean enabled) { this.sphereModer = enabled; save(); }
+    public boolean isSphereCheater() { return sphereCheater; }
+    public void setSphereCheater(boolean enabled) { this.sphereCheater = enabled; save(); }
+    public boolean isSphereAdmin() { return sphereAdmin; }
+    public void setSphereAdmin(boolean enabled) { this.sphereAdmin = enabled; save(); }
+    public boolean isSphereTeacher() { return sphereTeacher; }
+    public void setSphereTeacher(boolean enabled) { this.sphereTeacher = enabled; save(); }
     public boolean isSphereDiscipline() { return sphereDiscipline; }
     public void setSphereDiscipline(boolean enabled) { this.sphereDiscipline = enabled; save(); }
+    public boolean isSphereDark() { return sphereDark; }
+    public void setSphereDark(boolean enabled) { this.sphereDark = enabled; save(); }
+    public boolean isSphereBlood() { return sphereBlood; }
+    public void setSphereBlood(boolean enabled) { this.sphereBlood = enabled; save(); }
+    public boolean isSphereLightning() { return sphereLightning; }
+    public void setSphereLightning(boolean enabled) { this.sphereLightning = enabled; save(); }
+    public boolean isSphereIce() { return sphereIce; }
+    public void setSphereIce(boolean enabled) { this.sphereIce = enabled; save(); }
+    public boolean isSphereDiablo() { return sphereDiablo; }
+    public void setSphereDiablo(boolean enabled) { this.sphereDiablo = enabled; save(); }
+
     public boolean isHeadBatman() { return headBatman; }
     public void setHeadBatman(boolean enabled) { this.headBatman = enabled; save(); }
     public boolean isHeadVampire() { return headVampire; }
@@ -839,6 +880,8 @@ public class BQoLConfig {
     public void setHeadNutcracker(boolean enabled) { this.headNutcracker = enabled; save(); }
     public boolean isHeadElf() { return headElf; }
     public void setHeadElf(boolean enabled) { this.headElf = enabled; save(); }
+    public boolean isHeadTiger() { return headTiger; }
+    public void setHeadTiger(boolean enabled) { this.headTiger = enabled; save(); }
 
     public boolean isEasterEgg() { return easterEgg; }
     public void setEasterEgg(boolean enabled) { this.easterEgg = enabled; save(); }
@@ -887,6 +930,40 @@ public class BQoLConfig {
     public void setBetterParticlesTotemsCountEnabled(boolean enabled) { this.betterParticlesTotemsCountEnabled = enabled; save();}
     public int getBetterParticlesTotemsCountMode() { return Math.max(0, Math.min(2, betterParticlesTotemsCountMode)); }
     public void setBetterParticlesTotemsCountMode(int mode) { this.betterParticlesTotemsCountMode = Math.max(0, Math.min(2, mode)); save();}
+
+    /// Better Liquid
+    public boolean isBetterLiquidEnabled() { return betterLiquidEnabled; }
+    public void setBetterLiquidEnabled(boolean enabled) { this.betterLiquidEnabled = enabled; save(); }
+
+    public boolean isBetterLiquidWaterColorEnabled() { return betterLiquidWaterColorEnabled; }
+    public void setBetterLiquidWaterColorEnabled(boolean enabled) { this.betterLiquidWaterColorEnabled = enabled; save(); }
+    public int getBetterLiquidWaterColor() { return betterLiquidWaterColor; }
+    public void setBetterLiquidWaterColor(int rgb) { this.betterLiquidWaterColor = rgb & 0xFFFFFF; save(); }
+
+    public boolean isBetterLiquidLavaColorEnabled() { return betterLiquidLavaColorEnabled; }
+    public void setBetterLiquidLavaColorEnabled(boolean enabled) { this.betterLiquidLavaColorEnabled = enabled; save(); }
+    public int getBetterLiquidLavaColor() { return betterLiquidLavaColor; }
+    public void setBetterLiquidLavaColor(int rgb) { this.betterLiquidLavaColor = rgb & 0xFFFFFF; save(); }
+
+    public boolean isBetterLiquidWaterTransparencyEnabled() { return betterLiquidWaterTransparencyEnabled; }
+    public void setBetterLiquidWaterTransparencyEnabled(boolean enabled) { this.betterLiquidWaterTransparencyEnabled = enabled; save(); }
+    public int getBetterLiquidWaterTransparency() { return betterLiquidWaterTransparency; }
+    public void setBetterLiquidWaterTransparency(int percentage) {this.betterLiquidWaterTransparency = Math.max(0, Math.min(100, percentage));save();}
+
+    public boolean isBetterLiquidLavaTransparencyEnabled() { return betterLiquidLavaTransparencyEnabled; }
+    public void setBetterLiquidLavaTransparencyEnabled(boolean enabled) { this.betterLiquidLavaTransparencyEnabled = enabled; save(); }
+    public int getBetterLiquidLavaTransparency() { return betterLiquidLavaTransparency; }
+    public void setBetterLiquidLavaTransparency(int percentage) {this.betterLiquidLavaTransparency = Math.max(0, Math.min(100, percentage)) ;save();}
+
+    public boolean isBetterLiquidWaterColorIntensityEnabled() { return betterLiquidWaterColorIntensityEnabled; }
+    public void setBetterLiquidWaterColorIntensityEnabled(boolean enabled) { this.betterLiquidWaterColorIntensityEnabled = enabled; save(); }
+    public int getBetterLiquidWaterColorIntensity() { return betterLiquidWaterColorIntensity; }
+    public void setBetterLiquidWaterColorIntensity(int percentage) { this.betterLiquidWaterColorIntensity = Math.max(0, Math.min(100, percentage)); save(); }
+
+    public boolean isBetterLiquidLavaColorIntensityEnabled() { return betterLiquidLavaColorIntensityEnabled; }
+    public void setBetterLiquidLavaColorIntensityEnabled(boolean enabled) { this.betterLiquidLavaColorIntensityEnabled = enabled; save(); }
+    public int getBetterLiquidLavaColorIntensity() { return betterLiquidLavaColorIntensity; }
+    public void setBetterLiquidLavaColorIntensity(int percentage) { this.betterLiquidLavaColorIntensity = Math.max(0, Math.min(100, percentage)); save(); }
 
     /// Better Fog
     public boolean isBetterFogEnabled() { return betterFogEnabled; }
@@ -1025,8 +1102,7 @@ public class BQoLConfig {
         /// Better Movement
         this.betterMovementEnabled = defaults.betterMovementEnabled;
 
-        this.betterMovementDefaultMode = defaults.betterMovementDefaultMode;
-        this.betterMovementPvPMode = defaults.betterMovementPvPMode;
+        this.betterMovementDefault = defaults.betterMovementDefault;
         this.betterMovementStairUp = defaults.betterMovementStairUp;
         this.betterMovementWaterSprint = defaults.betterMovementWaterSprint;
         this.betterMovementScaffold = defaults.betterMovementScaffold;
@@ -1146,6 +1222,9 @@ public class BQoLConfig {
         this.betterPrefixesStar = defaults.betterPrefixesStar;
         this.betterPrefixesStarColorRgb = defaults.betterPrefixesStarColorRgb;
 
+        this.betterPrefixesLightning = defaults.betterPrefixesLightning;
+        this.betterPrefixesLightningColorRgb = defaults.betterPrefixesLightningColorRgb;
+
         /// Better Holograms
         this.betterHologramsEnabled = defaults.betterHologramsEnabled;
 
@@ -1215,6 +1294,16 @@ public class BQoLConfig {
         this.sphereBUNNY = defaults.sphereBUNNY;
         this.sphereDHELPER = defaults.sphereDHELPER;
         this.sphereDiscipline = defaults.sphereDiscipline;
+        this.sphereDark = defaults.sphereDark;
+        this.sphereBlood = defaults.sphereBlood;
+        this.sphereLightning = defaults.sphereLightning;
+        this.sphereIce = defaults.sphereIce;
+        this.sphereDiablo = defaults.sphereDiablo;
+        this.sphereWarden = defaults.sphereWarden;
+        this.sphereModer = defaults.sphereModer;
+        this.sphereCheater = defaults.sphereCheater;
+        this.sphereAdmin = defaults.sphereAdmin;
+        this.sphereTeacher = defaults.sphereTeacher;
 
         this.headBatman = defaults.headBatman;
         this.headVampire = defaults.headVampire;
@@ -1233,6 +1322,7 @@ public class BQoLConfig {
         this.headThor = defaults.headThor;
         this.headNutcracker = defaults.headNutcracker;
         this.headElf = defaults.headElf;
+        this.headTiger = defaults.headTiger;
         this.easterEgg = defaults.easterEgg;
 
         /// BetterSky
@@ -1260,6 +1350,24 @@ public class BQoLConfig {
         this.betterParticlesTotemsColor = defaults.betterParticlesTotemsColor;
         this.betterParticlesTotemsCountEnabled = defaults.betterParticlesTotemsCountEnabled;
         this.betterParticlesTotemsCountMode = defaults.betterParticlesTotemsCountMode;
+
+        /// Better Liquid
+        this.betterLiquidEnabled = defaults.betterLiquidEnabled;
+
+        this.betterLiquidWaterColorEnabled = defaults.betterLiquidWaterColorEnabled;
+        this.betterLiquidWaterColor = defaults.betterLiquidWaterColor;
+        this.betterLiquidLavaColorEnabled = defaults.betterLiquidLavaColorEnabled;
+        this.betterLiquidLavaColor = defaults.betterLiquidLavaColor;
+
+        this.betterLiquidWaterTransparencyEnabled = defaults.betterLiquidWaterTransparencyEnabled;
+        this.betterLiquidWaterTransparency = defaults.betterLiquidWaterTransparency;
+        this.betterLiquidLavaTransparencyEnabled = defaults.betterLiquidLavaTransparencyEnabled;
+        this.betterLiquidLavaTransparency = defaults.betterLiquidLavaTransparency;
+
+        this.betterLiquidWaterColorIntensityEnabled = defaults.betterLiquidWaterColorIntensityEnabled;
+        this.betterLiquidLavaColorIntensityEnabled = defaults.betterLiquidLavaColorIntensityEnabled;
+        this.betterLiquidWaterColorIntensity = defaults.betterLiquidWaterColorIntensity;
+        this.betterLiquidLavaColorIntensity = defaults.betterLiquidLavaColorIntensity;
 
         /// Better Fog
         this.betterFogEnabled = defaults.betterFogEnabled;

@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "bqol",
-	"version": "1.1.0",
+	"version": "${version}",
 	"name": "BQoL",
 	"description": "Better Quality of Life.",
 	"authors": [
@@ -26,9 +26,9 @@
 		"bqol.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.0",
+		"fabricloader": ">=0.18.4",
 		"fabric-api": "*",
-		"minecraft": "~1.20.1",
-		"java": ">=17"
+		"minecraft": "~1.21.11",
+		"java": ">=21"
 	}
 }

@@ -55,17 +55,17 @@ public abstract class CHATScreen extends Screen {
             return;
         }
 
-        context.getMatrices().push();
+        context.getMatrices().pushMatrix();
 
         bqol$matrixPushed = true;
 
-        context.getMatrices().translate(0.0F, offsetY, 0.0F);
+        context.getMatrices().translate(0.0F, offsetY);
     }
 
     @Inject(method = "render", at = @At("TAIL"))
     private void bqol$renderAnimationEnd(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (bqol$matrixPushed) {
-            context.getMatrices().pop();
+            context.getMatrices().popMatrix();
             bqol$matrixPushed = false;
         }
     }

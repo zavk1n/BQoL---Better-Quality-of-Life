@@ -1,6 +1,6 @@
 package com.zavk1n.bqol.client.screen;
 
-import com.zavk1n.bqol.client.KeybindManager;
+import com.zavk1n.bqol.client.FeatureKeybindManager;
 import com.zavk1n.bqol.client.screen.featurescreen.*;
 import com.zavk1n.bqol.client.screen.featurescreen.particles.ParticlesConfigScreen;
 import com.zavk1n.bqol.client.screen.featurescreen.sounds.SoundsConfigScreen;
@@ -357,6 +357,17 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
+                "Better Liquid",
+                "Settings for different types of liquids.",
+                "better_liquid",
+                config.isBetterLiquidEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
                 "Better Fog",
                 "Variably customizable fog.",
                 "better_fog",
@@ -414,7 +425,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
         featurePanels.removeIf(panel -> isModuleBlocked(panel.configKey));
 
         for (FeaturePanel panel : featurePanels) {
-            panel.keyBinding = KeybindManager.getFeatureKeyBinding(panel.configKey);
+            panel.keyBinding = FeatureKeybindManager.getFeatureKeyBinding(panel.configKey);
         }
     }
 
@@ -549,6 +560,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_spheres" -> client.setScreen(new SpheresConfigScreen(this));
             case "better_sky" -> client.setScreen(new SkyConfigScreen(this));
             case "better_particles" -> client.setScreen(new ParticlesConfigScreen(this));
+            case "better_liquid" -> client.setScreen(new LiquidConfigScreen(this));
             case "better_fog" -> client.setScreen(new FogConfigScreen(this));
             case "better_health" -> client.setScreen(new HealthConfigScreen(this));
             case "no_render" -> client.setScreen(new NoRenderConfigScreen(this));
@@ -576,6 +588,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
             case "better_sky" -> "better_sky";
             case "better_particles" -> "better_particles";
             case "better_fog" -> "better_fog";
+            case "better_liquid" -> "better_liquid";
             case "better_health" -> "better_health";
             case "no_render" -> "no_render";
             case "better_mine" -> "better_mine";
@@ -727,6 +740,12 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterFog.setEnabled(panel.enabled);
             }
 
+            case "better_liquid" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterLiquidEnabled(panel.enabled);
+                BetterLiquid.setEnabled(panel.enabled);
+            }
+
             case "better_health" -> {
                 panel.enabled = !panel.enabled;
                 config.setBetterHealthEnabled(panel.enabled);
@@ -795,7 +814,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
             panel.keybindButton = ButtonWidget.builder(getKeybindButtonText(panel),
                     button -> {
-                        KeybindManager.startKeybindListening(panel.configKey);
+                        FeatureKeybindManager.startKeybindListening(panel.configKey);
                         updateAllButtons();
                     })
                 .dimensions(nextX, panel.y - 3, keybindWidth, buttonHeight)
@@ -814,7 +833,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
     }
 
     private Text getKeybindButtonText(FeaturePanel panel) {
-        if (KeybindManager.isKeybindListening(panel.configKey)) {
+        if (FeatureKeybindManager.isKeybindListening(panel.configKey)) {
             return Text.literal("Press key...")
                 .styled(style -> style.withColor(ACCENT_COLOR));
         }
@@ -970,7 +989,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
     public void close() {
         config.save();
 
-        KeybindManager.stopKeybindListening();
+        FeatureKeybindManager.stopKeybindListening();
 
         if (client != null) {
             client.setScreen(parent);
@@ -979,7 +998,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
     @Override
     public boolean shouldCloseOnEsc() {
-        if (KeybindManager.isKeybindListening()) {
+        if (FeatureKeybindManager.isKeybindListening()) {
             return false;
         }
 

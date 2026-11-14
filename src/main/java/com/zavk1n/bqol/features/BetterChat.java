@@ -1,22 +1,22 @@
 package com.zavk1n.bqol.features;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.PlayerSkinDrawer;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.SkinTextures;
 import net.minecraft.network.message.MessageSignatureData;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -40,11 +40,39 @@ public class BetterChat {
         boolean killMessage;
     }
 
-    private static final int HEAD_SIZE = 8;
-    private static final int CHAT_PING_COLOR = 0xA099FF;
+    private record StyleRun(int start, int end, Style style) {}
 
-    private static final long KILL_WINDOW_MS = 8000L;
-    private static final long KILL_REMOVE_WINDOW_MS = 2000L;
+    private static final Pattern VALID_PREFIX_PATTERN = Pattern.compile("(?:\\s*(?:\\[[^\\]]*\\]|\\{[^}]*\\}):?)*\\s*");
+
+    private static final int MAX_PATTERN_CACHE_SIZE = 128;
+
+    private static final Map<String, Pattern> SENDER_PATTERN_CACHE =
+        new LinkedHashMap<>(MAX_PATTERN_CACHE_SIZE, 0.75F, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, Pattern> eldest) {
+                return size() > MAX_PATTERN_CACHE_SIZE;
+            }
+        };
+
+    private static final int MAX_SENDER_CACHE_SIZE = 256;
+
+    private static final Map<String, PlayerListEntry> SENDER_CACHE =
+        new LinkedHashMap<>(MAX_SENDER_CACHE_SIZE, 0.75F, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, PlayerListEntry> eldest) {
+                return size() > MAX_SENDER_CACHE_SIZE;
+            }
+        };
+
+    private static final int HEAD_SIZE = 8;
+
+    private static final int CHAT_PING_COLOR = 0xA099FF;
+    private static final int STACK_COLOR = 0x8C8C8C;
+
+    private static final long KILL_WINDOW_NANOS = 8_000_000_000L;
+    private static final long KILL_REMOVE_WINDOW_NANOS = 2_000_000_000L;
+    private static final long STACK_INTERVAL_NANOS = 4_000_000_000L;
+
     private static final float KILL_REMOVE_MAX_HEALTH = 10.0F;
     private static final float KILL_REMOVE_MAX_DISTANCE = 12.0F;
 
@@ -53,9 +81,6 @@ public class BetterChat {
 
     private static PlayerEntity killTarget = null;
     private static long killTargetTime = 0L;
-
-    private static final int STACK_COLOR = 0x8C8C8C;
-    private static final long STACK_INTERVAL_MS = 4000L;
 
     private static int stackCount = 0;
     private static long lastStackTime = 0L;
@@ -236,15 +261,29 @@ public class BetterChat {
         config.setBetterChatKillMessage(enabled);
     }
 
+    public static boolean isStackUpdating() {
+        return stackUpdating;
+    }
+
+    private static boolean removeLastStackMessage(ChatHud hud) {
+        return ((ChatStackAccess) hud).bqol$removeLastStackMessage();
+    }
+
+    public interface ChatStackAccess {
+        boolean bqol$removeLastStackMessage();
+    }
+
     public static void onAttack(PlayerEntity victim) {
-        if (!isBetterChatKillMessageEnabled() || victim == null || victim.isDead()) {
+        if (!isBetterChatKillMessageEnabled()
+            || victim == null
+            || victim.isDead()) {
             return;
         }
 
         MinecraftClient client = MinecraftClient.getInstance();
 
         killTarget = victim;
-        killTargetTime = System.currentTimeMillis();
+        killTargetTime = System.nanoTime();
         killTargetLastHealth = victim.getHealth() + victim.getAbsorptionAmount();
         killTargetLastDistance = client.player != null ? client.player.distanceTo(victim) : 0.0F;
     }
@@ -257,7 +296,7 @@ public class BetterChat {
             return;
         }
 
-        if (System.currentTimeMillis() - killTargetTime > KILL_WINDOW_MS) {
+        if (System.nanoTime() - killTargetTime > KILL_WINDOW_NANOS) {
             resetKillTarget();
             return;
         }
@@ -271,12 +310,12 @@ public class BetterChat {
             return;
         }
 
-        long now = System.currentTimeMillis();
+        long now = System.nanoTime();
 
         if (client.player == null
             || client.world == null
             || !isBetterChatKillMessageEnabled()
-            || now - killTargetTime > KILL_WINDOW_MS) {
+            || now - killTargetTime > KILL_WINDOW_NANOS) {
             resetKillTarget();
             return;
         }
@@ -293,7 +332,7 @@ public class BetterChat {
         if (gone) {
             PlayerEntity victim = killTarget;
 
-            boolean recentHit = now - killTargetTime <= KILL_REMOVE_WINDOW_MS;
+            boolean recentHit = now - killTargetTime <= KILL_REMOVE_WINDOW_NANOS;
             boolean wasLow = killTargetLastHealth <= KILL_REMOVE_MAX_HEALTH;
             boolean wasClose = killTargetLastDistance <= KILL_REMOVE_MAX_DISTANCE;
 
@@ -337,7 +376,7 @@ public class BetterChat {
     }
 
     public static Text processChatPing(Text message) {
-        if (!isBetterChatPingEnabled() || message == null) {
+        if (message == null || !isBetterChatPingEnabled()) {
             return message;
         }
 
@@ -347,7 +386,7 @@ public class BetterChat {
             return message;
         }
 
-        String nickname = client.player.getGameProfile().getName();
+        String nickname = client.player.getNameForScoreboard();
 
         if (nickname == null || nickname.isEmpty()) {
             return message;
@@ -355,31 +394,50 @@ public class BetterChat {
 
         PlayerListEntry sender = findSender(message.getString());
 
-        if (sender == null || sender.getProfile().getId().equals(client.player.getUuid())) {
+        if (sender == null || sender.getProfile().id().equals(client.player.getUuid())) {
             return message;
         }
 
-        StringBuilder plain = new StringBuilder();
-        List<Style> styles = new ArrayList<>();
+        String plainText = message.getString();
+
+        if (plainText.isEmpty() || !getSenderPattern(nickname).matcher(plainText).find()) {
+            return message;
+        }
+
+        StringBuilder plain = new StringBuilder(plainText.length());
+        List<StyleRun> styles = new ArrayList<>();
 
         message.visit((style, part) -> {
+            int start = plain.length();
+
             plain.append(part);
 
-            for (int i = 0; i < part.length(); i++) {
-                styles.add(style);
+            int end = plain.length();
+
+            if (start < end) {
+                if (!styles.isEmpty()) {
+                    int lastIndex = styles.size() - 1;
+
+                    StyleRun last = styles.get(lastIndex);
+
+                    if (last.end() == start && last.style().equals(style)) {
+                        styles.set(lastIndex, new StyleRun(last.start(), end, style));
+                    } else {
+                        styles.add(new StyleRun(start, end, style));
+                    }
+                } else {
+                    styles.add(new StyleRun(start, end, style));
+                }
             }
 
             return Optional.<Void>empty();
-
         }, Style.EMPTY);
 
-        if (plain.length() == 0) {
+        if (plain.isEmpty()) {
             return message;
         }
 
-        Pattern pattern = Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(nickname) + "(?![A-Za-z0-9_])", Pattern.CASE_INSENSITIVE);
-
-        Matcher matcher = pattern.matcher(plain);
+        Matcher matcher = getSenderPattern(nickname).matcher(plain);
 
         if (!matcher.find()) {
             return message;
@@ -396,43 +454,56 @@ public class BetterChat {
             position = matcher.end();
 
         } while (matcher.find());
+
         appendStyledRange(result, plain, styles, position, plain.length(), false);
 
         return result;
     }
 
-    private static void appendStyledRange(MutableText result, CharSequence source, List<Style> styles, int start, int end, boolean highlighted) {
-        int index = start;
+    private static void appendStyledRange(MutableText result, CharSequence source, List<StyleRun> styles, int start, int end, boolean highlighted) {
+        if (start >= end) {
+            return;
+        }
 
-        while (index < end) {
-            Style original = styles.get(index);
-
-            int next = index + 1;
-
-            while (next < end && original.equals(styles.get(next))) {
-                next++;
+        for (StyleRun run : styles) {
+            if (run.end() <= start) {
+                continue;
             }
 
-            Style finalStyle = original;
+            if (run.start() >= end) {
+                break;
+            }
+
+            int from = Math.max(start, run.start());
+            int to = Math.min(end, run.end());
+
+            if (from >= to) {
+                continue;
+            }
+
+            Style style = run.style();
 
             if (highlighted) {
-                finalStyle = original
+                style = style
                     .withColor(CHAT_PING_COLOR)
                     .withBold(true);
             }
 
-            result.append(Text.literal(source.subSequence(index, next).toString()).setStyle(finalStyle));
-
-            index = next;
+            result.append(Text.literal(source.subSequence(from, to).toString())
+                .setStyle(style)
+            );
         }
     }
 
     public static PlayerListEntry findSender(String message) {
-        if (!isBetterChatHeadsEnabled() || message == null || message.isEmpty()) {
+        if ((!isBetterChatHeadsEnabled() && !isBetterChatPingEnabled())
+            || message == null
+            || message.isEmpty()) {
             return null;
         }
 
         MinecraftClient client = MinecraftClient.getInstance();
+
         ClientPlayNetworkHandler connection = client.getNetworkHandler();
 
         if (connection == null) {
@@ -452,15 +523,13 @@ public class BetterChat {
                 continue;
             }
 
-            String nickname = player.getProfile().getName();
+            String nickname = player.getProfile().name();
 
             if (nickname == null || nickname.isEmpty()) {
                 continue;
             }
 
-            Pattern pattern = Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(nickname) + "(?![A-Za-z0-9_])", Pattern.CASE_INSENSITIVE);
-
-            Matcher matcher = pattern.matcher(clean);
+            Matcher matcher = getSenderPattern(nickname).matcher(clean);
 
             while (matcher.find()) {
                 if (!isValidChatSender(clean, matcher.start(), matcher.end())) {
@@ -474,16 +543,34 @@ public class BetterChat {
 
                 break;
             }
+
+            if (bestPosition == 0) {
+                break;
+            }
         }
 
         return bestMatch;
     }
 
     private static String cleanChatMessage(String message) {
-        return message
-            .replaceAll("(?i)§x(§[0-9a-f]){6}", "")
-            .replaceAll("(?i)§[0-9a-fk-or]", "")
-            .trim();
+        if (message == null || message.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder result = new StringBuilder(message.length());
+
+        for (int i = 0; i < message.length(); i++) {
+            char c = message.charAt(i);
+
+            if (c == '§' && i + 1 < message.length()) {
+                i++;
+                continue;
+            }
+
+            result.append(c);
+        }
+
+        return result.toString();
     }
 
     private static boolean isValidChatSender(String message, int start, int end) {
@@ -491,12 +578,9 @@ public class BetterChat {
             return false;
         }
 
-        String prefix = message.substring(0, start);
-        String remaining = message.substring(end);
+        int colon = message.indexOf(':', end);
 
-        int colon = remaining.indexOf(':');
-
-        if (colon >= 0 && colon <= 40) {
+        if (colon >= 0 && colon - end <= 40) {
             return true;
         }
 
@@ -507,10 +591,13 @@ public class BetterChat {
             return true;
         }
 
-        boolean validPrefix = prefix.matches("(?:\\s*(?:\\[[^\\]]*\\]|\\{[^}]*\\}):?)*\\s*");
-        boolean validAfter = !remaining.isEmpty() && Character.isWhitespace(remaining.charAt(0));
+        if (!VALID_PREFIX_PATTERN.matcher(message)
+            .region(0, start)
+            .matches()) {
+            return false;
+        }
 
-        return validPrefix && validAfter;
+        return end < message.length() && Character.isWhitespace(message.charAt(end));
     }
 
     public static boolean renderHeadForMessage(DrawContext context, int x, int y, String message, float opacity) {
@@ -518,58 +605,43 @@ public class BetterChat {
             return false;
         }
 
-        PlayerListEntry sender = findSender(message);
-
-        if (sender != null) {
-            if (drawHeadTexture(context, x, y, sender.getSkinTexture(), opacity)) {
-                return true;
-            }
-        }
-
         MinecraftClient client = MinecraftClient.getInstance();
 
-        if (client.player != null) {
-            String localNickname = client.player.getGameProfile().getName();
+        if (client.player == null || client.getNetworkHandler() == null) {
+            return false;
+        }
 
-            Pattern pattern = Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(localNickname) + "(?![A-Za-z0-9_])", Pattern.CASE_INSENSITIVE);
+        PlayerListEntry sender = getCachedSender(message);
 
-            Matcher matcher = pattern.matcher(cleanChatMessage(message));
+        if (sender == null) {
+            sender = findSender(message);
 
-            while (matcher.find()) {
-                if (isValidChatSender(cleanChatMessage(message), matcher.start(), matcher.end())) {
-                    return drawHeadTexture(context, x, y, client.player.getSkinTexture(), opacity);
-                }
+            if (sender != null) {
+                cacheSender(message, sender);
             }
         }
 
-        return false;
-    }
-
-    private static boolean drawHeadTexture(DrawContext context, int x, int y, Identifier skin, float opacity) {
-        if (context == null || skin == null) {
+        if (sender == null) {
             return false;
         }
 
-        opacity = Math.max(0.0F, Math.min(1.0F, opacity));
+        SkinTextures skin;
 
-        if (opacity <= 0.0F) {
+        if (sender.getProfile().id().equals(client.player.getUuid())) {
+            skin = client.player.getSkin();
+        } else {
+            skin = sender.getSkinTextures();
+        }
+
+        int alpha = (int) (Math.max(0.0F, Math.min(1.0F, opacity)) * 255.0F);
+
+        if (alpha == 0) {
             return false;
         }
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+        PlayerSkinDrawer.draw(context, skin, x, y, HEAD_SIZE, (alpha << 24) | 0xFFFFFF);
 
-        try {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, opacity);
-
-            context.drawTexture(skin, x, y, 8.0F, 8.0F, HEAD_SIZE, HEAD_SIZE, 64, 64);
-            context.drawTexture(skin, x, y, 40.0F, 8.0F, HEAD_SIZE, HEAD_SIZE, 64, 64);
-
-            return true;
-        } finally {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.disableBlend();
-        }
+        return true;
     }
 
     public static boolean processStackMessage(ChatHud hud, Text message, MessageSignatureData signature, MessageIndicator indicator) {
@@ -582,10 +654,10 @@ public class BetterChat {
             return false;
         }
 
-        long now = System.currentTimeMillis();
+        long now = System.nanoTime();
 
         boolean sameMessage = lastStackMessage != null && Objects.equals(lastStackMessage, message);
-        boolean withinInterval = now - lastStackTime < STACK_INTERVAL_MS;
+        boolean withinInterval = now - lastStackTime < STACK_INTERVAL_NANOS;
 
         if (!sameMessage || !withinInterval) {
             lastStackMessage = message.copy();
@@ -618,18 +690,6 @@ public class BetterChat {
         } finally {
             stackUpdating = false;
         }
-    }
-
-    public static boolean isStackUpdating() {
-        return stackUpdating;
-    }
-
-    private static boolean removeLastStackMessage(ChatHud hud) {
-        return ((ChatStackAccess) hud).bqol$removeLastStackMessage();
-    }
-
-    public interface ChatStackAccess {
-        boolean bqol$removeLastStackMessage();
     }
 
     public static String transliterateOutgoingMessage(String message) {
@@ -690,9 +750,44 @@ public class BetterChat {
         return result.toString();
     }
 
+    private static PlayerListEntry getCachedSender(String message) {
+        PlayerListEntry sender = SENDER_CACHE.get(message);
+
+        if (sender == null) {
+            return null;
+        }
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        ClientPlayNetworkHandler connection = client.getNetworkHandler();
+
+        if (connection == null || !connection.getPlayerList().contains(sender)) {
+            SENDER_CACHE.remove(message);
+            return null;
+        }
+
+        return sender;
+    }
+
+    private static void cacheSender(String message, PlayerListEntry sender) {
+        if (message != null && sender != null) {
+            SENDER_CACHE.put(message, sender);
+        }
+    }
+
+    private static Pattern getSenderPattern(String nickname) {
+        return SENDER_PATTERN_CACHE.computeIfAbsent(nickname, name -> Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(name) + "(?![A-Za-z0-9_])", Pattern.CASE_INSENSITIVE));
+    }
+
+    public static void clearSenderCache() {
+        SENDER_CACHE.clear();
+        SENDER_PATTERN_CACHE.clear();
+    }
+
     public static void resetKillTarget() {
         killTarget = null;
         killTargetTime = 0L;
+        killTargetLastHealth = 20.0F;
+        killTargetLastDistance = 0.0F;
     }
 
     public static void resetStackMessages() {

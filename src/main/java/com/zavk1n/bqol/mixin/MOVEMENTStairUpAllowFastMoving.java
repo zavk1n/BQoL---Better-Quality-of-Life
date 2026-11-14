@@ -2,14 +2,23 @@ package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterMovement;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.CakeBlock;
+import net.minecraft.block.SlabBlock;
+import net.minecraft.block.SnowBlock;
+import net.minecraft.block.StairsBlock;
+import net.minecraft.block.TrapdoorBlock;
+import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,125 +32,99 @@ public abstract class MOVEMENTStairUpAllowFastMoving {
             return;
         }
 
-        ClientPlayerEntity player = (ClientPlayerEntity)(Object)this;
+        ClientPlayerEntity player = (ClientPlayerEntity) (Object) this;
 
         if (player.input == null || !player.isOnGround() || !player.isAlive()) {
             return;
         }
 
-        if (!isAllowedBlock(player)) {
+        if (!bqol$isAllowedBlock(player)) {
             ci.cancel();
         }
     }
 
-    private boolean isAllowedBlock(ClientPlayerEntity player) {
-        World world = player.getWorld();
+    @Unique
+    private boolean bqol$isAllowedBlock(ClientPlayerEntity player) {
+        World world = player.getEntityWorld();
 
-        if (world == null) {
+        Vec3d velocity = player.getVelocity();
+
+        double velocityX = velocity.x;
+        double velocityZ = velocity.z;
+
+        double lengthSquared = velocityX * velocityX + velocityZ * velocityZ;
+
+        if (lengthSquared < 0.0001D) {
             return false;
         }
 
-        double velocityX = player.getVelocity().x;
-        double velocityZ = player.getVelocity().z;
+        double inverseLength = 1.0D / Math.sqrt(lengthSquared);
 
-        double length = Math.sqrt(velocityX * velocityX + velocityZ * velocityZ);
+        velocityX *= inverseLength;
+        velocityZ *= inverseLength;
 
-        if (length < 0.01D) {
-            return false;
-        }
+        BlockPos currentPos = BlockPos.ofFloored(player.getX(), player.getY() - 0.05D, player.getZ());
+        BlockPos targetPos = BlockPos.ofFloored(player.getX() + velocityX, player.getY(), player.getZ() + velocityZ);
 
-        velocityX /= length;
-        velocityZ /= length;
-
-        BlockPos currentPos = BlockPos.ofFloored(
-            player.getX(),
-            player.getY() - 0.05D,
-            player.getZ()
-        );
-
-        BlockPos targetPos = BlockPos.ofFloored(
-            player.getX() + velocityX,
-            player.getY(),
-            player.getZ() + velocityZ
-        );
-
-        if (!isHeightAllowed(player, targetPos)) {
-            return false;
-        }
-
-        return isAllowedBlockState(world, currentPos, targetPos);
-    }
-
-    private boolean isAllowedBlockState(World world, BlockPos currentPos, BlockPos targetPos) {
         BlockState currentState = world.getBlockState(currentPos);
         BlockState targetState = world.getBlockState(targetPos);
 
-        boolean currentStep = isStepBlock(currentState);
-        boolean targetStep = isStepBlock(targetState);
+        return bqol$isAllowedBlockState(currentPos, targetPos, currentState, targetState);
+    }
+
+    @Unique
+    private boolean bqol$isAllowedBlockState(BlockPos currentPos, BlockPos targetPos, BlockState currentState, BlockState targetState) {
+        boolean currentStep = bqol$isStepBlock(currentState);
+        boolean targetStep = bqol$isStepBlock(targetState);
 
         if (!currentStep && !targetStep) {
             return false;
         }
 
         if (targetState.getBlock() instanceof StairsBlock) {
-            return isValidStairsSide(currentPos, targetPos, targetState);
+            return bqol$isValidStairsSide(currentPos, targetPos, targetState);
         }
 
         if (currentState.getBlock() instanceof StairsBlock) {
-            return isValidStairsSide(currentPos, targetPos, currentState);
+            return bqol$isValidStairsSide(currentPos, targetPos, currentState);
         }
 
         return true;
     }
 
-    private boolean isStepBlock(BlockState state) {
+    @Unique
+    private boolean bqol$isStepBlock(BlockState state) {
         Block block = state.getBlock();
 
         if (block instanceof StairsBlock) {
-            if (!state.getFluidState().isEmpty()) {
-                return false;
-            }
-
-            return true;
+            return state.getFluidState().isEmpty();
         }
 
         if (block instanceof SlabBlock) {
-            if (!state.getFluidState().isEmpty()) {
-                return false;
-            }
-
-            return state.get(SlabBlock.TYPE) == SlabType.BOTTOM;
+            return state.getFluidState().isEmpty()
+                && state.get(SlabBlock.TYPE) == SlabType.BOTTOM;
         }
 
         if (block instanceof TrapdoorBlock) {
-            if (state.get(TrapdoorBlock.OPEN) || state.get(TrapdoorBlock.WATERLOGGED)) {
-                return false;
-            }
-
-            return state.get(TrapdoorBlock.HALF) == net.minecraft.block.enums.BlockHalf.BOTTOM;
+            return !state.get(TrapdoorBlock.OPEN)
+                && !state.get(TrapdoorBlock.WATERLOGGED)
+                && state.get(TrapdoorBlock.HALF) == BlockHalf.BOTTOM;
         }
 
         if (block instanceof SnowBlock) {
-            int layers = state.get(SnowBlock.LAYERS);
-
-            return layers >= 2;
+            return state.get(SnowBlock.LAYERS) >= 2;
         }
 
         return block instanceof CakeBlock;
     }
 
-    private boolean isValidStairsSide(BlockPos currentPos, BlockPos targetPos, BlockState stairState) {
+    @Unique
+    private boolean bqol$isValidStairsSide(BlockPos currentPos, BlockPos targetPos, BlockState stairState) {
         Direction facing = stairState.get(StairsBlock.FACING);
 
         int dx = targetPos.getX() - currentPos.getX();
         int dz = targetPos.getZ() - currentPos.getZ();
 
         return dx == facing.getOffsetX() && dz == facing.getOffsetZ();
-    }
-
-    private boolean isHeightAllowed(ClientPlayerEntity player, BlockPos targetPos) {
-        double dy = targetPos.getY() - player.getY();
-
-        return dy <= 1.0 && dy >= -1.0;
     }
 }

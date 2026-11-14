@@ -2,28 +2,25 @@ package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterFog;
 
+import net.minecraft.block.enums.CameraSubmersionType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BackgroundRenderer;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.fog.FogRenderer;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
 
+import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(BackgroundRenderer.class)
+@Mixin(FogRenderer.class)
 public abstract class FOGRenderFogColor {
 
-    @ModifyArgs(
-        method = "render",
-        at = @At(
-            value = "INVOKE",
-            target = "Lcom/mojang/blaze3d/systems/RenderSystem;clearColor(FFFF)V"
-        ),
-        require = 1
-    )
-    private static void bqol$modifyFogColor(Args args) {
+    @Inject(method = "getFogColor(Lnet/minecraft/client/render/Camera;FLnet/minecraft/client/world/ClientWorld;IF)Lorg/joml/Vector4f;", at = @At("RETURN"), cancellable = true)
+    private void bqol$modifyFogColor(Camera camera, float tickProgress, ClientWorld world, int viewDistance, float skyDarkness, CallbackInfoReturnable<Vector4f> cir) {
         MinecraftClient client = MinecraftClient.getInstance();
 
         if (client.player == null
@@ -34,7 +31,15 @@ public abstract class FOGRenderFogColor {
 
         LivingEntity entity = client.player;
 
-        if (entity.hasStatusEffect(StatusEffects.BLINDNESS) && !BetterFog.isNoBlindnessEnabled() || entity.hasStatusEffect(StatusEffects.DARKNESS)) {
+        if ((entity.hasStatusEffect(StatusEffects.BLINDNESS) && !BetterFog.isNoBlindnessEnabled()) || entity.hasStatusEffect(StatusEffects.DARKNESS)) {
+            return;
+        }
+
+        CameraSubmersionType submersion = camera.getSubmersionType();
+
+        if (submersion == CameraSubmersionType.WATER
+            || submersion == CameraSubmersionType.LAVA
+            || submersion == CameraSubmersionType.POWDER_SNOW) {
             return;
         }
 
@@ -44,8 +49,10 @@ public abstract class FOGRenderFogColor {
         float green = ((rgb >> 8) & 0xFF) / 255.0F;
         float blue = (rgb & 0xFF) / 255.0F;
 
-        args.set(0, red);
-        args.set(1, green);
-        args.set(2, blue);
+        Vector4f color = cir.getReturnValue();
+
+        if (color != null) {
+            color.set(red, green, blue, color.w());
+        }
     }
 }

@@ -19,11 +19,12 @@ public abstract class PREFIXESAddName {
 
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), cancellable = true)
     private void bqol$formatChatName(Text message, CallbackInfo ci) {
-        if (bqol$processingMessage || !BetterPrefixes.isEnabled() || message == null) {
+        if (bqol$processingMessage || message == null || !BetterPrefixes.isEnabled()) {
             return;
         }
 
-        Text formatted = BetterPrefixes.getInstance().formatMessage(message);
+        BetterPrefixes prefixes = BetterPrefixes.getInstance();
+        Text formatted = prefixes.formatMessage(message);
 
         if (formatted == message) {
             return;

@@ -16,13 +16,12 @@ public abstract class PREFIXESGetName {
 
     @Inject(method = "getPlayerName", at = @At("RETURN"), cancellable = true)
     private void bqol$formatPlayerName(PlayerListEntry entry, CallbackInfoReturnable<Text> cir) {
-        if (!BetterPrefixes.isEnabled() || entry == null) {
+        if (entry == null || !BetterPrefixes.isEnabled()) {
             return;
         }
 
-        String name = entry.getProfile().getName();
-
         BetterPrefixes prefixes = BetterPrefixes.getInstance();
+        String name = entry.getProfile().name();
 
         if (prefixes.isLocalPlayerName(name)) {
             cir.setReturnValue(prefixes.formatName(name));

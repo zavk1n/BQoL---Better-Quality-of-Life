@@ -115,7 +115,18 @@ public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
             new SphereEntry("Sphere Armadillo", config::isSphereArmadillo, config::setSphereArmadillo),
             new SphereEntry("Sphere D.HELPER", config::isSphereDHELPER, config::setSphereDHELPER),
             new SphereEntry("Sphere Discipline", config::isSphereDiscipline, config::setSphereDiscipline),
+            new SphereEntry("Sphere Dark", config::isSphereDark, config::setSphereDark),
+            new SphereEntry("Sphere Blood", config::isSphereBlood, config::setSphereBlood),
+            new SphereEntry("Sphere Lightning", config::isSphereLightning, config::setSphereLightning),
+            new SphereEntry("Sphere Ice", config::isSphereIce, config::setSphereIce),
             new SphereEntry("Sphere BUNNY", config::isSphereBUNNY, config::setSphereBUNNY),
+            new SphereEntry("Sphere Diablo", config::isSphereDiablo, config::setSphereDiablo),
+            new SphereEntry("Sphere Warden", config::isSphereWarden, config::setSphereWarden),
+            new SphereEntry("Sphere Moder", config::isSphereModer, config::setSphereModer),
+            new SphereEntry("Sphere Cheater", config::isSphereCheater, config::setSphereCheater),
+            new SphereEntry("Sphere Admin", config::isSphereAdmin, config::setSphereAdmin),
+            new SphereEntry("Sphere Teacher", config::isSphereTeacher, config::setSphereTeacher),
+
             new SphereEntry("Batman Head", config::isHeadBatman, config::setHeadBatman),
             new SphereEntry("Vampire Head", config::isHeadVampire, config::setHeadVampire),
             new SphereEntry("Jack's Head", config::isHeadJack, config::setHeadJack),
@@ -133,6 +144,7 @@ public class ReallyWorldSpheresConfigScreen extends MainConfigScreen {
             new SphereEntry("Thor Head", config::isHeadThor, config::setHeadThor),
             new SphereEntry("Nutcracker Head", config::isHeadNutcracker, config::setHeadNutcracker),
             new SphereEntry("Elf Head", config::isHeadElf, config::setHeadElf),
+            new SphereEntry("Tiger Head", config::isHeadTiger, config::setHeadTiger),
             new SphereEntry("Easter Egg", config::isEasterEgg, config::setEasterEgg)
         );
 

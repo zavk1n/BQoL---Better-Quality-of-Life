@@ -19,6 +19,8 @@ public class BetterHolograms {
         boolean antiHolograms;
     }
 
+    private static boolean currentHologram;
+
     public static void initialize() {
         if (instance == null) {
             instance = new BetterHolograms();
@@ -98,6 +100,18 @@ public class BetterHolograms {
     }
 
     public static boolean isHologram(ArmorStandEntity stand) {
-        return stand.hasCustomName();
+        return stand != null && stand.hasCustomName();
+    }
+
+    public static void begin() {
+        currentHologram = true;
+    }
+
+    public static void end() {
+        currentHologram = false;
+    }
+
+    public static boolean isCurrentHologram() {
+        return currentHologram;
     }
 }

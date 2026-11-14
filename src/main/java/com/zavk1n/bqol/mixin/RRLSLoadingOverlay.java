@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -44,6 +45,13 @@ public abstract class RRLSLoadingOverlay {
     private void bqol$afterRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (bqol$hidden) {
             context.disableScissor();
+        }
+    }
+
+    @Inject(method = "pausesGame", at = @At("HEAD"), cancellable = true)
+    private void bqol$allowGameTicks(CallbackInfoReturnable<Boolean> cir) {
+        if (bqol$hidden && BetterRRLS.isEnabled()) {
+            cir.setReturnValue(false);
         }
     }
 }

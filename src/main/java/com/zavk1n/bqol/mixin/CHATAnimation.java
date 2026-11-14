@@ -17,30 +17,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(ChatHud.class)
 public abstract class CHATAnimation {
 
     @Unique
-    private static final float BQOL_FADE_TIME = 150.0F;
+    private static final long BQOL_FADE_TIME_NANOS = 150_000_000L;
 
     @Unique
     private static final float BQOL_OFFSET_SCALE = 0.8F;
-
-    @Shadow
-    @Final
-    private List<ChatHudLine.Visible> visibleMessages;
-
-    @Shadow
-    private int scrolledLines;
-
-    @Shadow
-    protected abstract int getLineHeight();
-
-    @Unique
-    private final List<Long> bqol$messageTimestamps = new ArrayList<>();
 
     @Unique
     private float bqol$animationOffset;
@@ -49,48 +35,17 @@ public abstract class CHATAnimation {
     private float bqol$animationAlpha = 1.0F;
 
     @Unique
-    private void bqol$updateAnimation() {
-        if (!BetterChat.isBetterChatAnimationEnabled()) {
-            bqol$animationOffset = 0.0F;
-            bqol$animationAlpha = 1.0F;
-            bqol$messageTimestamps.clear();
-            return;
-        }
+    private long bqol$lastMessageTime;
 
-        bqol$animationOffset = 0.0F;
-        bqol$animationAlpha = 1.0F;
+    @Shadow
+    private int scrolledLines;
 
-        if (scrolledLines != 0 || bqol$messageTimestamps.isEmpty()) {
-            return;
-        }
+    @Shadow
+    @Final
+    private List<ChatHudLine.Visible> visibleMessages;
 
-        long timestamp = bqol$messageTimestamps.get(0);
-
-        float elapsed = Math.max(0.0F, Math.min(System.currentTimeMillis() - timestamp, BQOL_FADE_TIME));
-        float progress = elapsed / BQOL_FADE_TIME;
-        float eased = 1.0F - (float) Math.pow(1.0F - progress, 3.0F);
-
-        bqol$animationOffset = getLineHeight() * BQOL_OFFSET_SCALE * (1.0F - eased);
-        bqol$animationAlpha = 0.5F + eased * 0.5F;
-    }
-
-    @Inject(method = "render", at = @At("HEAD"))
-    private void bqol$renderAnimation(DrawContext context, int currentTick, int mouseX, int mouseY, CallbackInfo ci) {
-        bqol$updateAnimation();
-    }
-
-    @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;ILnet/minecraft/client/gui/hud/MessageIndicator;Z)V", at = @At("TAIL"))
-    private void bqol$onMessageAdded(Text message, MessageSignatureData signature, int ticks, MessageIndicator indicator, boolean refresh, CallbackInfo ci) {
-        if (refresh || !BetterChat.isBetterChatAnimationEnabled()) {
-            return;
-        }
-
-        bqol$messageTimestamps.add(0, System.currentTimeMillis());
-
-        while (bqol$messageTimestamps.size() > visibleMessages.size()) {
-            bqol$messageTimestamps.remove(bqol$messageTimestamps.size() - 1);
-        }
-    }
+    @Shadow
+    protected abstract int getLineHeight();
 
     @Unique
     private float bqol$getAnimationOffset() {
@@ -100,5 +55,47 @@ public abstract class CHATAnimation {
     @Unique
     private float bqol$getAnimationAlpha() {
         return BetterChat.isBetterChatAnimationEnabled() ? bqol$animationAlpha : 1.0F;
+    }
+
+    @Unique
+    private void bqol$updateAnimation() {
+        if (!BetterChat.isBetterChatAnimationEnabled()) {
+            bqol$animationOffset = 0.0F;
+            bqol$animationAlpha = 1.0F;
+            return;
+        }
+
+        if (scrolledLines != 0 || bqol$lastMessageTime == 0L) {
+            bqol$animationOffset = 0.0F;
+            bqol$animationAlpha = 1.0F;
+            return;
+        }
+
+        long elapsed = System.nanoTime() - bqol$lastMessageTime;
+
+        if (elapsed >= BQOL_FADE_TIME_NANOS) {
+            bqol$animationOffset = 0.0F;
+            bqol$animationAlpha = 1.0F;
+            return;
+        }
+
+        float progress = Math.clamp(elapsed / (float) BQOL_FADE_TIME_NANOS, 0.0F, 1.0F);
+
+        float eased = 1.0F - (float) Math.pow(1.0F - progress, 3.0);
+
+        bqol$animationOffset = getLineHeight() * BQOL_OFFSET_SCALE * (1.0F - eased);
+        bqol$animationAlpha = 0.5F + eased * 0.5F;
+    }
+
+    @Inject(method = "render(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/font/TextRenderer;IIIZZ)V", at = @At("HEAD"))
+    private void bqol$renderAnimation(DrawContext context, net.minecraft.client.font.TextRenderer textRenderer, int currentTick, int mouseX, int mouseY, boolean interactable, boolean bool, CallbackInfo ci) {
+        bqol$updateAnimation();
+    }
+
+    @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V", at = @At("TAIL"))
+    private void bqol$onMessageAdded(Text message, MessageSignatureData signature, MessageIndicator indicator, CallbackInfo ci) {
+        if (BetterChat.isBetterChatAnimationEnabled()) {
+            bqol$lastMessageTime = System.nanoTime();
+        }
     }
 }

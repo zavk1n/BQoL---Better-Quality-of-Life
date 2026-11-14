@@ -111,7 +111,7 @@ public class HolyWorldTotemsConfigScreen extends MainConfigScreen {
 
             int labelX = x + (COL_SPACING - labelWidth) / 2;
 
-            ColorCheckbox checkbox = new ColorCheckbox(x + (COL_SPACING - 15) / 2, y + 20, Text.empty(), entry.enabledGetter.getAsBoolean(),
+            ColorCheckbox checkbox = new ColorCheckbox(x + (COL_SPACING - 15) / 2, y + 20, Text.literal(""), entry.enabledGetter.getAsBoolean(),
                 button -> {
                     boolean enabled = !entry.enabledGetter.getAsBoolean();
                     entry.enabledSetter.accept(enabled);

@@ -5,6 +5,7 @@ import com.zavk1n.bqol.features.BetterTnt;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.text.Text;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -86,7 +87,7 @@ public class TNTInGameHud {
     }
 
     @Inject(method = "render", at = @At("TAIL"))
-    private void bqol$renderAlert(DrawContext context, float tickDelta, CallbackInfo ci) {
+    private void bqol$renderAlert(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         MinecraftClient mc = MinecraftClient.getInstance();
 
         if (mc.player == null || mc.world == null) {
@@ -101,7 +102,7 @@ public class TNTInGameHud {
 
         bqol$lastTime = now;
 
-        List<BetterTnt.AlertInfo> alerts = BetterTnt.getAlertTnts(tickDelta);
+        List<BetterTnt.AlertInfo> alerts = BetterTnt.getAlertTnts(tickCounter.getTickProgress(false));
 
         if (!alerts.isEmpty()) {
             bqol$lastAlerts = new ArrayList<>(alerts);
@@ -133,7 +134,7 @@ public class TNTInGameHud {
         for (int i = 0; i < visibleCount; i++) {
             BetterTnt.AlertInfo alert = bqol$lastAlerts.get(i);
 
-            String text = alert.getText(mc.player.getPos());
+            String text = alert.getText(mc.player.getEntityPos());
 
             boolean lastLine = i == visibleCount - 1;
             boolean hasMore = bqol$lastAlerts.size() > 5;
@@ -188,7 +189,7 @@ public class TNTInGameHud {
             return 0;
         }
 
-        var playerPos = mc.player.getPos();
+        var playerPos = mc.player.getEntityPos();
 
         var searchBox = new net.minecraft.util.math.Box(
             playerPos.x - 32.0D,

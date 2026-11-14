@@ -3,11 +3,10 @@ package com.zavk1n.bqol.mixin;
 import com.zavk1n.bqol.config.BQoLConfig;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.feature.StuckObjectsFeatureRenderer;
+import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.LivingEntity;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class NORENDERArrows {
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private void hidePlayerArrows(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, LivingEntity entity, float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch, CallbackInfo ci) {
+    private void hidePlayerArrows(MatrixStack matrices, OrderedRenderCommandQueue queue, int light, PlayerEntityRenderState state, float f, float g, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
 
         if (client.world == null) {
@@ -31,8 +30,6 @@ public class NORENDERArrows {
             return;
         }
 
-        if (entity instanceof AbstractClientPlayerEntity) {
-            ci.cancel();
-        }
+        ci.cancel();
     }
 }

@@ -9,13 +9,13 @@ import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(SoundSystem.class)
 public class SOUNDSPlaySound {
 
-    @Inject(method = "play(Lnet/minecraft/client/sound/SoundInstance;)V", at = @At("HEAD"), cancellable = true)
-    private void onPlaySound(SoundInstance soundInstance, CallbackInfo ci) {
+    @Inject(method = "play(Lnet/minecraft/client/sound/SoundInstance;)Lnet/minecraft/client/sound/SoundSystem$PlayResult;", at = @At("HEAD"), cancellable = true)
+    private void onPlaySound(SoundInstance soundInstance, CallbackInfoReturnable<SoundSystem.PlayResult> cir) {
         if (!BetterSounds.isEnabled() || soundInstance == null) {
             return;
         }
@@ -41,7 +41,7 @@ public class SOUNDSPlaySound {
         String path = soundId.getPath();
 
         if (!betterSounds.shouldPlaySound(path)) {
-            ci.cancel();
+            cir.setReturnValue(SoundSystem.PlayResult.NOT_STARTED);
         }
     }
 }

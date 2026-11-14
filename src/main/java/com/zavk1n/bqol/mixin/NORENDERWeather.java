@@ -2,9 +2,9 @@ package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.config.BQoLConfig;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.LightmapTextureManager;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.render.FrameGraphBuilder;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,13 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class NORENDERWeather {
 
     @Inject(method = "renderWeather", at = @At("HEAD"), cancellable = true)
-    private void bqol$renderWeather(LightmapTextureManager lightmapTextureManager, float tickDelta, double cameraX, double cameraY, double cameraZ, CallbackInfo ci) {
-        MinecraftClient client = MinecraftClient.getInstance();
-
-        if (client.world == null) {
-            return;
-        }
-
+    private void bqol$renderWeather(FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CallbackInfo ci) {
         BQoLConfig config = BQoLConfig.getInstance();
 
         if (!config.isNoRenderWeatherEnabled()) {

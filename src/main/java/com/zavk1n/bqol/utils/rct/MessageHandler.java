@@ -15,8 +15,10 @@ public final class MessageHandler {
             return;
         }
 
-        HolyWorldController.handleIncomingMessage(message.getString());
-        ReallyWorldController.handleIncomingMessage(message.getString());
-        FakeTimeController.handleIncomingMessage(message.getString());
+        String content = message.getString();
+
+        HolyWorldController.handleIncomingMessage(content);
+        ReallyWorldController.handleIncomingMessage(content);
+        FakeTimeController.handleIncomingMessage(content);
     }
 }

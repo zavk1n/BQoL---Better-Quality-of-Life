@@ -62,31 +62,25 @@ public class BetterHealth {
         long pendingAttackTick;
 
         long lastDamageTick;
-
-        long lastArmorSample;
-        long lastArmorCheckTick = -10;
-
-        boolean hasCachedArmorResult = false;
+        long visibleUntilTick;
 
         Text cachedRenderText;
 
         float lastCachedHealth = -1f;
         float lastCachedAbsorption = -1f;
 
+        float targetHealthBeforeHit = -1.0f;
+        boolean damageConfirmed;
+
         int lastSettingsHash;
 
         void clearCache() {
             lastArmorPlayerUuid = null;
 
-            hasCachedArmorResult = false;
-
             cachedRenderText = null;
 
             lastCachedHealth = -1f;
             lastCachedAbsorption = -1f;
-
-            lastArmorCheckTick = -10;
-            lastArmorSample = 0;
 
             lastSettingsHash = 0;
         }
@@ -184,15 +178,9 @@ public class BetterHealth {
         float alpha
     ) {}
 
-    private record Position(
-        int x,
-        int y
-    ) {}
-
     private net.minecraft.world.World lastWorld = null;
 
     private long lastUpdateTick = -1;
-    private long lastHoverTick = 0;
 
     private int durationTicks = 100;
     private int location = 0;
@@ -247,15 +235,7 @@ public class BetterHealth {
     }
 
     public static void onAttack(PlayerEntity target) {
-        if (instance != null) {
-            instance.onAttackInternal(target);
-        }
-    }
-
-    public static void onDamaged() {
-        if (instance != null) {
-            instance.onDamagedInternal();
-        }
+        getInstance().onAttackInternal(target);
     }
 
     public static PlayerEntity getLastAttackedPlayer() {
@@ -267,7 +247,7 @@ public class BetterHealth {
     }
 
     private void reloadFromConfigInternal() {
-        durationTicks = Math.max(1, (int) (config.getBetterHealthDuration() / 50));
+        durationTicks = Math.max(1, (int) Math.ceil(config.getBetterHealthDuration() / 50.0));
 
         location = config.getBetterHealthPosition();
 
@@ -298,26 +278,33 @@ public class BetterHealth {
         state.target = null;
         state.targetUuid = null;
 
-        state.pendingTarget = null;
-        state.pendingTargetUuid = null;
-        state.pendingAttackTick = 0;
+        cancelPendingAttack();
 
         state.lastDamageTick = 0;
+        state.visibleUntilTick = 0;
 
         state.clearCache();
 
         lastWorld = null;
         wasFirstPerson = true;
         lastUpdateTick = -1;
+
+        state.targetHealthBeforeHit = -1.0f;
+        state.damageConfirmed = false;
     }
 
     private void clearTargetAfterFade() {
+        if (!hidingIndicator || !animation.isFinished()) {
+            return;
+        }
+
         state.target = null;
         state.targetUuid = null;
 
         cancelPendingAttack();
 
         state.lastDamageTick = 0;
+        state.visibleUntilTick = 0;
 
         state.clearCache();
 
@@ -333,84 +320,154 @@ public class BetterHealth {
             return;
         }
 
+        if (hidingIndicator) {
+            return;
+        }
+
         hidingIndicator = true;
 
-        boolean scalingEnabled = isEnabledInternal()
-                && config.isBetterHealthScaling();
-
-        animation.hide(scalingEnabled);
+        animation.hide(config.isBetterHealthScaling());
     }
 
     private void onAttackInternal(PlayerEntity target) {
-        MinecraftClient client = mc();
+        MinecraftClient minecraft = mc();
 
-        if (client == null
-            || client.player == null
-            || client.world == null
+        if (minecraft.player == null
+            || minecraft.world == null
             || !isEnabledInternal()
-            || blocked.main
             || target == null
-            || target == client.player
+            || target == minecraft.player
             || target.isRemoved()
             || target.isDead()
-            || hidingIndicator) {
+            || target.getHealth() <= 0) {
             return;
         }
 
-        state.pendingTarget = target;
-        state.pendingTargetUuid = target.getUuid();
-        state.pendingAttackTick = client.world.getTime();
+        boolean newTarget = state.targetUuid == null || !state.targetUuid.equals(target.getUuid());
+
+        if (newTarget) {
+            state.targetHealthBeforeHit = target.getHealth();
+            state.damageConfirmed = false;
+        }
+
+        state.target = target;
+        state.targetUuid = target.getUuid();
+
+        long tick = minecraft.world.getTime();
+
+        state.lastDamageTick = tick;
+        state.visibleUntilTick = tick + durationTicks;
+
+        hidingIndicator = false;
+
+        cancelPendingAttack();
+
+        if (newTarget) {
+            state.clearCache();
+            animation.reset();
+        }
+
+        if (config.isBetterHealthHovering() && !isHoverOnTarget(minecraft)) {
+            animation.hide(config.isBetterHealthScaling());
+            return;
+        }
+
+        animation.show(config.isBetterHealthScaling(), false);
     }
 
-    private void onDamagedInternal() {
-        MinecraftClient client = mc();
+    private boolean hasDamageBeenConfirmed(PlayerEntity target) {
+        if (target == null) {
+            return false;
+        }
 
-        if (client == null
-            || client.world == null
-            || !isEnabledInternal()
-            || state.target == null
-            || state.target.isRemoved()
-            || state.target.isDead()
-            || hidingIndicator) {
+        if (state.damageConfirmed) {
+            return true;
+        }
 
+        float currentHealth = target.getHealth();
+
+        if (state.targetHealthBeforeHit > 0.0f && currentHealth < state.targetHealthBeforeHit) {
+            state.damageConfirmed = true;
+        }
+
+        return state.damageConfirmed;
+    }
+
+    private void updatePendingAttack(MinecraftClient client) {
+        PlayerEntity pending = state.pendingTarget;
+
+        if (pending == null || client.world == null) {
             return;
         }
 
-        state.lastDamageTick = client.world.getTime();
+        long tick = client.world.getTime();
 
-        boolean scalingEnabled = config.isBetterHealthScaling();
+        if (tick - state.pendingAttackTick > 10
+            || pending.isRemoved()
+            || pending.isDead()
+            || pending.getHealth() <= 0) {
+            cancelPendingAttack();
+            return;
+        }
 
-        animation.show(scalingEnabled, false);
+        boolean newTarget = state.targetUuid == null
+            || !state.targetUuid.equals(pending.getUuid());
+
+        state.target = pending;
+        state.targetUuid = pending.getUuid();
+
+        state.lastDamageTick = tick;
+        state.visibleUntilTick = tick + durationTicks;
+
+        hidingIndicator = false;
+
+        if (newTarget) {
+            state.clearCache();
+            animation.reset();
+        }
+
+        animation.show(config.isBetterHealthScaling(), false);
+
+        cancelPendingAttack();
+    }
+
+    private void updateTargetReference(MinecraftClient client) {
+        if (state.targetUuid == null || client.world == null) {
+            return;
+        }
+
+        if (state.target != null && !state.target.isRemoved()) {
+            return;
+        }
+
+        PlayerEntity refreshed = client.world.getPlayerByUuid(state.targetUuid);
+
+        if (refreshed != null && !refreshed.isDead() && refreshed.getHealth() > 0) {
+            state.target = refreshed;
+        }
     }
 
     private void init() {
         reloadFromConfigInternal();
 
-        HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
+        HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
             MinecraftClient client = MinecraftClient.getInstance();
 
-            if (client == null || !isEnabled()) {
+            if (!isEnabledInternal()) {
                 return;
             }
 
-            renderIndicator(client, drawContext, tickDelta);
+            float deltaSeconds = tickCounter.getDynamicDeltaTicks() / 20.0f;
+
+            renderIndicator(client, drawContext, deltaSeconds);
         });
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client == null) {
-                return;
-            }
-
-            update(client);
-        });
-
-        ClientPlayConnectionEvents.DISCONNECT.register(
-            (handler, client) -> resetDisplayInternal()
-        );
+        ClientTickEvents.END_CLIENT_TICK.register(this::update);
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> resetDisplayInternal());
     }
 
     private void update(MinecraftClient client) {
-        if (client.player == null || client.world == null) {
+        if (client == null || client.player == null || client.world == null) {
             return;
         }
 
@@ -425,55 +482,80 @@ public class BetterHealth {
         checkWorldChange(client);
         checkDeaths(client);
 
-        if (hidingIndicator) {
+        if (client.player.isDead() || client.player.getHealth() <= 0) {
             cancelPendingAttack();
-        } else {
-            updatePendingAttack(client);
+            startHideAnimation();
+            return;
         }
+
+        updatePendingAttack(client);
 
         boolean firstPerson = client.options.getPerspective().isFirstPerson();
 
         if (firstPerson && !wasFirstPerson
             && state.target != null
-            && !hidingIndicator) {
-
-            boolean scalingEnabled = isEnabledInternal() && config.isBetterHealthScaling();
-
-            animation.show(scalingEnabled, false);
+            && !hidingIndicator
+            && worldTick < state.visibleUntilTick) {
+            animation.show(config.isBetterHealthScaling(), false);
         }
 
         wasFirstPerson = firstPerson;
 
-        if (!hidingIndicator && state.targetUuid != null && worldTick - state.lastDamageTick <= durationTicks) {
-            updateTargetReference(client);
+        if (state.target == null || hidingIndicator) {
+            return;
         }
 
-        boolean expired = state.target != null
-            && state.lastDamageTick > 0
-            && worldTick - state.lastDamageTick >= durationTicks;
+        updateTargetReference(client);
 
-        if (expired && !hidingIndicator) {
+        PlayerEntity target = state.target;
+
+        if (target == null) {
+            return;
+        }
+
+        if (target.isDead()
+            || target.getHealth() <= 0
+            || target.isRemoved()) {
+            resetDisplayInternal();
+            return;
+        }
+
+        if (worldTick >= state.visibleUntilTick) {
             startHideAnimation();
+            return;
         }
 
-        boolean scalingEnabled = isEnabledInternal() && config.isBetterHealthScaling();
+        boolean shouldShow = true;
 
-        if (hidingIndicator) {
-            cancelPendingAttack();
-            animation.hide(scalingEnabled);
+        if (client.player.squaredDistanceTo(target) > 128.0 * 128.0) {
+            shouldShow = false;
+        }
 
-        } else {
-            boolean visible = shouldShowIndicator(client, worldTick) && !isGuiHidden(client);
-
-            if (visible) {
-                animation.show(scalingEnabled, false);
-            } else if (!hidingIndicator) {
-                animation.hide(scalingEnabled);
+        if (shouldShow && config.isBetterHealthPvPMode()) {
+            if (!hasDamageBeenConfirmed(target) || shouldHideIndicator(target)) {
+                shouldShow = false;
             }
+        }
+
+        if (shouldShow
+            && config.isBetterHealthHovering()
+            && !isHoverOnTarget(client)) {
+            shouldShow = false;
+        }
+
+        if (shouldShow) {
+            animation.show(config.isBetterHealthScaling(), false);
+        } else {
+            animation.hide(config.isBetterHealthScaling());
         }
     }
 
+
     private RenderData prepareRenderData(PlayerEntity player) {
+        if (player == null || player.isRemoved()) {
+            return null;
+        }
+
         float normalHealth = player.getHealth();
         float absorption = player.getAbsorptionAmount();
         float totalHealth = normalHealth + absorption;
@@ -486,85 +568,29 @@ public class BetterHealth {
             || state.lastSettingsHash != settingsHash;
 
         if (rebuild) {
-            boolean useGoldenHearts = isEnabledInternal() && config.isBetterHealthGoldenHearts();
-            boolean useGoldenPlus = isEnabledInternal() && config.isBetterHealthGoldenHeartsPlus();
-            boolean useDecimal = isEnabledInternal() && config.isBetterHealthDecimal();
-
-            state.cachedRenderText = buildDisplayText(normalHealth, absorption, totalHealth, useDecimal, useGoldenHearts, useGoldenPlus);
+            state.cachedRenderText = buildDisplayText(normalHealth, absorption, totalHealth, config.isBetterHealthDecimal(), config.isBetterHealthGoldenHearts(), config.isBetterHealthGoldenHeartsPlus());
 
             state.lastCachedHealth = normalHealth;
             state.lastCachedAbsorption = absorption;
             state.lastSettingsHash = settingsHash;
         }
 
-        float maxHealth = Math.max(player.getMaxHealth(), 20f);
-        float healthPercent = MathHelper.clamp(totalHealth / maxHealth, 0.0f, 1.0f);
-        float danger = 1.0f - healthPercent;
-        float baseScale = MathHelper.lerp(danger, 1.0f, 1.20f);
-        float animationScale = 1.0f;
+        float healthScale;
 
-        if (config.isBetterHealthScaling()) {
-            animationScale = animation.currentScale;
+        if (normalHealth > 15.0f) {
+            healthScale = 1.1f;
+        } else if (normalHealth > 10.0f) {
+            healthScale = 1.25f;
+        } else if (normalHealth > 5.0f) {
+            healthScale = 1.35f;
+        } else {
+            healthScale = 1.5f;
         }
 
-        float finalScale = baseScale * animationScale;
+        float animationScale = config.isBetterHealthScaling() ? animation.currentScale : 1.0f;
+        float finalScale = healthScale * animationScale;
 
         return new RenderData(state.cachedRenderText, finalScale, animation.currentAlpha);
-    }
-
-    private Position calculateIndicatorPosition(MinecraftClient client, int textWidth) {
-        int screenWidth = client.getWindow().getScaledWidth();
-        int screenHeight = client.getWindow().getScaledHeight();
-
-        int absX = screenWidth / 2 + 2;
-        int absY = screenHeight / 2 - 25;
-
-        switch (location) {
-            case 1 -> {
-                // Left
-                absX = screenWidth / 2 - 25;
-                absY = screenHeight / 2 - 5;
-            }
-
-            case 2 -> {
-                // Right
-                absX = screenWidth / 2 + 35;
-                absY = screenHeight / 2 - 5;
-            }
-
-            case 3 -> {
-                // Under
-                absX = screenWidth / 2;
-                absY = screenHeight / 2 + 16;
-            }
-        }
-
-        return new Position(absX, absY);
-    }
-
-    private int textColor(Text text, float alpha) {
-        int baseColor = text.getStyle().getColor() != null ? text.getStyle().getColor().getRgb() : 0xFFFFFF;
-
-        if (alpha >= 1f) {
-            return baseColor;
-        }
-
-        int alphaInt = (int) (MathHelper.clamp(alpha, 0f, 1f) * 255f);
-
-        return (alphaInt << 24) | (baseColor & 0xFFFFFF);
-    }
-
-    private void drawIndicator(DrawContext context, TextRenderer renderer, RenderData data, Position pos) {
-        int textWidth = renderer.getWidth(data.text());
-
-        context.getMatrices().push();
-        context.getMatrices().translate(pos.x(), pos.y(), 0);
-        context.getMatrices().scale(data.scale(), data.scale(), 1.0f);
-
-        int color = textColor(data.text(), data.alpha());
-
-        context.drawTextWithShadow(renderer, data.text(), -textWidth / 2, 0, color);
-        context.getMatrices().pop();
     }
 
     private Text buildDisplayText(float normalHealth, float absorption, float totalHealth, boolean useDecimal, boolean goldenHearts, boolean goldenPlus) {
@@ -587,27 +613,6 @@ public class BetterHealth {
 
             return Text.literal(healthStr).setStyle(Style.EMPTY.withColor(color));
         }
-    }
-
-    public static String getColoredIndicatorString(PlayerEntity player) {
-        return instance != null ? instance.getColoredIndicatorStringInternal(player) : "";
-    }
-
-    private String getColoredIndicatorStringInternal(PlayerEntity player) {
-        if (player == null || blocked.main) {
-            return "";
-        }
-
-        float totalHealth = player.getHealth() + player.getAbsorptionAmount();
-
-        Formatting color = getIndicatorFormatting(totalHealth);
-
-        boolean useDecimal = isEnabledInternal()
-                && config.isBetterHealthDecimal();
-
-        String healthValue = formatIndicatorString(totalHealth, useDecimal);
-
-        return color + healthValue;
     }
 
     private String formatIndicatorString(float health, boolean useDecimal) {
@@ -634,33 +639,66 @@ public class BetterHealth {
         return Formatting.GREEN;
     }
 
-    private void renderIndicator(MinecraftClient client, DrawContext context, float tickDelta) {
-        if (client.player == null
-            || client.world == null
-            || !client.options.getPerspective().isFirstPerson()
-            || isGuiHidden(client)) {
-
+    private void renderIndicator(MinecraftClient client, DrawContext context, float deltaSeconds) {
+        if (client == null || context == null) {
             return;
         }
 
-        PlayerEntity player = state.target;
+        boolean scalingEnabled = config.isBetterHealthScaling();
 
-        if (player == null) {
-            return;
-        }
-
-        boolean scalingEnabled = isEnabledInternal() && config.isBetterHealthScaling();
-
-        animation.update(tickDelta, scalingEnabled);
+        animation.update(deltaSeconds, scalingEnabled);
 
         if (hidingIndicator && animation.isFinished()) {
             clearTargetAfterFade();
+        }
+
+        if (client.player == null || client.world == null) {
             return;
         }
 
-        RenderData data = prepareRenderData(player);
+        if (!client.options.getPerspective().isFirstPerson()) {
+            return;
+        }
 
-        if (data.alpha() <= 0.001f) {
+        if (isGuiHidden(client)) {
+            return;
+        }
+
+        PlayerEntity target = state.target;
+
+        if (target == null || target.isRemoved() || target.isDead() || target.getHealth() <= 0) {
+            return;
+        }
+
+        if (animation.currentAlpha <= 0.001f) {
+            return;
+        }
+
+        RenderData data = prepareRenderData(target);
+
+        if (data == null || data.text() == null) {
+            return;
+        }
+
+        int color = data.text().getStyle().getColor() != null ? data.text().getStyle().getColor().getRgb() : 0xFFFFFF;
+
+        render(client, context, data.text(), animation.currentAlpha, data.scale(), location, scalingEnabled, color);
+    }
+
+    public static void render(MinecraftClient client, DrawContext context, Text text, float alpha, float scale, int location, boolean scalingEnabled, int color) {
+        if (client == null
+            || client.player == null
+            || client.world == null
+            || context == null
+            || text == null) {
+            return;
+        }
+
+        if (!client.options.getPerspective().isFirstPerson()) {
+            return;
+        }
+
+        if (alpha <= 0.001f) {
             return;
         }
 
@@ -670,35 +708,44 @@ public class BetterHealth {
             return;
         }
 
-        int textWidth = renderer.getWidth(data.text());
+        int screenWidth = client.getWindow().getScaledWidth();
+        int screenHeight = client.getWindow().getScaledHeight();
 
-        Position pos = calculateIndicatorPosition(client, textWidth);
+        int x = screenWidth / 2;
+        int y = screenHeight / 2 - 25;
 
-        drawIndicator(context, renderer, data, pos);
-    }
-
-    private boolean shouldShowIndicator(MinecraftClient client, long tick) {
-        if (blocked.main
-            || hidingIndicator
-            || state.target == null
-            || client.player == null
-            || state.target.isRemoved()
-            || state.target.isDead()
-            || tick - state.lastDamageTick >= durationTicks
-            || client.player.squaredDistanceTo(state.target) > 128.0 * 128.0) {
-
-            return false;
+        switch (location) {
+            case 1 -> {
+                x -= 25;
+                y += 20;
+            }
+            case 2 -> {
+                x += 35;
+                y += 20;
+            }
+            case 3 -> {
+                y += 41;
+            }
+            default -> {
+                x += 2;
+            }
         }
 
-        if (config.isBetterHealthPvPMode() && shouldHideIndicator(state.target)) {
-            return false;
-        }
+        float finalScale = scalingEnabled ? MathHelper.clamp(scale, 0.90F, 1.10F * 1.5f) : 1.0f;
 
-        if (config.isBetterHealthHovering()) {
-            return isHoverOnTarget(client);
-        }
+        int finalAlpha = MathHelper.clamp((int) (alpha * 255.0f), 0, 255);
+        int finalColor = (finalAlpha << 24) | (color & 0xFFFFFF);
 
-        return true;
+        int textWidth = renderer.getWidth(text);
+
+        context.getMatrices().pushMatrix();
+
+        context.getMatrices().translate((float) x, (float) y);
+        context.getMatrices().scale(finalScale, finalScale);
+
+        context.drawTextWithShadow(renderer, text, -textWidth / 2, 0, finalColor);
+
+        context.getMatrices().popMatrix();
     }
 
     private boolean shouldHideIndicator(PlayerEntity player) {
@@ -717,90 +764,19 @@ public class BetterHealth {
 
             hasAnyArmor = true;
 
-            if (stack.getItem() instanceof ArmorItem armorItemLeather && armorItemLeather.getMaterial() == ArmorMaterials.LEATHER
-                || stack.getItem() instanceof ArmorItem armorItemChain && armorItemChain.getMaterial() == ArmorMaterials.CHAIN) {
+            if (stack.isOf(Items.LEATHER_HELMET)
+                || stack.isOf(Items.LEATHER_CHESTPLATE)
+                || stack.isOf(Items.LEATHER_LEGGINGS)
+                || stack.isOf(Items.LEATHER_BOOTS)
+                || stack.isOf(Items.CHAINMAIL_HELMET)
+                || stack.isOf(Items.CHAINMAIL_CHESTPLATE)
+                || stack.isOf(Items.CHAINMAIL_LEGGINGS)
+                || stack.isOf(Items.CHAINMAIL_BOOTS)) {
                 return true;
             }
         }
 
         return !hasAnyArmor;
-    }
-
-    private void cancelPendingAttack() {
-        state.pendingTarget = null;
-        state.pendingTargetUuid = null;
-        state.pendingAttackTick = 0;
-    }
-
-    private void updatePendingAttack(MinecraftClient client) {
-        if (hidingIndicator) {
-            cancelPendingAttack();
-            return;
-        }
-
-        PlayerEntity pending = state.pendingTarget;
-
-        if (pending == null) {
-            return;
-        }
-
-        if (pending.isRemoved() || pending.isDead()) {
-            cancelPendingAttack();
-            return;
-        }
-
-        long tick = client.world.getTime();
-
-        if (tick - state.pendingAttackTick > 10) {
-            cancelPendingAttack();
-            return;
-        }
-
-        if (pending.hurtTime <= 0) {
-            return;
-        }
-
-        boolean newTarget = state.target == null || !state.target.getUuid().equals(pending.getUuid());
-
-        state.target = pending;
-        state.targetUuid = pending.getUuid();
-
-        state.lastDamageTick = tick;
-
-        hidingIndicator = false;
-
-        boolean scalingEnabled = config.isBetterHealthScaling();
-
-        if (newTarget || animation.currentAlpha <= 0.05f) {
-            animation.show(scalingEnabled, false);
-        } else {
-            animation.targetAlpha = 1.0f;
-        }
-
-        cancelPendingAttack();
-    }
-
-    private void updateTargetReference(MinecraftClient client) {
-        if (hidingIndicator
-            || state.targetUuid == null
-            || client.world == null
-            || client.world.getTime() - state.lastDamageTick > durationTicks) {
-            return;
-        }
-
-        if (state.target == null || state.target.isRemoved()) {
-            PlayerEntity refreshed = client.world.getPlayerByUuid(state.targetUuid);
-
-            if (refreshed != null
-                && !refreshed.isRemoved()
-                && !refreshed.isDead()) {
-
-                state.target = refreshed;
-
-            } else {
-                startHideAnimation();
-            }
-        }
     }
 
     private boolean isHoverOnTarget(MinecraftClient client) {
@@ -817,7 +793,6 @@ public class BetterHealth {
         return client.currentScreen != null && !(client.currentScreen instanceof ChatScreen);
     }
 
-
     private int computeSettingsHash() {
         int hash = 1;
 
@@ -831,7 +806,6 @@ public class BetterHealth {
     private void checkWorldChange(MinecraftClient client) {
         if (client.world == null) {
             lastWorld = null;
-
             return;
         }
 
@@ -848,6 +822,7 @@ public class BetterHealth {
             state.pendingAttackTick = 0;
 
             state.lastDamageTick = 0;
+            state.visibleUntilTick = 0;
 
             state.clearCache();
 
@@ -862,18 +837,23 @@ public class BetterHealth {
     private void checkDeaths(MinecraftClient client) {
         if (client.player != null && (client.player.isDead() || client.player.getHealth() <= 0)) {
             startHideAnimation();
-
             return;
         }
 
-        if (state.target != null && (state.target.isDead() || state.target.getHealth() <= 0)) {
-            startHideAnimation();
+        if (state.target != null && (state.target.isDead()
+            || state.target.getHealth() <= 0
+            || state.target.isRemoved())) {
+            resetDisplayInternal();
         }
     }
 
-    private void resetAllStates() {
-        lastHoverTick = 0;
+    private void cancelPendingAttack() {
+        state.pendingTarget = null;
+        state.pendingTargetUuid = null;
+        state.pendingAttackTick = 0;
+    }
 
+    private void resetAllStates() {
         durationTicks = 100;
         location = 0;
 
@@ -892,6 +872,10 @@ public class BetterHealth {
         state.pendingAttackTick = 0;
 
         state.lastDamageTick = 0;
+        state.visibleUntilTick = 0;
+
+        state.targetHealthBeforeHit = -1.0f;
+        state.damageConfirmed = false;
 
         state.clearCache();
 

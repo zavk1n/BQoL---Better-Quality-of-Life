@@ -4,6 +4,7 @@ import com.zavk1n.bqol.features.BetterThirdPerson;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.util.PlayerInput;
 import net.minecraft.util.math.MathHelper;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,8 +40,10 @@ public abstract class THIRDPERSONPlayer {
             return;
         }
 
-        float forward = player.input.movementForward;
-        float sideways = player.input.movementSideways;
+        PlayerInput input = player.input.playerInput;
+
+        float forward = (input.forward() ? 1.0F : 0.0F) - (input.backward() ? 1.0F : 0.0F);
+        float sideways = (input.left() ? 1.0F : 0.0F) - (input.right() ? 1.0F : 0.0F);
 
         if (!bqol$rotationInitialized) {
             bqol$rotationYaw = player.getYaw();

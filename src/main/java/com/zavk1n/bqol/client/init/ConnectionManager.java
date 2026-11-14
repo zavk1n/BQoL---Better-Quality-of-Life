@@ -13,8 +13,9 @@ import java.util.HashSet;
 
 @Environment(EnvType.CLIENT)
 public final class ConnectionManager {
-
     private ConnectionManager() {}
+
+    private static long connectionId;
 
     public static void register() {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> onJoin(client));
@@ -24,8 +25,14 @@ public final class ConnectionManager {
     private static void onJoin(MinecraftClient client) {
         BetterHealth.resetDisplay();
 
+        long currentConnection = ++connectionId;
+
         LiteApiManager.sendRequest()
             .thenAcceptAsync(response -> {
+                if (currentConnection != connectionId) {
+                    return;
+                }
+
                 if (response == null) {
                     BQoL.LOGGER.warn("LiteApi returned a null response");
                     return;
@@ -33,6 +40,7 @@ public final class ConnectionManager {
 
                 if (response.isOk()) {
                     LiteApiManager.updateBlocklist(new HashSet<>(response.blocklist()));
+
                     refreshAllModulesBlockedStatus();
                 } else {
                     BQoL.LOGGER.warn("LiteApi error response: {} ({})", response.error(), response.message());
@@ -45,6 +53,8 @@ public final class ConnectionManager {
     }
 
     private static void onDisconnect(MinecraftClient client) {
+        connectionId++;
+
         BetterHealth.resetDisplay();
         LiteApiManager.reset();
         refreshAllModulesBlockedStatus();

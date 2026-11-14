@@ -7,6 +7,7 @@ import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.MutableText;
@@ -40,6 +41,15 @@ public class BetterSpheres {
         boolean hwgolden;
         boolean reallyworld;
     }
+
+    private enum ServerType {
+        OTHER,
+        HOLYWORLD,
+        REALLYWORLD
+    }
+
+    private ServerType cachedServerType = ServerType.OTHER;
+    private String cachedServerAddress;
 
     private record NameSegment(String text, int color) {}
     private enum NameSpecType {
@@ -148,6 +158,10 @@ public class BetterSpheres {
 
     private static final int WHITE = 0xFFFFFF;
 
+    private static final int BLACK = 0x404040;
+    private static final int BLACKMINIHEADER = 0x616161;
+    private static final int BLACKSTROKE = 0x787878;
+
     private static final int RED = 0xFF5555;
     private static final int REDMINIHEADER = 0xFF7A7A;
     private static final int REDSTROKE = 0xFF9E9E;
@@ -163,6 +177,10 @@ public class BetterSpheres {
     private static final int CYAN = 0x33EFFF;
     private static final int CYANMINIHEADER = 0x8CF4FF;
     private static final int CYANSTROKE = 0xB5F8FF;
+
+    private static final int TURQUOISE = 0x00B88C;
+    private static final int TURQUOISEMINIHEADER = 0x02E8B1;
+    private static final int TURQUOISESTROKE = 0x40FFD3;
 
     private static final int ORANGE = 0xFF741A;
     private static final int ORANGEMINIHEADER = 0xFFB380;
@@ -209,31 +227,10 @@ public class BetterSpheres {
         public static final int MYTHIC_NAME = 0xFF0000;
         public static final int GOLDEN_NAME = 0xFFE500;
 
-        public static final List<Integer> DEFAULT_GRADIENT = List.of(
-            0xC2C2C2,
-            0xD6D6D6,
-            0xE3E3E3
-        );
-
-        public static final List<Integer> EPIC_GRADIENT = List.of(
-            0xEC17FF,
-            0xEF52FF,
-            0xF173FF
-        );
-
-        public static final List<Integer> LEGENDARY_GRADIENT = List.of(
-            0x0092FF,
-            0x47B0FF,
-            0x7EC6FC,
-            0xA3D8FF
-        );
-
-        public static final List<Integer> MYTHIC_GRADIENT = List.of(
-            0xD10000,
-            0xFF0000,
-            0xFF5252,
-            0xFC6868
-        );
+        public static final List<Integer> DEFAULT_GRADIENT = List.of(0xC2C2C2, 0xD6D6D6, 0xE3E3E3);
+        public static final List<Integer> EPIC_GRADIENT = List.of(0xEC17FF, 0xEF52FF, 0xF173FF);
+        public static final List<Integer> LEGENDARY_GRADIENT = List.of(0x0092FF, 0x47B0FF, 0x7EC6FC, 0xA3D8FF);
+        public static final List<Integer> MYTHIC_GRADIENT = List.of(0xD10000, 0xFF0000, 0xFF5252, 0xFC6868);
     }
 
     private static final String DAMAGE = "Урон";
@@ -256,11 +253,10 @@ public class BetterSpheres {
 
     private static final Map<String, Pattern> PARAMETER_PATTERNS =
         PARAMETERS.stream().collect(java.util.stream.Collectors.toUnmodifiableMap(
-            p -> p,
-            p -> Pattern.compile(
-                "^" + Pattern.quote(p) + "(\\s+(\\d+|[IVXLCDM]+))?$"
-            )
-        ));
+            p -> p, p -> Pattern.compile("^" + Pattern.quote(p) + "(\\s+(\\d+|[IVXLCDM]+))?$")));
+
+    private static final Pattern ROMAN_PATTERN = Pattern.compile("^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$");
+    private static final Pattern BULLET_PREFIX_PATTERN = Pattern.compile("^[◆▪•✦*]\\s*");
 
     private final List<HWDefaultSphereMatch> hwSphereMatches;
     private static class HWDefaultSphereMatch {
@@ -380,7 +376,7 @@ public class BetterSpheres {
             new HWGoldenSphereMatch(
                 config::isHolyWorldSphereSpeed,
                 Map.of("Скорость", 3),
-                "Сфера Скорки",
+                "Сфера Скорости",
                 List.of("Скорость 3"),
                 List.of(0xFFE500)
             ),
@@ -403,7 +399,8 @@ public class BetterSpheres {
 
     private void processTooltipHolyWorld(ItemStack stack, List<Text> lines) {
         if (!config.isHolyWorldSpheresEnabled()
-            || blocked.holyworld) {
+            || blocked.holyworld
+            || !stack.isOf(Items.PLAYER_HEAD)) {
             return;
         }
 
@@ -413,8 +410,14 @@ public class BetterSpheres {
             return;
         }
 
+        Text firstLine = lines.get(0);
+
+        if (firstLine == null) {
+            return;
+        }
+
         String originalName = COLOR_PATTERN
-            .matcher(lines.get(0).getString())
+            .matcher(firstLine.getString())
             .replaceAll("")
             .trim();
 
@@ -426,21 +429,12 @@ public class BetterSpheres {
     }
 
     private void processTooltipReallyWorld(ItemStack stack, List<Text> lines) {
-        if (blocked.main || lines == null || lines.isEmpty()) {
+        if (blocked.main || blocked.reallyworld || lines == null || lines.isEmpty()) {
             return;
         }
 
-        List<String> tooltip = lines.stream()
-            .filter(Objects::nonNull)
-            .map(Text::getString)
-            .toList();
-
         for (RWMatch match : rwMatches) {
-            if (!match.enabled.getAsBoolean()) {
-                continue;
-            }
-
-            if (!containsLine(tooltip, match.name)) {
+            if (!match.enabled.getAsBoolean() || !containsLine(lines, match.name)) {
                 continue;
             }
 
@@ -453,6 +447,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereAir, "Шар Воздуха",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -483,6 +478,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereFire, "Шар Огня",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -501,8 +497,10 @@ public class BetterSpheres {
                 ),
                 NameSpec.color(ORANGE),
                 List.of(
-                    TextLine.of("Пассивные эффекты:", ORANGEMINIHEADER, true),
+                    TextLine.of("Активируемые эффекты:", ORANGEMINIHEADER, true),
                     TextLine.of("Огнеупорность", ORANGESTROKE, false),
+                    TextLine.plain(""),
+                    TextLine.of("Пассивные эффекты:", ORANGEMINIHEADER, true),
                     TextLine.of("+4 Максимальное здоровье", ORANGESTROKE, false),
                     TextLine.of("+2.5 Урон", ORANGESTROKE, false),
                     TextLine.of("+0.3 Скорость атаки", ORANGESTROKE, false)
@@ -511,6 +509,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereGround, "Шар Земли",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -523,6 +522,9 @@ public class BetterSpheres {
                     "+4.5 Броня",
                     "+20 Сопротивление к отбрасыванию",
                     "+2 Сопротивление к отбрасыванию",
+                    " +2 Сопротивление к отбрасыванию",
+                    "+2 Сопротивление отбрасыванию",
+                    " +2 Сопротивление отбрасыванию",
                     "+4 Твёрдость брони",
                     "+4 Прочность брони",
                     "Проклятие утраты"
@@ -541,6 +543,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereWater, "Шар Воды",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -570,6 +573,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereGOD, "ШАР БОГА",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -582,6 +586,8 @@ public class BetterSpheres {
                     "Сопротивление III (00:06)",
                     "Пассивные эффекты:",
                     "+3 Броня",
+                    "+2.5 Урон при атаке",
+                    "+2.5 Урон атаки",
                     "+2.7 Урон при атаке",
                     "+2.7 Урон атаки",
                     "+25% Скорость",
@@ -595,12 +601,13 @@ public class BetterSpheres {
                     TextLine.of("Пассивные эффекты:", GOLDMINIHEADER, true),
                     TextLine.of("+25% Скорость", GOLDSTROKE, false),
                     TextLine.of("+3 Броня", GOLDSTROKE, false),
-                    TextLine.of("+2.7 Урон", GOLDSTROKE, false)
+                    TextLine.of("+2.5 Урон", GOLDSTROKE, false)
                 )
             ),
             new RWMatch(config::isSphereCocaCola, "Шар КокаКолы",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -627,6 +634,7 @@ public class BetterSpheres {
             new RWMatch(config::isSpherePepsi, "Шар Пепси",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -651,6 +659,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereRedBull, "Шар РедБулла",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -680,6 +689,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereSprite, "Шар Спрайта",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -704,6 +714,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereFanta, "Шар Фанты",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -726,6 +737,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereShine, "Шар Света",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -740,6 +752,8 @@ public class BetterSpheres {
                     "+2 Урон атаки",
                     "+3.5 Везение",
                     "+3.5 Удачи",
+                    "+3.5 Удача",
+                    " +3.5 Удача",
                     "В радиусе 16 блоков",
                     "Проклятие утраты"
                 ),
@@ -757,6 +771,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereChaos, "Шар Хаоса",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -776,21 +791,306 @@ public class BetterSpheres {
                     "В радиусе 8 блоков",
                     "Проклятие утраты"
                 ),
+                NameSpec.color(BLACK),
+                List.of(
+                    TextLine.of("Активируемые эффекты:", BLACKMINIHEADER, true),
+                    TextLine.of("Слабость 2 (00:10) Радиус: 8 блоков", BLACKSTROKE, false),
+                    TextLine.plain(""),
+                    TextLine.of("Пассивные эффекты:", BLACKMINIHEADER, true),
+                    TextLine.of("+2.5 Броня", BLACKSTROKE, false),
+                    TextLine.of("+3 Урон", BLACKSTROKE, false),
+                    TextLine.of("+0.4 Скорость атаки", BLACKSTROKE, false),
+                    TextLine.of("-10 Максимальное здоровье", BLACKSTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereDark, "Шар Тьмы",
+                List.of(
+                    "Когда во второй руке:",
+                    "Пока во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "Тьма (00:06)",
+                    "+2 Урон при атаке",
+                    "+2 Урон к урону",
+                    "+2 к урону",
+                    "+30% к скорости передвижения",
+                    "+6 Максимальное здоровье",
+                    "+6 к максимальному здоровью",
+                    "+6 к Максимальное здоровье",
+                    "+6 Макс. здоровье",
+                    "В радиусе 15 блоков",
+                    "Проклятие утраты"
+                ),
                 NameSpec.color(PURPLE),
                 List.of(
                     TextLine.of("Активируемые эффекты:", PURPLEMINIHEADER, true),
-                    TextLine.of("Слабость 2 (00:10) Радиус: 8 блоков", PURPLESTROKE, false),
+                    TextLine.of("Тьма (00:06) Радиус: 15 блоков", PURPLESTROKE, false),
                     TextLine.plain(""),
                     TextLine.of("Пассивные эффекты:", PURPLEMINIHEADER, true),
-                    TextLine.of("+2.5 Броня", PURPLESTROKE, false),
-                    TextLine.of("+3 Урон", PURPLESTROKE, false),
-                    TextLine.of("+0.4 Скорость атаки", PURPLESTROKE, false),
-                    TextLine.of("-10 Максимальное здоровье", PURPLESTROKE, false)
+                    TextLine.of("+2 Урон", PURPLESTROKE, false),
+                    TextLine.of("+30% Скорость", PURPLESTROKE, false),
+                    TextLine.of("+6 Максимальное здоровье", PURPLESTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereBlood, "Шар Крови",
+                List.of(
+                    "Когда во второй руке:",
+                    "Пока во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "Моментальный урон 2 (00:10)",
+                    "Моментальный урон 2",
+                    "Игнорирует броню",
+                    "Моментальный урон II (00:10)",
+                    "+3.5 к броне",
+                    "+2 к урону",
+                    "-10% к скорости передвижения",
+                    "В радиусе 15 блоков",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(RED),
+                List.of(
+                    TextLine.of("Активируемые эффекты:", REDMINIHEADER, true),
+                    TextLine.of("Моментальный урон 2 Радиус: 15 блоков", REDSTROKE, false),
+                    TextLine.plain(""),
+                    TextLine.of("Пассивные эффекты:", REDSTROKE, true),
+                    TextLine.of("+3.5 Броня", REDSTROKE, false),
+                    TextLine.of("+2 Урон", REDSTROKE, false),
+                    TextLine.of("-10% Скорость", REDSTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereLightning, "Шар Молнии",
+                List.of(
+                    "Когда во второй руке:",
+                    "Пока во второй руке:",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "Скорость атаки +0.35 (00:08)",
+                    "+3.5 к броне",
+                    "+3 к урону",
+                    "+25% к скорости передвижения",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(CYAN),
+                List.of(
+                    TextLine.of("Активируемые эффекты:", CYANMINIHEADER, true),
+                    TextLine.of("+0.35 Скорость атаки", CYANSTROKE, false),
+                    TextLine.plain(""),
+                    TextLine.of("Пассивные эффекты:", CYANSTROKE, true),
+                    TextLine.of("+3 Урон", CYANSTROKE, false),
+                    TextLine.of("+25% Скорость", CYANSTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereIce, "Шар Льда",
+                List.of(
+                    "Когда во второй руке:",
+                    "Пока во второй руке:",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "Заморозка (00:04)",
+                    "+2.5 к броне",
+                    "+10 к максимальному здоровью",
+                    "В радиусе 8 блоков",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(CYAN),
+                List.of(
+                    TextLine.of("Активируемые эффекты:", CYANMINIHEADER, true),
+                    TextLine.of("Заморозка (00:04) Радиус: 8 блоков", CYANSTROKE, false),
+                    TextLine.plain(""),
+                    TextLine.of("Пассивные эффекты:", CYANSTROKE, true),
+                    TextLine.of("+2.5 Броня", CYANSTROKE, false),
+                    TextLine.of("+10 Максимальное здоровье", CYANSTROKE, false)
                 )
             ),
             new RWMatch(config::isSphereDiscipline, "Шар Порядка",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "Регенерация II (00:08)",
+                    "+15% Скорость",
+                    "+2 Броня",
+                    "+20 Максимальное здоровье",
+                    "+20 Макс. здоровье",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(PINK),
+                List.of(
+                    TextLine.of("Активируемые эффекты:", PINKMINIHEADER, true),
+                    TextLine.of("Регенерация 2 (00:08)", PINKSTROKE, false),
+                    TextLine.plain(""),
+                    TextLine.of("Пассивные эффекты:", PINKMINIHEADER, true),
+                    TextLine.of("+15% Скорость", PINKSTROKE, false),
+                    TextLine.of("+2 Броня", PINKSTROKE, false),
+                    TextLine.of("+20 Максимальное здоровье", PINKSTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereWarden, "Шар Вардена",
+                List.of(
+                    "Когда во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "Регенерация II (00:08)",
+                    "+14 к Здоровью",
+                    "+2 к Урону",
+                    "+2 к Броне",
+                    "-30% Скорости передвижения",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(TURQUOISE),
+                List.of(
+                    TextLine.of("Пассивные эффекты:", TURQUOISEMINIHEADER, true),
+                    TextLine.of("+2 Урон", TURQUOISESTROKE, false),
+                    TextLine.of("+2 Броня", TURQUOISESTROKE, false),
+                    TextLine.of("+14 Максимальное здоровье", TURQUOISESTROKE, false),
+                    TextLine.of("-30% Скорость", TURQUOISESTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereModer, "Шар Модера",
+                List.of(
+                    "Когда во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "+10 к Здоровью",
+                    "+3.5 к Броне",
+                    "-15% Скорости передвижения",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(BLUE),
+                List.of(
+                    TextLine.of("Пассивные эффекты:", BLUEMINIHEADER, true),
+                    TextLine.of("+3.5 Броня", BLUESTROKE, false),
+                    TextLine.of("+10 Максимальное здоровье", BLUESTROKE, false),
+                    TextLine.of("-15% Скорость", BLUESTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereCheater, "Шар Читера",
+                List.of(
+                    "Когда во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "+6 к Здоровью",
+                    "+1 к Урону",
+                    "-1 к Броне",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(RED),
+                List.of(
+                    TextLine.of("Пассивные эффекты:", REDMINIHEADER, true),
+                    TextLine.of("+1 Урон", REDSTROKE, false),
+                    TextLine.of("+6 Максимальное здоровье", REDSTROKE, false),
+                    TextLine.of("-1 Броня", REDSTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereAdmin, "Шар Админа",
+                List.of(
+                    "Когда во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "+10 к Здоровью",
+                    "+2 к Урону",
+                    "+3 к Броне",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(GOLD),
+                List.of(
+                    TextLine.of("Пассивные эффекты:", GOLDMINIHEADER, true),
+                    TextLine.of("+2 Урон", GOLDSTROKE, false),
+                    TextLine.of("+3 Броня", GOLDSTROKE, false),
+                    TextLine.of("+10 Максимальное здоровье", GOLDSTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereTeacher, "Шар Учителя",
+                List.of(
+                    "Когда во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "+8 к Здоровью",
+                    "-1 к Урону",
+                    "+3 к Броне",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(GREEN),
+                List.of(
+                    TextLine.of("Пассивные эффекты:", GRAYMINIHEADER, true),
+                    TextLine.of("+3 Броня", GREENSTROKE, false),
+                    TextLine.of("+8 Максимальное здоровье", GREENSTROKE, false),
+                    TextLine.of("-1 Урон", GREENSTROKE, false)
+                )
+            ),
+            new RWMatch(config::isSphereDiscipline, "Шар Порядка",
+                List.of(
+                    "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -818,13 +1118,14 @@ public class BetterSpheres {
                 )
             ),
 
-            new RWMatch(config::isSpherePoseidon, "Шар Посейдона 2", List.of(), NameSpec.rename("Шар Посейдона"), List.of()),
+            new RWMatch(config::isSpherePoseidon, "Шар Посейдона 2", List.of(), NameSpec.rename("Шар Посейдона", CYAN), List.of()),
             new RWMatch(config::isSphereArmadillo, "Шар Броненосца 2", List.of(), NameSpec.rename("Шар Броненосца", GRAY), List.of()),
             new RWMatch(config::isSphereHades, "Шар Аида 2", List.of(), NameSpec.rename("Шар Аида", RED), List.of()),
 
             new RWMatch(config::isSphereBUNNY, "Шар BUNNY",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -838,7 +1139,7 @@ public class BetterSpheres {
                     "+21% Скорость",
                     "Проклятие утраты"
                 ),
-                NameSpec.NONE,
+                NameSpec.color(GRAY),
                 List.of(
                     TextLine.of("Пассивные эффекты:", GRAYMINIHEADER, true),
                     TextLine.of("Огнестойкость", GRAYSTROKE, false),
@@ -849,6 +1150,7 @@ public class BetterSpheres {
             new RWMatch(config::isSphereDHELPER, "Шар Д.Хелпера",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -865,7 +1167,7 @@ public class BetterSpheres {
                     "+3 к стойкости",
                     "Проклятие утраты"
                 ),
-                NameSpec.NONE,
+                NameSpec.color(ORANGE),
                 List.of(
                     TextLine.of("Пассивные эффекты:", ORANGEMINIHEADER, true),
                     TextLine.of("+7 Максимальное здоровье", ORANGESTROKE, false),
@@ -873,9 +1175,36 @@ public class BetterSpheres {
                     TextLine.of("+3 Стойкость", ORANGESTROKE, false)
                 )
             ),
+            new RWMatch(config::isSphereDiablo, "Шар Диабло",
+                List.of(
+                    "Когда во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "При нажатии SHIFT:",
+                    "+2 Урон к атаки",
+                    "+2 Урон атаки",
+                    "+7 Макс. здоровье",
+                    "+3 Прочность брони",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(RED),
+                List.of(
+                    TextLine.of("Пассивные эффекты:", REDSTROKE, true),
+                    TextLine.of("+2 Урон", REDSTROKE, false),
+                    TextLine.of("+7 Максимальное здоровье", REDSTROKE, false),
+                    TextLine.of("+3 Прочность брони", REDSTROKE, false)
+                )
+            ),
             new RWMatch(config::isHeadBatman, "Голова БетМена",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -889,7 +1218,7 @@ public class BetterSpheres {
                     "+0.3 Скорость атаки",
                     "Проклятие утраты"
                 ),
-                NameSpec.NONE,
+                NameSpec.color(GRAY),
                 List.of(
                     TextLine.of("Пассивные эффекты:", GRAYMINIHEADER, true),
                     TextLine.of("+1.5 Урон", GRAYSTROKE, false),
@@ -900,6 +1229,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadVampire, "Голова Дракулы",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -930,6 +1260,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadVampire, "Голова Вампира",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -960,6 +1291,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadJack, "Голова Джека",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -986,6 +1318,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadGrinch, "Голова Гринча",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1012,6 +1345,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadHydra, "Голова Гидры",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1037,6 +1371,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadIronMan, "Голова Железного Человека",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1058,9 +1393,36 @@ public class BetterSpheres {
                     TextLine.of("-25% Скорость", WHITE, false)
                 )
             ),
+            new RWMatch(config::isHeadTiger, "Тигринная голова",
+                List.of(
+                    "Когда во второй руке:",
+                    "При экипировке в левой руке",
+                    "Когда в руке",
+                    "При экиперовке в левой руке:",
+                    "Когда во второcтепенной руке:",
+                    "Когда во второй руке",
+                    "Когда во второcтепенной руке",
+                    "Когда надето на голову",
+                    "Когда надето на голову:",
+                    "Когда надето на голове:",
+                    "При нажатии SHIFT:",
+                    "+2.5 к урону",
+                    "+1 здоровье",
+                    "+25% к скорости",
+                    "Проклятие утраты"
+                ),
+                NameSpec.color(ORANGE),
+                List.of(
+                    TextLine.of("Пассивные эффекты:", ORANGEMINIHEADER, true),
+                    TextLine.of("+2.5 Урон", ORANGESTROKE, false),
+                    TextLine.of("+25% Скорость", ORANGESTROKE, false),
+                    TextLine.of("+1 Максимальное здоровье", ORANGESTROKE, false)
+                )
+            ),
             new RWMatch(config::isHeadCobra, "Голова Кобры",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1079,6 +1441,8 @@ public class BetterSpheres {
                 List.of(
                     TextLine.of("Пассивные эффекты:", GREENMINIHEADER, true),
                     TextLine.of("Отравляет врагов ядом", GREENSTROKE, false),
+                    TextLine.plain(""),
+                    TextLine.of("Пассивные эффекты:", GREENMINIHEADER, true),
                     TextLine.of("+3 Урон", GREENSTROKE, false),
                     TextLine.of("+20% Скорость атаки", GREENSTROKE, false),
                     TextLine.of("+2.5 Стойкость", GREENSTROKE, false)
@@ -1087,6 +1451,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadBunny, "Голова Кролика",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1111,6 +1476,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadPegasus, "Голова Пегаса",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1143,6 +1509,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadPenguin, "Голова Пингвина",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1167,6 +1534,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadGingerbread, "Голова Пряника",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1191,6 +1559,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadRudolph, "Голова Рудольфа",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1215,6 +1584,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadSanta, "Голова Санты",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1245,6 +1615,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadThor, "Голова Тора",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1273,6 +1644,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadHulk, "ГОЛОВА ХАЛКА",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1297,6 +1669,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadNutcracker, "Голова Щелкунчика",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1321,6 +1694,7 @@ public class BetterSpheres {
             new RWMatch(config::isHeadElf, "Голова Эльфа",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1345,6 +1719,7 @@ public class BetterSpheres {
             new RWMatch(config::isEasterEgg, "Пасхальное яйцо",
                 List.of(
                     "Когда во второй руке:",
+                    "При экипировке в левой руке",
                     "Когда в руке",
                     "При экиперовке в левой руке:",
                     "Когда во второcтепенной руке:",
@@ -1369,6 +1744,78 @@ public class BetterSpheres {
         );
     }
 
+    public static void initialize() {
+        if (instance == null) {
+            instance = new BetterSpheres();
+            instance.refreshBlockedStatusInternal();
+            instance.registerCallbacks();
+            BQoL.LOGGER.info("Better Spheres initialized");
+        }
+    }
+
+    public static BetterSpheres getInstance() {
+        if (instance == null)
+            initialize();
+
+        return instance;
+    }
+
+    public static void refreshBlockedStatus() {
+        if (instance != null)
+            instance.refreshBlockedStatusInternal();
+    }
+
+    public static boolean isEnabled() {
+        return instance != null && instance.isEnabledInternal();
+    }
+
+    public static void setEnabled(boolean enabled) {
+        if (instance != null)
+            instance.setEnabledInternal(enabled);
+    }
+
+    private void refreshBlockedStatusInternal() {
+        blocked.main = LiteApiManager.isFeatureBlocked("better_spheres");
+        blocked.holyworld = LiteApiManager.isFeatureBlocked("better_spheres_holyworld");
+        blocked.hwgolden = LiteApiManager.isFeatureBlocked("better_spheres_holyworld_golden");
+        blocked.reallyworld = LiteApiManager.isFeatureBlocked("better_spheres_reallyworld");
+    }
+
+    private boolean isEnabledInternal() {
+        return config.isBetterSpheresEnabled() && !blocked.main;
+    }
+
+    private void setEnabledInternal(boolean enabled) {
+        config.setBetterSpheresEnabled(enabled);
+        refreshBlockedStatusInternal();
+    }
+
+
+    private void registerCallbacks() {
+        if (registered) {
+            return;
+        }
+
+        registered = true;
+
+        ItemTooltipCallback.EVENT.register((stack, context, type, lines) -> {
+            if (!isEnabled()
+                || stack == null
+                || lines == null
+                || lines.isEmpty()) {
+                return;
+            }
+
+            updateServerType();
+
+            switch (cachedServerType) {
+                case HOLYWORLD -> processTooltipHolyWorld(stack, lines);
+                case REALLYWORLD -> processTooltipReallyWorld(stack, lines);
+                default -> {}
+            }
+        });
+    }
+
     private void applyReallyWorldMatch(ItemStack stack, List<Text> lines, RWMatch match) {
         int nameIndex = findLineIndex(lines, match.name);
 
@@ -1383,7 +1830,13 @@ public class BetterSpheres {
                 }
 
                 String text = line.getString();
-                return match.hiddenLines.stream().anyMatch(text::contains);
+                for (String hidden : match.hiddenLines) {
+                    if (text.contains(hidden)) {
+                        return true;
+                    }
+                }
+
+                return false;
             });
         }
 
@@ -1433,80 +1886,14 @@ public class BetterSpheres {
         }
     }
 
-    public static void initialize() {
-        if (instance == null) {
-            instance = new BetterSpheres();
-            instance.refreshBlockedStatusInternal();
-            instance.registerCallbacks();
-            BQoL.LOGGER.info("Better Spheres initialized");
-        }
-    }
-
-    public static BetterSpheres getInstance() {
-        if (instance == null)
-            initialize();
-
-        return instance;
-    }
-
-    public static void refreshBlockedStatus() {
-        if (instance != null)
-            instance.refreshBlockedStatusInternal();
-    }
-
-    public static boolean isEnabled() {
-        return instance != null && instance.isEnabledInternal();
-    }
-
-    public static void setEnabled(boolean enabled) {
-        if (instance != null)
-            instance.setEnabledInternal(enabled);
-    }
-
-    private void refreshBlockedStatusInternal() {
-        blocked.main = LiteApiManager.isFeatureBlocked("better_spheres");
-        blocked.holyworld = LiteApiManager.isFeatureBlocked("better_spheres_holyworld");
-        blocked.hwgolden = LiteApiManager.isFeatureBlocked("better_spheres_holyworld_golden");
-        blocked.reallyworld = LiteApiManager.isFeatureBlocked("better_spheres_reallyworld");
-    }
-
-    private boolean isEnabledInternal() {
-        return config.isBetterSpheresEnabled() && !blocked.main;
-    }
-
-    private void setEnabledInternal(boolean enabled) {
-        config.setBetterSpheresEnabled(enabled);
-        refreshBlockedStatusInternal();
-    }
-
-    private void registerCallbacks() {
-        if (registered) {
-            return;
+    private boolean containsLine(List<Text> lines, String text) {
+        for (Text line : lines) {
+            if (line != null && line.getString().contains(text)) {
+                return true;
+            }
         }
 
-        registered = true;
-
-        ItemTooltipCallback.EVENT.register((stack, context, lines) -> {
-            if (!isEnabled()
-                || stack.getItem() != Items.PLAYER_HEAD
-                || lines.isEmpty()) {
-                return;
-            }
-
-            if (isHolyWorld()) {
-                processTooltipHolyWorld(stack, lines);
-                return;
-            }
-
-            if (isReallyWorld()) {
-                processTooltipReallyWorld(stack, lines);
-            }
-        });
-    }
-
-    private boolean containsLine(List<String> lines, String text) {
-        return lines.stream()
-            .anyMatch(line -> line.contains(text));
+        return false;
     }
 
     private void setNameColor(ItemStack stack, int color) {
@@ -1518,7 +1905,7 @@ public class BetterSpheres {
         MutableText result = Text.literal(name.getString())
             .setStyle(style);
 
-        stack.setCustomName(result);
+        stack.set(DataComponentTypes.CUSTOM_NAME, result);
     }
 
     private void renamePreservingStyle(ItemStack stack, String newName) {
@@ -1529,7 +1916,7 @@ public class BetterSpheres {
         MutableText result = Text.literal(newName)
             .setStyle(style);
 
-        stack.setCustomName(result);
+        stack.set(DataComponentTypes.CUSTOM_NAME, result);
     }
 
     private void setAlternatingNameColors(ItemStack stack, int color1, int color2) {
@@ -1561,7 +1948,7 @@ public class BetterSpheres {
             letterIndex++;
         }
 
-        stack.setCustomName(result);
+        stack.set(DataComponentTypes.CUSTOM_NAME, result);
     }
 
     private void setSegmentedName(ItemStack stack, List<NameSegment> segments) {
@@ -1576,7 +1963,7 @@ public class BetterSpheres {
                 .setStyle( baseStyle.withColor(segment.color())));
         }
 
-        stack.setCustomName(result);
+        stack.set(DataComponentTypes.CUSTOM_NAME, result);
     }
 
     private HWSphereResult searchHWSpheres(Map<String, Integer> parameters) {
@@ -1680,7 +2067,7 @@ public class BetterSpheres {
                 continue;
             }
 
-            raw = raw.replaceFirst("^[◆▪•✦*]\\s*", "");
+            raw = BULLET_PREFIX_PATTERN.matcher(raw).replaceFirst("");
 
             for (Map.Entry<String, Pattern> entry :
                 PARAMETER_PATTERNS.entrySet()) {
@@ -1731,8 +2118,7 @@ public class BetterSpheres {
     private int romanToInt(String roman) {
         if (roman == null
             || roman.isBlank()
-            || !roman.matches(
-            "^M{0,4}(CM|CD|D?C{0,3})" + "(XC|XL|L?X{0,3})" + "(IX|IV|V?I{0,3})$")) {
+            || !ROMAN_PATTERN.matcher(roman).matches()) {
             return 0;
         }
 
@@ -1774,7 +2160,7 @@ public class BetterSpheres {
         lines.removeIf(line -> {
             String clean = line.getString().trim();
 
-            clean = clean.replaceFirst("^[◆▪•✦*]\\s*", "");
+            clean = BULLET_PREFIX_PATTERN.matcher(clean).replaceFirst("");
 
             for (Pattern pattern :
                 PARAMETER_PATTERNS.values()) {
@@ -1802,7 +2188,7 @@ public class BetterSpheres {
                 .getString()
                 .trim();
 
-            clean = clean.replaceFirst("^[◆▪•✦*]\\s*", "");
+            clean = BULLET_PREFIX_PATTERN.matcher(clean).replaceFirst("");
 
             for (String parameter : PARAMETERS) {
                 if (clean.startsWith(parameter)) {
@@ -1898,7 +2284,7 @@ public class BetterSpheres {
             return;
         }
 
-        stack.setCustomName(Text.literal(originalName)
+        stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(originalName)
             .styled(style -> style
                 .withColor(sphereInfo.nameColor())
                 .withItalic(false))
@@ -1907,7 +2293,8 @@ public class BetterSpheres {
 
     private void applyHWGoldenSphereName(ItemStack stack, HWGoldenSphereMatch match) {
         if (!config.isHWGoldenSpheres()
-            || match == null) {
+            || match == null
+            || !stack.isOf(Items.PLAYER_HEAD)) {
             return;
         }
 
@@ -1917,7 +2304,7 @@ public class BetterSpheres {
                 .withItalic(false));
 
         if (!stack.getName().equals(customName)) {
-            stack.setCustomName(customName);
+            stack.set(DataComponentTypes.CUSTOM_NAME, customName);
         }
     }
 
@@ -1927,39 +2314,39 @@ public class BetterSpheres {
             .withItalic(false);
     }
 
-    private boolean isHolyWorld() {
+    private void updateServerType() {
         MinecraftClient client = mc();
-
-        if (client == null) {
-            return false;
-        }
-
         ServerInfo server = client.getCurrentServerEntry();
 
-        if (server == null || server.address == null) {
-            return false;
+        String address = server != null ? server.address : null;
+
+        if (Objects.equals(cachedServerAddress, address)) {
+            return;
         }
 
-        return server.address
-            .toLowerCase(Locale.ROOT)
-            .contains("holyworld");
+        cachedServerAddress = address;
+
+        if (address == null || address.isEmpty()) {
+            cachedServerType = ServerType.OTHER;
+            return;
+        }
+
+        String normalized = address.toLowerCase(Locale.ROOT);
+
+        if (normalized.contains("holyworld")) {
+            cachedServerType = ServerType.HOLYWORLD;
+        } else if (normalized.contains("reallyworld")) {
+            cachedServerType = ServerType.REALLYWORLD;
+        } else {
+            cachedServerType = ServerType.OTHER;
+        }
+    }
+
+    private boolean isHolyWorld() {
+        return cachedServerType == ServerType.HOLYWORLD;
     }
 
     private boolean isReallyWorld() {
-        MinecraftClient client = mc();
-
-        if (client == null) {
-            return false;
-        }
-
-        ServerInfo server = client.getCurrentServerEntry();
-
-        if (server == null || server.address == null) {
-            return false;
-        }
-
-        return server.address
-            .toLowerCase(Locale.ROOT)
-            .contains("reallyworld");
+        return cachedServerType == ServerType.REALLYWORLD;
     }
 }

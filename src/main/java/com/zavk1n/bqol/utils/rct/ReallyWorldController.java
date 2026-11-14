@@ -9,8 +9,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
@@ -24,26 +22,31 @@ import java.util.regex.Pattern;
 public class ReallyWorldController {
     private static ReallyWorldController instance;
 
-    public ReallyWorldController() {
-        instance = this;
-    }
-
-    public static ReallyWorldController getInstance() {
-        return instance;
-    }
-
     private static final String HUB_COMMAND = "hub";
-    private static final int HUB_TIMEOUT_TICKS = 50;
-    private static final int MENU_TIMEOUT_TICKS = 50;
+
+    private static final int HUB_TIMEOUT_TICKS = 120;
+    private static final int MENU_TIMEOUT_TICKS = 60;
     private static final int SUCCESS_DELAY_TICKS = 60;
     private static final int MENU_CHANGE_DELAY_TICKS = 2;
     private static final int MAX_ANARCHY = 88;
 
-    private static final Pattern GRIEF_NUMBER = Pattern.compile("#\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
+    private static final int MAX_MENU_ATTEMPTS = 3;
+
+    private static final Pattern GRIEF_NUMBER = Pattern.compile("#\\s*(\\d+)");
 
     public int operationTimeoutTicks = 500;
+    public String lastNumber;
 
     private State state = State.IDLE;
+
+    private int stateTicks;
+    private int operationTicks;
+    private int finishDelayTicks;
+    private int menuAttempts;
+    private int switchingMenuAttempts;
+    private int targetNumber = -1;
+
+    private String previousMenuSnapshot;
 
     private enum State {
         IDLE,
@@ -60,14 +63,13 @@ public class ReallyWorldController {
         WAITING_FINISH
     }
 
-    private int stateTicks;
-    private int operationTicks;
-    private int finishDelayTicks;
+    public ReallyWorldController() {
+        instance = this;
+    }
 
-    private String targetNumber;
-    private String previousMenuSnapshot;
-
-    public String lastNumber;
+    public static ReallyWorldController getInstance() {
+        return instance;
+    }
 
     public boolean isBusy() {
         return state != State.IDLE;
@@ -76,9 +78,12 @@ public class ReallyWorldController {
     public void start(String number) {
         MinecraftClient mc = MinecraftClient.getInstance();
 
-        if (mc.player == null
-            || mc.getNetworkHandler() == null
-            || isBusy()) {
+        if (mc.player == null || mc.getNetworkHandler() == null || isBusy()) {
+            return;
+        }
+
+        if (number == null || number.isBlank()) {
+            Chat.send(mc, Chat.invalidNumber());
             return;
         }
 
@@ -86,7 +91,7 @@ public class ReallyWorldController {
 
         try {
             value = Integer.parseInt(number.trim());
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException ignored) {
             Chat.send(mc, Chat.invalidNumber());
             return;
         }
@@ -96,12 +101,13 @@ public class ReallyWorldController {
             return;
         }
 
-        targetNumber = Integer.toString(value);
+        targetNumber = value;
+        previousMenuSnapshot = null;
 
-        stateTicks = 0;
+        menuAttempts = 0;
+        switchingMenuAttempts = 0;
         operationTicks = 0;
         finishDelayTicks = 0;
-        previousMenuSnapshot = null;
 
         switchTo(State.TRAVELLING_TO_HUB);
         sendCommand(mc, HUB_COMMAND);
@@ -122,7 +128,7 @@ public class ReallyWorldController {
             return;
         }
 
-        ++stateTicks;
+        stateTicks++;
 
         switch (state) {
             case TRAVELLING_TO_HUB -> waitForReallyWorldHub(mc);
@@ -143,10 +149,7 @@ public class ReallyWorldController {
     private void waitForReallyWorldHub(MinecraftClient mc) {
         if (hasReallyWorldHubCompass(mc)) {
             switchTo(State.OPENING_SERVER_MENU);
-            return;
-        }
-
-        if (stateTicks >= HUB_TIMEOUT_TICKS) {
+        } else if (stateTicks >= HUB_TIMEOUT_TICKS) {
             fail(mc, "После /hub не удалось обнаружить компас выбора сервера.");
         }
     }
@@ -185,27 +188,23 @@ public class ReallyWorldController {
             return;
         }
 
-        if (inventorySlot < 9) {
-            mc.player.getInventory().selectedSlot = inventorySlot;
-            mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
+        if (inventorySlot >= 9) {
+            int hotbarSlot = findEmptyHotbarSlot(mc);
 
-            switchTo(State.WAITING_SERVER_MENU);
-            return;
+            if (hotbarSlot == -1) {
+                hotbarSlot = mc.player.getInventory().getSelectedSlot();
+            }
+
+            if (!moveToHotbar(mc, inventorySlot, hotbarSlot)) {
+                return;
+            }
+
+            mc.player.getInventory().setSelectedSlot(hotbarSlot);
+        } else {
+            mc.player.getInventory().setSelectedSlot(inventorySlot);
         }
 
-        int hotbarSlot = findEmptyHotbarSlot(mc);
-
-        if (hotbarSlot == -1) {
-            hotbarSlot = mc.player.getInventory().selectedSlot;
-        }
-
-        if (!moveToHotbar(mc, inventorySlot, hotbarSlot)) {
-            return;
-        }
-
-        mc.player.getInventory().selectedSlot = hotbarSlot;
         mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
-
         switchTo(State.WAITING_SERVER_MENU);
     }
 
@@ -214,8 +213,10 @@ public class ReallyWorldController {
             return -1;
         }
 
+        var inventory = mc.player.getInventory();
+
         for (int slot = 0; slot < 36; slot++) {
-            if (isServerCompass(mc.player.getInventory().getStack(slot))) {
+            if (isServerCompass(inventory.getStack(slot))) {
                 return slot;
             }
         }
@@ -225,13 +226,25 @@ public class ReallyWorldController {
 
     private void waitForServerMenu(MinecraftClient mc) {
         if (BetterRCT.openMenu(mc) != null) {
+            switchingMenuAttempts = 0;
+            menuAttempts = 0;
             switchTo(State.FINDING_WORKBENCH);
             return;
         }
 
         if (stateTicks >= MENU_TIMEOUT_TICKS) {
-            fail(mc, "Не удалось открыть меню выбора серверов.");
+            retryServerMenu(mc);
         }
+    }
+
+    private void retryServerMenu(MinecraftClient mc) {
+        if (switchingMenuAttempts < MAX_MENU_ATTEMPTS) {
+            switchingMenuAttempts++;
+            switchTo(State.OPENING_SERVER_MENU);
+            return;
+        }
+
+        fail(mc, "Не удалось открыть меню выбора серверов.");
     }
 
     private void findAndClickWorkbench(MinecraftClient mc) {
@@ -239,9 +252,8 @@ public class ReallyWorldController {
 
         if (screen == null) {
             if (stateTicks >= MENU_TIMEOUT_TICKS) {
-                fail(mc, "Меню выбора серверов было закрыто.");
+                retryWorkbench(mc, "Меню выбора серверов было закрыто.");
             }
-
             return;
         }
 
@@ -250,15 +262,15 @@ public class ReallyWorldController {
 
         if (slot.isEmpty()) {
             if (stateTicks >= MENU_TIMEOUT_TICKS) {
-                fail(mc, "В меню не найден режим «Гриф выживание».");
+                retryWorkbench(mc, "В меню не найден режим «Гриф выживание».");
             }
-
             return;
         }
 
         previousMenuSnapshot = BetterRCT.snapshot(screen);
 
         if (clickSlot(mc, menu, slot.getAsInt())) {
+            menuAttempts++;
             switchTo(State.WAITING_WORKBENCH_MENU);
         }
     }
@@ -270,17 +282,24 @@ public class ReallyWorldController {
 
         if (!hasMenuChanged(mc)) {
             if (stateTicks >= MENU_TIMEOUT_TICKS) {
-                fail(mc, "Меню грифа не открылось или не обновилось.");
+                retryWorkbench(mc, "Меню грифа не открылось или не обновилось.");
             }
-
             return;
         }
 
-        switchTo(getPageState());
+        menuAttempts = 0;
+        switchTo(targetNumber <= 32 ? State.FINDING_SERVER : State.FINDING_FIRST_PAGE);
     }
 
-    private State getPageState() {
-        return getTargetNumber() <= 32 ? State.FINDING_SERVER : State.FINDING_FIRST_PAGE;
+    private void retryWorkbench(MinecraftClient mc, String errorMessage) {
+        if (menuAttempts < MAX_MENU_ATTEMPTS) {
+            menuAttempts++;
+            previousMenuSnapshot = null;
+            switchTo(State.FINDING_WORKBENCH);
+            return;
+        }
+
+        fail(mc, errorMessage);
     }
 
     private void findAndClickNextPage(MinecraftClient mc) {
@@ -325,11 +344,7 @@ public class ReallyWorldController {
             return;
         }
 
-        if (getTargetNumber() >= 65) {
-            switchTo(State.FINDING_SECOND_PAGE);
-        } else {
-            switchTo(State.FINDING_SERVER);
-        }
+        switchTo(targetNumber >= 65 ? State.FINDING_SECOND_PAGE : State.FINDING_SERVER);
     }
 
     private void findAndClickSecondPage(MinecraftClient mc) {
@@ -389,19 +404,11 @@ public class ReallyWorldController {
         }
 
         ScreenHandler menu = screen.getScreenHandler();
-        int number = getTargetNumber();
-
-        OptionalInt slot;
-
-        if (number >= 65 && number <= 68) {
-            slot = findItemByName(menu, "ГРИФ #" + number + " (1.16.5)");
-        } else {
-            slot = BetterRCT.playerStackSlot(menu, countFor(number));
-        }
+        OptionalInt slot = findItemByNumber(menu, targetNumber);
 
         if (slot.isEmpty()) {
             if (stateTicks >= MENU_TIMEOUT_TICKS) {
-                fail(mc, "Не удалось найти гриф #" + number + " в меню.");
+                fail(mc, "Не удалось найти гриф #" + targetNumber + " в меню.");
             }
 
             return;
@@ -412,120 +419,75 @@ public class ReallyWorldController {
         }
     }
 
-    private static OptionalInt findItemByName(ScreenHandler menu, String expectedName) {
-        int slots = BetterRCT.slotCount(menu);
-        Matcher expectedMatcher = GRIEF_NUMBER.matcher(expectedName);
+    private static OptionalInt findItemByNumber(ScreenHandler menu, int expectedNumber) {
+        int slotCount = BetterRCT.slotCount(menu);
 
-        if (!expectedMatcher.find()) {
-            return OptionalInt.empty();
-        }
-
-        final int expectedNumber;
-
-        try {
-            expectedNumber = Integer.parseInt(expectedMatcher.group(1));
-        } catch (NumberFormatException e) {
-            return OptionalInt.empty();
-        }
-
-        for (int i = 0; i < slots; i++) {
+        for (int i = 0; i < slotCount; i++) {
             ItemStack stack = menu.slots.get(i).getStack();
 
             if (stack.isEmpty() || stack.getItem() != Items.PLAYER_HEAD) {
                 continue;
             }
 
-            String name = stack.getName().getString();
+            String name = BetterRCT.normalize(stack.getName().getString());
 
-            if (!BetterRCT.matches(name, "ГРИФ")) {
+            if (!name.contains("гриф")) {
                 continue;
             }
 
             Matcher matcher = GRIEF_NUMBER.matcher(name);
 
-            if (!matcher.find()) {
-                continue;
-            }
-
-            try {
-                if (Integer.parseInt(matcher.group(1)) == expectedNumber) {
-                    return OptionalInt.of(i);
+            while (matcher.find()) {
+                try {
+                    if (Integer.parseInt(matcher.group(1)) == expectedNumber) {
+                        return OptionalInt.of(i);
+                    }
+                } catch (NumberFormatException ignored) {
                 }
-            } catch (NumberFormatException ignored) {}
+            }
         }
 
         return OptionalInt.empty();
     }
 
     public static OptionalInt workbenchSlot(ScreenHandler menu) {
-        return BetterRCT.slotMatching(menu, stack -> {
-            if (stack.getItem() != Items.CRAFTING_TABLE) {
-                return false;
-            }
-
-            return BetterRCT.matches(stack.getName().getString(), "ГРИФ ВЫЖИВАНИЕ (1.16.5)");
-        });
+        return BetterRCT.slotMatching(menu, stack -> stack.getItem() == Items.CRAFTING_TABLE && BetterRCT.matches(stack.getName().getString(), "ГРИФ ВЫЖИВАНИЕ (1.21.11)"));
     }
 
     public static OptionalInt nextPageSlot(ScreenHandler menu) {
-        return BetterRCT.slotMatching(menu, stack -> {
-            if (stack.getItem() != Items.ARROW) {
-                return false;
-            }
-
-            return BetterRCT.matches(stack.getName().getString(), "Следующая страница");
-        });
-    }
-
-    private static int countFor(int number) {
-        if (number <= 32) {
-            return number;
-        }
-
-        if (number <= 64) {
-            return number - 32;
-        }
-
-        return number - 64;
-    }
-
-    private int getTargetNumber() {
-        if (targetNumber == null) {
-            return -1;
-        }
-
-        try {
-            return Integer.parseInt(targetNumber);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        return BetterRCT.slotMatching(menu, stack -> stack.getItem() == Items.ARROW && BetterRCT.matches(stack.getName().getString(), "Следующая страница"));
     }
 
     private boolean hasMenuChanged(MinecraftClient mc) {
         HandledScreen<?> screen = BetterRCT.openMenu(mc);
 
-        if (screen == null || previousMenuSnapshot == null) {
-            return false;
-        }
-
-        return !previousMenuSnapshot.equals(BetterRCT.snapshot(screen));
-    }
-
-    private boolean isTargetGriefOnScoreboard(MinecraftClient mc) {
-        return mc != null
-            && mc.world != null
-            && targetNumber != null
-            && isOnReallyWorldServer(targetNumber);
+        return screen != null
+            && previousMenuSnapshot != null
+            && !previousMenuSnapshot.equals(BetterRCT.snapshot(screen));
     }
 
     public boolean scoreboardContains(String text) {
         MinecraftClient mc = MinecraftClient.getInstance();
 
-        if (mc == null || mc.world == null || text == null || text.isBlank()) {
+        if (mc.world == null || text == null || text.isBlank()) {
             return false;
         }
 
         String wanted = BetterRCT.normalize(text);
+
+        boolean griefSearch = wanted.startsWith("гриф");
+
+        String expectedNumber = null;
+
+        if (griefSearch) {
+            Matcher matcher = GRIEF_NUMBER.matcher(wanted);
+
+            if (!matcher.find()) {
+                return false;
+            }
+
+            expectedNumber = matcher.group(1);
+        }
 
         for (String line : BetterRCT.sidebarLines(mc)) {
             String normalized = BetterRCT.normalize(line);
@@ -534,33 +496,42 @@ public class ReallyWorldController {
                 continue;
             }
 
-            if (wanted.startsWith("гриф")) {
-                Matcher wantedMatcher = GRIEF_NUMBER.matcher(wanted);
-                Matcher lineMatcher = GRIEF_NUMBER.matcher(normalized);
-
-                if (!wantedMatcher.find()) {
-                    continue;
+            if (!griefSearch) {
+                if (BetterRCT.matches(normalized, wanted)) {
+                    return true;
                 }
+                continue;
+            }
 
-                String expectedNumber = wantedMatcher.group(1);
+            if (!normalized.contains("гриф")) {
+                continue;
+            }
 
-                while (lineMatcher.find()) {
-                    if (expectedNumber.equals(lineMatcher.group(1)) && normalized.contains("гриф")) {
-                        return true;
-                    }
+            Matcher matcher = GRIEF_NUMBER.matcher(normalized);
+
+            while (matcher.find()) {
+                if (expectedNumber.equals(matcher.group(1))) {
+                    return true;
                 }
-            } else if (BetterRCT.matches(normalized, wanted)) {
-                return true;
             }
         }
 
         return false;
     }
 
-    private void waitForFinish(MinecraftClient mc) {
-        if (!BetterRCT.getInstance().isOnServer(targetNumber)) {
-            finishDelayTicks = 0;
+    public boolean isOnReallyWorldServer(String number) {
+        if (number == null || number.isBlank()) {
+            return false;
+        }
 
+        return scoreboardContains("ГРИФ #" + number);
+    }
+
+    private void waitForFinish(MinecraftClient mc) {
+        String number = Integer.toString(targetNumber);
+
+        if (!BetterRCT.getInstance().isOnServer(number)) {
+            finishDelayTicks = 0;
             return;
         }
 
@@ -568,14 +539,18 @@ public class ReallyWorldController {
             return;
         }
 
-        lastNumber = targetNumber;
+        lastNumber = number;
+
+        int messageColor = BetterRCT.getInstance().MESSAGE_COLOR;
 
         Text message = Text.literal("Я успешно зашел на сервер - ")
-            .styled(style -> style.withColor(BetterRCT.getInstance().MESSAGE_COLOR))
-            .append(Text.literal("Гриф #" + targetNumber)
-                .styled(style -> style
-                    .withColor(BetterRCT.getInstance().MESSAGE_COLOR)
-                    .withBold(true)));
+            .styled(style -> style.withColor(messageColor))
+            .append(
+                Text.literal("Гриф #" + number)
+                    .styled(style -> style
+                        .withColor(messageColor)
+                        .withBold(true))
+            );
 
         closeMenu(mc);
         Chat.info(mc, message);
@@ -583,30 +558,25 @@ public class ReallyWorldController {
     }
 
     public void handleIncomingMessageInternal(String message) {
-        if (message == null || !isBusy()) {
-            return;
-        }
-
-        if (message.contains("Не удалось подключиться к серверу")) {
+        if (message != null
+            && isBusy()
+            && message.contains("Не удалось подключиться к серверу")) {
             stop();
         }
     }
 
     public static void handleIncomingMessage(String message) {
-        if (instance == null) {
-            return;
+        if (instance != null) {
+            instance.handleIncomingMessageInternal(message);
         }
-
-        instance.handleIncomingMessageInternal(message);
     }
 
     public void stop() {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
         if (!isBusy()) {
             return;
         }
 
+        MinecraftClient mc = MinecraftClient.getInstance();
         closeMenu(mc);
 
         Chat.info(mc, Text.literal("Скрипт RCT был остановлен.")
@@ -653,8 +623,10 @@ public class ReallyWorldController {
             return -1;
         }
 
+        var inventory = mc.player.getInventory();
+
         for (int slot = 0; slot < 9; slot++) {
-            if (mc.player.getInventory().getStack(slot).isEmpty()) {
+            if (inventory.getStack(slot).isEmpty()) {
                 return slot;
             }
         }
@@ -680,14 +652,6 @@ public class ReallyWorldController {
         stateTicks = 0;
     }
 
-    public boolean isOnReallyWorldServer(String number) {
-        if (number == null || number.isBlank()) {
-            return false;
-        }
-
-        return scoreboardContains("ГРИФ #" + number);
-    }
-
     private void fail(MinecraftClient mc, String message) {
         closeMenu(mc);
 
@@ -701,8 +665,11 @@ public class ReallyWorldController {
     }
 
     private void reset() {
-        targetNumber = null;
+        targetNumber = -1;
         previousMenuSnapshot = null;
+
+        menuAttempts = 0;
+        switchingMenuAttempts = 0;
 
         stateTicks = 0;
         operationTicks = 0;

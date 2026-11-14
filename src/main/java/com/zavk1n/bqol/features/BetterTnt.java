@@ -2,41 +2,49 @@ package com.zavk1n.bqol.features;
 
 import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.config.BQoLConfig;
+import com.zavk1n.bqol.accessors.ACCESSORTNTRenderState;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
+import net.minecraft.client.render.entity.state.TntEntityRenderState;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.TntEntity;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
-public class BetterTnt {
-    private MinecraftClient mc() {
-        if (client == null) client = MinecraftClient.getInstance();
-        return client;
-    }
+public final class BetterTnt {
 
     private BetterTnt() {}
 
     private static BetterTnt instance;
-    private MinecraftClient client;
+    private final MinecraftClient client = MinecraftClient.getInstance();
     private final BQoLConfig config = BQoLConfig.getInstance();
 
     private final BlockedFeatures blocked = new BlockedFeatures();
-    private static class BlockedFeatures {
-        boolean main;
-        boolean timer;
-        boolean alert;
-        boolean showXYZ;
-        boolean showBlocks;
-        boolean explosionArea;
+    private static final class BlockedFeatures {
+        private boolean main;
+        private boolean timer;
+        private boolean alert;
+        private boolean showXYZ;
+        private boolean showBlocks;
+        private boolean explosionArea;
     }
+
+    private static final TntType[] TNT_TYPES = TntType.values();
+    private final Map<UUID, TrackedTnt> trackedAlerts = new HashMap<>();
 
     public enum TntType {
         NORMAL,
@@ -48,20 +56,15 @@ public class BetterTnt {
         EXPLOSIVE_WAVE
     }
 
-    public static class AlertInfo {
+    public static final class AlertInfo {
+
         private final TntType type;
         private final double seconds;
         private final int x;
         private final int y;
         private final int z;
 
-        public AlertInfo(
-            TntType type,
-            double seconds,
-            int x,
-            int y,
-            int z
-        ) {
+        public AlertInfo(TntType type, double seconds, int x, int y, int z) {
             this.type = type;
             this.seconds = seconds;
             this.x = x;
@@ -90,79 +93,92 @@ public class BetterTnt {
         }
 
         public String getFuseText() {
-            return String.format(Locale.ROOT, "%.2f", seconds);
+            return formatSeconds(seconds);
         }
 
         public String getText(Vec3d playerPos) {
-            String text = "Время до взрыва " + getAlertTypeName(type) + " - " + getFuseText();
+            StringBuilder text = new StringBuilder(64)
+                .append("Время до взрыва ")
+                .append(getAlertTypeName(type))
+                .append(" - ")
+                .append(getFuseText());
 
-            if (BetterTnt.isAlertShowXYZEnabled()) {
-                text += " (X = " + x + ", Y = " + y + ", Z = " + z + ")";
-            } else if (BetterTnt.isAlertShowBlocksEnabled()) {
-                text += String.format(Locale.ROOT, " (в %.1f блоках)", getDistanceBlocks(playerPos));
+            if (isAlertShowXYZEnabled()) {
+                text.append(" (X = ").append(x)
+                    .append(", Y = ").append(y)
+                    .append(", Z = ").append(z)
+                    .append(')');
+            } else if (isAlertShowBlocksEnabled()) {
+                text.append(" (в ")
+                    .append(String.format(Locale.ROOT, "%.1f", getDistanceBlocks(playerPos)))
+                    .append(" блоках)");
             }
 
-            return text;
+            return text.toString();
         }
 
         public double getDistanceBlocks(Vec3d playerPos) {
-            double dx = (x + 0.5D) - playerPos.x;
-            double dy = (y + 0.5D) - playerPos.y;
-            double dz = (z + 0.5D) - playerPos.z;
+            double dx = x + 0.5D - playerPos.x;
+            double dy = y + 0.5D - playerPos.y;
+            double dz = z + 0.5D - playerPos.z;
 
             return Math.sqrt(dx * dx + dy * dy + dz * dz);
         }
+
+        private double getDistanceSquared(Vec3d playerPos) {
+            double dx = x + 0.5D - playerPos.x;
+            double dy = y + 0.5D - playerPos.y;
+            double dz = z + 0.5D - playerPos.z;
+
+            return dx * dx + dy * dy + dz * dz;
+        }
     }
 
-    private static class TrackedTnt {
-        private final UUID uuid;
-
+    private static final class TrackedTnt {
         private TntType type;
 
         private int x;
         private int y;
         private int z;
 
-        private boolean wasDetected;
         private int lastServerFuse;
-        private long lastSyncNanos;
+
+        private long lastSeenTick;
         private long endTimeNanos;
 
-        private TrackedTnt(TntEntity entity, TntType type, long endTimeNanos, int fuse) {
-            this.uuid = entity.getUuid();
+        private TrackedTnt(
+            TntEntity entity,
+            TntType type,
+            int fuse,
+            long now,
+            long tick
+        ) {
             this.type = type;
-            this.endTimeNanos = endTimeNanos;
             this.lastServerFuse = fuse;
-            this.lastSyncNanos = System.nanoTime();
-            this.wasDetected = true;
+            this.lastSeenTick = tick;
+            this.endTimeNanos = now + fuse * 50_000_000L;
 
             updatePosition(entity);
         }
 
         private void updatePosition(TntEntity entity) {
-            if (entity == null) {
-                return;
-            }
-
-            this.x = entity.getBlockPos().getX();
-            this.y = entity.getBlockPos().getY();
-            this.z = entity.getBlockPos().getZ();
+            this.x = entity.getBlockX();
+            this.y = entity.getBlockY();
+            this.z = entity.getBlockZ();
         }
 
-        private double getSeconds() {
-            return Math.max(0.0D, (endTimeNanos - System.nanoTime()) / 1_000_000_000.0D);
+        private double getSeconds(long now) {
+            return Math.max(0.0D, (endTimeNanos - now) / 1_000_000_000.0D);
         }
     }
 
-    private final Map<UUID, TntType> tntTypes = new HashMap<>();
-    private final Map<UUID, TrackedTnt> trackedAlerts = new HashMap<>();
-
     public static void initialize() {
-        if (instance == null) {
-            instance = new BetterTnt();
-            instance.refreshBlockedStatusInternal();
-            BQoL.LOGGER.info("Better Tnt initialized");
+        if (instance != null) {
+            return;
         }
+        instance = new BetterTnt();
+        instance.refreshBlockedStatusInternal();
+        BQoL.LOGGER.info("Better Tnt initialized");
     }
 
     public static BetterTnt getInstance() {
@@ -174,7 +190,9 @@ public class BetterTnt {
     }
 
     public static void refreshBlockedStatus() {
-        if (instance != null) instance.refreshBlockedStatusInternal();
+        if (instance != null) {
+            instance.refreshBlockedStatusInternal();
+        }
     }
 
     public static boolean isEnabled() {
@@ -182,7 +200,9 @@ public class BetterTnt {
     }
 
     public static void setEnabled(boolean enabled) {
-        if (instance != null) instance.setEnabledInternal(enabled);
+        if (instance != null) {
+            instance.setEnabledInternal(enabled);
+        }
     }
 
     public static boolean isTimerEnabled() {
@@ -206,11 +226,7 @@ public class BetterTnt {
     }
 
     public static int getAlertPosition() {
-        if (instance == null) {
-            initialize();
-        }
-
-        return instance.config.getBetterTntAlertPosition();
+        return getInstance().config.getBetterTntAlertPosition();
     }
 
     public static boolean isAlertShowXYZEnabled() {
@@ -253,13 +269,11 @@ public class BetterTnt {
     }
 
     private boolean isEnabledInternal() {
-        return config.isBetterTntEnabled()
-            && !blocked.main;
+        return config.isBetterTntEnabled() && !blocked.main;
     }
 
     private void setEnabledInternal(boolean enabled) {
         config.setBetterTntEnabled(enabled);
-
         refreshBlockedStatusInternal();
     }
 
@@ -313,52 +327,63 @@ public class BetterTnt {
         config.setBetterTntExplosionArea(enabled);
     }
 
-    public static void tickTracking() {
-        if (!isEnabled()) {
+    public void tickTracking() {
+        if (client.world == null
+            || client.player == null
+            || (!isTimerEnabled() && !isAlertEnabled())) {
+            trackedAlerts.clear();
             return;
         }
 
-        BetterTnt self = getInstance();
-        MinecraftClient mc = self.mc();
+        long now = System.nanoTime();
+        long tick = client.world.getTime();
 
-        if (mc.world == null || mc.player == null) {
-            self.trackedAlerts.clear();
+        Box searchBox = client.player.getBoundingBox().expand(32.0D);
+
+        List<TntEntity> nearbyTnts = client.world.getEntitiesByClass(TntEntity.class, searchBox, TntEntity::isAlive);
+
+        for (TntEntity tnt : nearbyTnts) {
+            trackTnt(tnt, now, tick);
+        }
+
+        trackedAlerts.values().removeIf(tracked -> tracked.lastSeenTick != tick || tracked.endTimeNanos <= now);
+    }
+
+    private void trackTnt(TntEntity tnt, long now, long tick) {
+        if (tnt == null || !tnt.isAlive()) {
             return;
         }
 
-        Vec3d playerPos = mc.player.getPos();
+        UUID uuid = tnt.getUuid();
 
-        double radius = 32.0D;
+        int fuse = Math.max(0, tnt.getFuse());
 
-        Box searchBox = new Box(
-            playerPos.x - radius,
-            playerPos.y - radius,
-            playerPos.z - radius,
+        TrackedTnt tracked = trackedAlerts.get(uuid);
 
-            playerPos.x + radius,
-            playerPos.y + radius,
-            playerPos.z + radius
-        );
-
-        List<TntEntity> nearby = mc.world.getEntitiesByClass(TntEntity.class, searchBox, BetterTnt::isValidTnt);
-
-        for (TntEntity tnt : nearby) {
-            self.trackTnt(tnt);
+        if (tracked == null) {
+            trackedAlerts.put(uuid, new TrackedTnt(tnt, getTntType(tnt), fuse, now, tick));
+            return;
         }
 
-        self.trackedAlerts.entrySet().removeIf(entry -> entry.getValue().getSeconds() <= 0.0D);
+        tracked.lastSeenTick = tick;
+        tracked.updatePosition(tnt);
+
+        TntType type = getTntType(tnt);
+
+        if (tracked.type != type) {
+            tracked.type = type;
+        }
+
+        if (fuse != tracked.lastServerFuse) {
+            tracked.lastServerFuse = fuse;
+            tracked.endTimeNanos = now + fuse * 50_000_000L;
+        }
     }
 
     public static void registerTnt(TntEntity entity) {
-        if (entity == null) {
-            return;
+        if (entity != null) {
+            getTntType(entity);
         }
-
-        BetterTnt self = getInstance();
-
-        TntType type = detectTypeFromText(entity.getName().getString());
-
-        self.tntTypes.put(entity.getUuid(), type);
     }
 
     public static TntType getTntType(TntEntity entity) {
@@ -366,79 +391,41 @@ public class BetterTnt {
             return TntType.NORMAL;
         }
 
-        BetterTnt self = getInstance();
-
-        TntType detectedType = detectTypeFromText(entity.getName().getString());
-
-        self.tntTypes.put(entity.getUuid(), detectedType);
-
-        return detectedType;
-    }
-
-    private static TntType detectTypeFromText(String name) {
-        if (name == null) {
-            return TntType.NORMAL;
-        }
-
-        return detectType(name);
+        return detectType(entity.getName().getString());
     }
 
     private static TntType detectType(String name) {
-        if (name == null) {
+        if (name == null || name.isEmpty()) {
             return TntType.NORMAL;
         }
 
-        if ((name.contains("Динамит B2") || name.contains("Динамит Б2"))) {
+        String normalized = name.toLowerCase(Locale.ROOT);
+
+        if (normalized.contains("динамит b2") || normalized.contains("динамит б2")) {
             return TntType.B2;
         }
 
-        if ((name.contains("Динамит B") || name.contains("Динамит В"))) {
+        if (normalized.contains("динамит b") || normalized.contains("динамит в")) {
             return TntType.B;
         }
 
-        if ((name.contains("Динамит A") || name.contains("Динамит А"))) {
+        if (normalized.contains("динамит a") || normalized.contains("динамит а")) {
             return TntType.A;
         }
 
-        if ((name.contains("C4 ВзРыВчАтКа") || name.contains("С4 ВзРыВчАтКа"))) {
+        if (normalized.contains("c4 взрывчатка") || normalized.contains("с4 взрывчатка")) {
             return TntType.C4;
         }
 
-        if (name.contains("Ледяная волна")) {
+        if (normalized.contains("ледяная волна")) {
             return TntType.ICE_WAVE;
         }
 
-        if (name.contains("Разрывная волна")) {
+        if (normalized.contains("разрывная волна")) {
             return TntType.EXPLOSIVE_WAVE;
         }
 
-        if (name.contains("Динамит")) {
-            return TntType.NORMAL;
-        }
-
         return TntType.NORMAL;
-    }
-
-    public static double getFuseSeconds(TntEntity tnt, float tickDelta) {
-        if (tnt == null) {
-            return 0.0D;
-        }
-
-        return Math.max(0.0D, (tnt.getFuse() - tickDelta) / 20.0D);
-    }
-
-    private double getTrackedFuseSeconds(TntEntity entity) {
-        if (entity == null) {
-            return 0.0D;
-        }
-
-        TrackedTnt tracked = trackedAlerts.get(entity.getUuid());
-
-        if (tracked == null) {
-            return 0.0D;
-        }
-
-        return tracked.getSeconds();
     }
 
     public static int getTimerColor(TntType type, double seconds) {
@@ -451,19 +438,13 @@ public class BetterTnt {
          * 7.01 - 10.00 Зеленый
          */
 
-        if (type == TntType.A
-            || type == TntType.B
-            || type == TntType.B2) {
-            if (seconds <= 2.00D) {
+        if (type == TntType.A || type == TntType.B || type == TntType.B2) {
+            if (seconds <= 2.0D) {
                 return 0xFFFF5555;
             }
 
-            if (seconds <= 5.00D) {
+            if (seconds <= 5.0D) {
                 return 0xFFFFFF55;
-            }
-
-            if (seconds <= 7.00D) {
-                return 0xFF55FF55;
             }
 
             return 0xFF55FF55;
@@ -478,96 +459,60 @@ public class BetterTnt {
          * 4.01 - 5.00 Зеленый
          */
 
-        if (seconds <= 1.00D) {
+        if (seconds <= 1.0D) {
             return 0xFFFF5555;
         }
 
-        if (seconds <= 3.00D) {
+        if (seconds <= 3.0D) {
             return 0xFFFFFF55;
-        }
-
-        if (seconds <= 4.00D) {
-            return 0xFF55FF55;
         }
 
         return 0xFF55FF55;
     }
 
-    public static void renderTimer(MatrixStack matrices, TntEntity tnt, Camera camera, TextRenderer textRenderer, VertexConsumerProvider vertexConsumers, int light, float tickDelta) {
+    public static void prepareRenderTimer(TntEntity entity, TntEntityRenderState state) {
+        if (entity == null || state == null) {
+            return;
+        }
+
+        ACCESSORTNTRenderState access = (ACCESSORTNTRenderState) state;
+        access.bqol$setTntTypeOrdinal(getTntType(entity).ordinal());
+    }
+
+    public static void renderTimer(MatrixStack matrices, TntEntityRenderState state, OrderedRenderCommandQueue queue, CameraRenderState cameraState) {
         if (!isTimerEnabled()
-            || tnt == null
-            || !tnt.isAlive()) {
+            || state == null
+            || queue == null
+            || cameraState == null) {
             return;
         }
 
-        BetterTnt self = getInstance();
-
-        double seconds = self.getTrackedFuseSeconds(tnt);
-
-        if (seconds <= 0.0D) {
+        if (state.fuse <= 0) {
             return;
         }
 
-        String text = String.format(Locale.ROOT, "%.2f", seconds);
-        TntType type = getTntType(tnt);
+        ACCESSORTNTRenderState access = (ACCESSORTNTRenderState) state;
 
-        int color = getTimerColor(type, seconds);
+        int ordinal = access.bqol$getTntTypeOrdinal();
 
-        matrices.push();
+        TntType type = ordinal >= 0 && ordinal < TNT_TYPES.length ? TNT_TYPES[ordinal] : TntType.NORMAL;
 
-        double timerHeight = self.isHolyWorldServer() ? tnt.getHeight() + 0.8D : tnt.getHeight() + 0.5D;
+        double seconds = state.fuse / 20.0D;
 
-        matrices.translate(0.0D, timerHeight, 0.0D);
-        matrices.multiply(camera.getRotation());
+        Text label = Text.literal(formatSeconds(seconds))
+            .styled(style -> style.withColor(TextColor.fromRgb(getTimerColor(type, seconds) & 0xFFFFFF)));
 
-        float scale = 0.025F;
-
-        matrices.scale(-scale, -scale, scale);
-
-        float width = textRenderer.getWidth(text);
-
-        textRenderer.draw(text, -width / 2.0F, 0.0F, color, false,
-            matrices.peek().getPositionMatrix(),
-            vertexConsumers,
-            TextRenderer.TextLayerType.SEE_THROUGH, 0x4D000000, light
-        );
-
-        matrices.pop();
+        queue.submitLabel(matrices, new Vec3d(0.0D, state.height + 0.30D, 0.0D), 0, label, true, state.light, state.squaredDistanceToCamera, cameraState);
     }
 
-    private void trackTnt(TntEntity entity) {
-        if (entity == null || !entity.isAlive()) {
-            return;
-        }
+    private static String formatSeconds(double seconds) {
+        long hundredths = Math.max(0L, Math.round(seconds * 100.0D));
+        long whole = hundredths / 100L;
+        long fraction = hundredths % 100L;
 
-        int fuse = entity.getFuse();
-
-        if (fuse <= 0) {
-            trackedAlerts.remove(entity.getUuid());
-            return;
-        }
-
-        UUID uuid = entity.getUuid();
-        TntType type = getTntType(entity);
-
-        TrackedTnt tracked = trackedAlerts.get(uuid);
-
-        long now = System.nanoTime();
-
-        if (tracked == null) {
-            long endTimeNanos = now + fuse * 50_000_000L;
-
-            tracked = new TrackedTnt(entity, type, endTimeNanos, fuse);
-
-            trackedAlerts.put(uuid, tracked);
-            return;
-        }
-
-        tracked.type = type;
-        tracked.updatePosition(entity);
-        tracked.lastServerFuse = fuse;
-        tracked.lastSyncNanos = now;
+        return whole + "." + (fraction < 10L ? "0" : "") + fraction;
     }
+
 
     public static List<AlertInfo> getAlertTnts(float tickDelta) {
         if (!isAlertEnabled()) {
@@ -575,22 +520,25 @@ public class BetterTnt {
         }
 
         BetterTnt self = getInstance();
-        MinecraftClient mc = self.mc();
 
-        if (mc.world == null || mc.player == null) {
+        if (self.client.world == null || self.client.player == null) {
             return Collections.emptyList();
         }
 
-        Vec3d playerPos = mc.player.getPos();
+        long now = System.nanoTime();
 
-        self.trackedAlerts.entrySet().removeIf(entry -> {TrackedTnt tracked = entry.getValue();
-            return tracked.getSeconds() <= 0.0D;
-        });
+        Vec3d playerPos = self.client.player.getEntityPos();
+
+        self.trackedAlerts.values().removeIf(tracked -> tracked.endTimeNanos <= now);
+
+        if (self.trackedAlerts.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         List<AlertInfo> result = new ArrayList<>(self.trackedAlerts.size());
 
         for (TrackedTnt tracked : self.trackedAlerts.values()) {
-            double seconds = tracked.getSeconds();
+            double seconds = tracked.getSeconds(now);
 
             if (seconds <= 0.0D) {
                 continue;
@@ -599,33 +547,25 @@ public class BetterTnt {
             result.add(new AlertInfo(tracked.type, seconds, tracked.x, tracked.y, tracked.z));
         }
 
-        result.sort(Comparator.comparingDouble(alert -> {
-                double dx = alert.getX() + 0.5D - playerPos.x;
-                double dy = alert.getY() + 0.5D - playerPos.y;
-                double dz = alert.getZ() + 0.5D - playerPos.z;
-
-                return dx * dx + dy * dy + dz * dz;
-            })
-        );
+        result.sort(Comparator.comparingDouble(alert -> alert.getDistanceSquared(playerPos)));
 
         return result;
     }
 
-    private static boolean isValidTnt(TntEntity entity) {
-        return entity != null && entity.isAlive() && entity.getFuse() >= 0;
-    }
-
     public static String getAlertTypeName(TntType type) {
-        switch (type) {
-            case A: return "Динамита A";
-            case B: return "Динамита B";
-            case B2: return "Динамита Б2";
-            case C4: return "C4 Взрывчатки";
-            case ICE_WAVE: return "Ледяной волны";
-            case EXPLOSIVE_WAVE: return "Разрывной волны";
-            case NORMAL:
-            default: return "Обычного динамита";
+        if (type == null) {
+            return "Обычного динамита";
         }
+
+        return switch (type) {
+            case A -> "Динамита A";
+            case B -> "Динамита B";
+            case B2 -> "Динамита Б2";
+            case C4 -> "C4 взрывчатки";
+            case ICE_WAVE -> "Ледяной волны";
+            case EXPLOSIVE_WAVE -> "Разрывной волны";
+            case NORMAL -> "Обычного динамита";
+        };
     }
 
     public static double getExplosionBlockRadius(TntEntity tnt) {
@@ -637,20 +577,7 @@ public class BetterTnt {
             case A -> 20.0D;
             case B -> 40.0D;
             case B2 -> 24.0D;
-
             case NORMAL, C4, ICE_WAVE, EXPLOSIVE_WAVE -> 8.0D;
         };
-    }
-
-    private boolean isHolyWorldServer() {
-        MinecraftClient mc = mc();
-
-        ServerInfo server = mc.getCurrentServerEntry();
-
-        if (server == null || server.address == null) {
-            return false;
-        }
-
-        return server.address.toLowerCase(Locale.ROOT).contains("holyworld");
     }
 }

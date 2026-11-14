@@ -6,6 +6,7 @@ import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
@@ -49,7 +50,6 @@ public class BetterMovement {
     private static class BlockedFeatures {
         boolean main;
         boolean defaultMode;
-        boolean pvpMode;
         boolean stairUp;
         boolean waterSprint;
         boolean scaffold;
@@ -80,9 +80,6 @@ public class BetterMovement {
         long nextPlacementMs;
         long lastPlacementMs;
 
-        BlockPos pendingTarget;
-        Hand pendingHand = Hand.MAIN_HAND;
-
         int bridgeY;
         boolean bridgeYInitialized;
 
@@ -102,17 +99,26 @@ public class BetterMovement {
     }
 
     private final ModesState defaultState = new ModesState();
-    private final ModesState pvpState = new ModesState();
 
     private final WaterSprintState waterSprintState = new WaterSprintState();
     private final ScaffoldState scaffoldState = new ScaffoldState();
 
     private final EndConcreteState endConcreteState = new EndConcreteState();
 
+    private static final Direction[] SCAFFOLD_DIRECTIONS = {
+        Direction.DOWN,
+        Direction.NORTH,
+        Direction.SOUTH,
+        Direction.WEST,
+        Direction.EAST,
+        Direction.UP
+    };
+
+    private static final double[] SCAFFOLD_SAMPLES = {
+        0.2D, 0.5D, 0.8D
+    };
+
     private long scaffoldLastPlacementTick = -100L;
-    private PlayerEntity pendingTarget;
-    private long pvpExpireTick;
-    private long pendingAttackTick;
     private boolean wasEnabledLastTick;
 
     public static void initialize() {
@@ -160,12 +166,6 @@ public class BetterMovement {
         }
     }
 
-    public static void setPvPMode(boolean enabled) {
-        if (instance != null) {
-            instance.setPvPModeInternal(enabled);
-        }
-    }
-
     public static void setStairUp(boolean enabled) {
         if (instance != null) {
             instance.setStairUpInternal(enabled);
@@ -184,18 +184,6 @@ public class BetterMovement {
         }
     }
 
-    public static void onAttack(PlayerEntity target) {
-        if (instance != null) {
-            instance.onAttackInternal(target);
-        }
-    }
-
-    public static void onDamaged() {
-        if (instance != null) {
-            instance.onDamagedInternal();
-        }
-    }
-
     public static void update() {
         if (instance != null) {
             instance.updateInternal();
@@ -205,7 +193,6 @@ public class BetterMovement {
     private void refreshBlockedStatusInternal() {
         blocked.main = LiteApiManager.isFeatureBlocked("better_sprint");
         blocked.defaultMode = LiteApiManager.isFeatureBlocked("better_sprint_default");
-        blocked.pvpMode = LiteApiManager.isFeatureBlocked("better_sprint_pvp");
         blocked.stairUp = LiteApiManager.isFeatureBlocked("better_sprint_stair_up");
         blocked.waterSprint = LiteApiManager.isFeatureBlocked("better_sprint_water_sprint");
         blocked.scaffold = LiteApiManager.isFeatureBlocked("better_sprint_scaffold");
@@ -214,16 +201,10 @@ public class BetterMovement {
     private void reloadFromConfigInternal() {
         refreshBlockedStatusInternal();
 
-        if (!config.isBetterMovementDefaultMode()) {
+        if (!config.isBetterMovementDefault()) {
             defaultState.sprint = false;
             defaultState.active = false;
             defaultState.delayUntilMs = 0L;
-        }
-
-        if (!config.isBetterMovementPvPMode()) {
-            pvpState.sprint = false;
-            pvpState.active = false;
-            pvpState.delayUntilMs = 0L;
         }
 
         if (!config.isBetterMovementWaterSprint()) {
@@ -258,24 +239,13 @@ public class BetterMovement {
     }
 
     private void setDefaultModeInternal(boolean enabled) {
-        config.setBetterMovementDefaultMode(enabled);
+        config.setBetterMovementDefault(enabled);
 
         if (enabled) {
             defaultState.delayUntilMs = 0L;
         } else {
             defaultState.active = false;
             defaultState.sprint = false;
-        }
-    }
-
-    private void setPvPModeInternal(boolean enabled) {
-        config.setBetterMovementPvPMode(enabled);
-
-        if (enabled) {
-            pvpState.delayUntilMs = 0L;
-        } else {
-            pvpState.active = false;
-            pvpState.sprint = false;
         }
     }
 
@@ -306,69 +276,6 @@ public class BetterMovement {
         scaffoldLastPlacementTick = -100L;
     }
 
-    private void onAttackInternal(PlayerEntity target) {
-        MinecraftClient client = mc();
-
-        if (client == null
-            || client.player == null
-            || client.world == null
-            || target == null
-            || target == client.player
-            || target.isRemoved()
-            || target.isDead()
-            || !config.isBetterMovementPvPMode()
-            || blocked.pvpMode) {
-            return;
-        }
-
-        pendingTarget = target;
-        pendingAttackTick = client.world.getTime();
-    }
-
-    private void onDamagedInternal() {
-        MinecraftClient client = mc();
-
-        if (client == null
-            || client.player == null
-            || !config.isBetterMovementPvPMode()
-            || blocked.pvpMode) {
-            return;
-        }
-
-        pvpExpireTick = client.player.age + Math.max(1, config.getPvpTimerDuration() / 50L);
-    }
-
-    private void updatePendingAttack() {
-        MinecraftClient client = mc();
-
-        if (client == null
-            || client.player == null
-            || client.world == null
-            || pendingTarget == null) {
-            return;
-        }
-
-        if (pendingTarget.isRemoved() || pendingTarget.isDead()) {
-            pendingTarget = null;
-            return;
-        }
-
-        long tick = client.world.getTime();
-
-        if (tick - pendingAttackTick > 10) {
-            pendingTarget = null;
-            return;
-        }
-
-        if (pendingTarget.hurtTime <= 0 || pendingTarget.getVelocity().horizontalLengthSquared() < 0.001D) {
-            return;
-        }
-
-        pvpExpireTick = client.player.age + Math.max(1, config.getPvpTimerDuration() / 50L);
-
-        pendingTarget = null;
-    }
-
     private void updateInternal() {
         MinecraftClient client = mc();
 
@@ -393,8 +300,6 @@ public class BetterMovement {
 
         long currentMs = System.currentTimeMillis();
 
-        updatePendingAttack();
-
         if (!isEnabledInternal()) {
             if (wasEnabledLastTick) {
                 resetRemainingStates();
@@ -417,12 +322,10 @@ public class BetterMovement {
         boolean inWaterOrLava = player.isTouchingWater() || player.isInLava();
 
         defaultState.sprint = false;
-        pvpState.sprint = false;
         waterSprintState.sprint = false;
         scaffoldState.sprint = false;
 
         updateInternalDefault(currentMs, moving, hasFood, inWaterOrLava);
-        updateInternalPvP(currentMs, moving, hasFood, inWaterOrLava);
         updateInternalStairUp(player);
         updateInternalWaterSprint(player, moving, hasFood);
         updateInternalScaffold(currentMs, player);
@@ -432,35 +335,32 @@ public class BetterMovement {
                 player.setSprinting(false);
 
                 defaultState.lastStoppedMs = currentMs;
-                pvpState.lastStoppedMs = currentMs;
             }
 
             resetAllMovementStates();
             return;
         }
 
-        boolean anySprintModeEnabled = (!blocked.defaultMode && config.isBetterMovementDefaultMode())
-            || (!blocked.pvpMode && config.isBetterMovementPvPMode())
+        boolean anySprintModeEnabled = (!blocked.defaultMode && config.isBetterMovementDefault())
             || (!blocked.waterSprint && config.isBetterMovementWaterSprint());
 
         if (!anySprintModeEnabled) {
             return;
         }
 
-        boolean finalSprint = defaultState.sprint || pvpState.sprint || waterSprintState.sprint;
+        boolean finalSprint = defaultState.sprint || waterSprintState.sprint;
 
         if (finalSprint) {
             if (!player.isSprinting()) {
                 player.setSprinting(true);
             }
         } else {
-            boolean shouldControlSprint = defaultState.active || pvpState.active || waterSprintState.active;
+            boolean shouldControlSprint = defaultState.active || waterSprintState.active;
 
             if (shouldControlSprint && player.isSprinting()) {
                 player.setSprinting(false);
 
                 defaultState.lastStoppedMs = currentMs;
-                pvpState.lastStoppedMs = currentMs;
             }
         }
     }
@@ -504,7 +404,7 @@ public class BetterMovement {
     private void updateInternalDefault(long currentMs, boolean moving, boolean hasFood, boolean inWaterOrLava) {
         updateMode(
             defaultState,
-            config.isBetterMovementDefaultMode()
+            config.isBetterMovementDefault()
                 && !blocked.defaultMode
                 && !inWaterOrLava,
             moving && hasFood,
@@ -512,21 +412,6 @@ public class BetterMovement {
             33,
             currentMs,
             this::calculateDefaultDelayMs
-        );
-    }
-
-    private void updateInternalPvP(long currentMs, boolean moving, boolean hasFood, boolean inWaterOrLava) {
-        updateMode(
-            pvpState,
-            config.isBetterMovementPvPMode()
-                && !blocked.pvpMode
-                && !inWaterOrLava
-                && mc().player.age < pvpExpireTick,
-            moving && hasFood,
-            true,
-            25,
-            currentMs,
-            this::calculatePvPDelayMs
         );
     }
 
@@ -641,7 +526,7 @@ public class BetterMovement {
 
         if (client.currentScreen != null
             || player.isSpectator()
-            || player.isFallFlying()
+            || player.isGliding()
             || player.isClimbing()
             || player.hasVehicle()
             || player.isTouchingWater()
@@ -679,8 +564,8 @@ public class BetterMovement {
             player.getZ()
         );
 
-        float forward = player.input.movementForward;
-        float sideways = player.input.movementSideways;
+        float forward = (player.input.playerInput.forward() ? 1.0F : 0.0F) - (player.input.playerInput.backward() ? 1.0F : 0.0F);
+        float sideways = (player.input.playerInput.left() ? 1.0F : 0.0F) - (player.input.playerInput.right() ? 1.0F : 0.0F);
 
         double yawRad = Math.toRadians(player.getYaw());
 
@@ -737,7 +622,7 @@ public class BetterMovement {
             }
         }
 
-        candidates.sort(Comparator.comparingDouble(pos -> pos.getSquaredDistance(player.getPos())));
+        candidates.sort(Comparator.comparingDouble(pos -> pos.getSquaredDistance(player.getEntityPos())));
 
         if (scaffoldLastPlacementTick == player.age) {
             return;
@@ -847,9 +732,6 @@ public class BetterMovement {
         scaffoldState.active = false;
         scaffoldState.sprint = false;
 
-        scaffoldState.pendingTarget = null;
-        scaffoldState.pendingHand = Hand.MAIN_HAND;
-
         scaffoldState.nextPlacementMs = 0L;
 
         scaffoldState.bridgeYInitialized = false;
@@ -865,7 +747,7 @@ public class BetterMovement {
             || player.isRemoved()
             || player.isSpectator()
             || player.hasVehicle()
-            || player.isFallFlying()
+            || player.isGliding()
             || player.isClimbing()
             || player.isTouchingWater()
             || player.isInLava()
@@ -897,7 +779,7 @@ public class BetterMovement {
         if (world == null
             || pos == null
             || pos.getY() < world.getBottomY()
-            || pos.getY() >= world.getTopY()) {
+            || pos.getY() >= world.getTopYInclusive()) {
             return false;
         }
 
@@ -932,7 +814,7 @@ public class BetterMovement {
 
         int targetY = target.getY();
 
-        if (targetY < world.getBottomY() + 3 || targetY >= world.getTopY()) {
+        if (targetY < world.getBottomY() + 3 || targetY >= world.getTopYInclusive()) {
             return false;
         }
 
@@ -984,16 +866,9 @@ public class BetterMovement {
         BlockHitResult nearest = null;
         double nearestDistance = Double.MAX_VALUE;
 
-        Direction[] directions = {
-            Direction.DOWN,
-            Direction.NORTH,
-            Direction.SOUTH,
-            Direction.WEST,
-            Direction.EAST,
-            Direction.UP
-        };
 
-        for (Direction offset : directions) {
+
+        for (Direction offset : SCAFFOLD_DIRECTIONS) {
             BlockPos neighbor = target.offset(offset);
 
             BlockState state = world.getBlockState(neighbor);
@@ -1023,10 +898,8 @@ public class BetterMovement {
                 double maxY = neighbor.getY() + box.maxY;
                 double maxZ = neighbor.getZ() + box.maxZ;
 
-                double[] samples = {0.2D, 0.5D, 0.8D};
-
-                for (double u : samples) {
-                    for (double v : samples) {
+                for (double u : SCAFFOLD_SAMPLES) {
+                    for (double v : SCAFFOLD_SAMPLES) {
                         double x;
                         double y;
                         double z;
@@ -1135,27 +1008,6 @@ public class BetterMovement {
         return Math.max(1L, currentMs + delayMs);
     }
 
-    private long calculatePvPDelayMs(long currentMs) {
-        int roll = ThreadLocalRandom.current().nextInt(100);
-
-        int delayMs;
-
-        if (roll < 88) {
-            delayMs = ThreadLocalRandom.current().nextInt(55, 140);
-        } else if (roll < 93) {
-            delayMs = ThreadLocalRandom.current().nextInt(134, 190);
-        } else {
-            delayMs = ThreadLocalRandom.current().nextInt(184, 256);
-        }
-
-        PlayerEntity player = mc().player;
-
-        delayMs += (int) delayBooster(player);
-        delayMs -= (int) delayNerfer(player);
-
-        return Math.max(1L, currentMs + delayMs);
-    }
-
     private long calculateScaffoldDelayMs() {
         int roll = ThreadLocalRandom.current().nextInt(100);
 
@@ -1235,7 +1087,10 @@ public class BetterMovement {
             return false;
         }
 
-        boolean input = player.input.movementForward != 0.0F || player.input.movementSideways != 0.0F;
+        boolean input = player.input.playerInput.forward()
+            || player.input.playerInput.backward()
+            || player.input.playerInput.left()
+            || player.input.playerInput.right();
 
         Vec3d velocity = player.getVelocity();
 
@@ -1249,7 +1104,9 @@ public class BetterMovement {
             return false;
         }
 
-        return player.input.movementForward > 0.0F && player.input.movementSideways == 0.0F;
+        return player.input.playerInput.forward()
+            && !player.input.playerInput.left()
+            && !player.input.playerInput.right();
     }
 
     private boolean hasEnoughFood(PlayerEntity player) {
@@ -1335,11 +1192,7 @@ public class BetterMovement {
             return false;
         }
 
-        BlockPos feet = BlockPos.ofFloored(
-            player.getX(),
-            player.getY() + 0.05D,
-            player.getZ()
-        );
+        BlockPos feet = BlockPos.ofFloored(player.getX(), player.getY() + 0.05D, player.getZ());
 
         BlockState state = client.world.getBlockState(feet);
 
@@ -1357,31 +1210,29 @@ public class BetterMovement {
             return false;
         }
 
+        ServerInfo server = client.getCurrentServerEntry();
+
+        if (server == null || server.address == null) {
+            return false;
+        }
+
         String address = client.getCurrentServerEntry().address.toLowerCase();
 
         return address.contains("holyworld") || address.contains("funtime");
     }
+
     private void resetAllMovementStates() {
         defaultState.delayUntilMs = 0L;
-        pvpState.delayUntilMs = 0L;
 
         defaultState.active = false;
-        pvpState.active = false;
         waterSprintState.active = false;
 
         defaultState.sprint = false;
-        pvpState.sprint = false;
         waterSprintState.sprint = false;
     }
 
     private void resetRemainingStates() {
-        pendingTarget = null;
-        pendingAttackTick = 0L;
-
-        pvpExpireTick = 0L;
-
         defaultState.lastStoppedMs = -1000L;
-        pvpState.lastStoppedMs = -1000L;
 
         endConcreteState.blocked = false;
         endConcreteState.lastCheckTick = -1L;

@@ -5,11 +5,9 @@ import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.ActionResult;
+import net.minecraft.util.Util;
 
 public class BetterHitCounter {
     private BetterHitCounter() {}
@@ -25,14 +23,18 @@ public class BetterHitCounter {
     private static final long RESET_DELAY_MS = 10_000L;
     private static final long FADE_DURATION_MS = 180L;
 
+    private static final int COMBO_COLOR = 0x00C7C2FF;
+
     private int combo = 0;
 
-    private long lastHitTime = 0L;
+    private long lastHitTime;
     private long fadeStartTime = -1L;
 
     private Entity trackedTarget;
 
-    private boolean eventsRegistered = false;
+    private String comboText = "";
+
+    private static final int HUD_OFFSET_Y = 77;
 
     public static void initialize() {
         if (instance == null) {
@@ -80,28 +82,27 @@ public class BetterHitCounter {
     }
 
     private void registerEvents() {
-        if (eventsRegistered) return;
-
-        eventsRegistered = true;
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
 
             if (!isEnabledInternal()
                 || client.player == null
                 || client.world == null) {
 
-                resetComboInternal();
+                if (combo > 0) {
+                    resetComboInternal();
+                }
+
                 return;
             }
 
             if (combo <= 0) return;
 
-            long now = System.currentTimeMillis();
+            long now = Util.getMeasuringTimeMs();
 
             if (trackedTarget == null
                 || !trackedTarget.isAlive()
                 || trackedTarget.isRemoved()
-                || trackedTarget.getWorld() != client.world) {
+                || trackedTarget.getEntityWorld() != client.world) {
 
                 beginFade(now);
             }
@@ -115,18 +116,21 @@ public class BetterHitCounter {
             }
         });
 
-        HudRenderCallback.EVENT.register((context, tickDelta) -> {
+        HudRenderCallback.EVENT.register((context, tickCounter) -> {
+            if (combo <= 0 || fadeStartTime >= 0L && Util.getMeasuringTimeMs() - fadeStartTime >= FADE_DURATION_MS) {
+                return;
+            }
+
             MinecraftClient client = MinecraftClient.getInstance();
 
             if (!isEnabledInternal()
                 || client.player == null
                 || client.world == null
-                || client.options.hudHidden
-                || combo <= 0) {
+                || client.options.hudHidden) {
                 return;
             }
 
-            long now = System.currentTimeMillis();
+            long now = Util.getMeasuringTimeMs();
 
             float alpha = getAlpha(now);
 
@@ -140,31 +144,38 @@ public class BetterHitCounter {
                 return;
             }
 
-            int color = (alphaByte << 24) | 0x00C7C2FF;
-
-            String text = "Combo: " + combo;
+            int color = (alphaByte << 24) | COMBO_COLOR;
 
             int x = client.getWindow().getScaledWidth() / 2;
-            int y = client.getWindow().getScaledHeight() - 77;
+            int y = client.getWindow().getScaledHeight() - HUD_OFFSET_Y;
 
-            context.drawCenteredTextWithShadow(client.textRenderer, text, x, y, color);
+            context.drawCenteredTextWithShadow(client.textRenderer, comboText, x, y, color);
         });
     }
 
     private void registerHit(Entity target) {
-        if (target == null || !target.isAlive()) return;
+        if (target == null || !target.isAlive()) {
+            return;
+        }
 
-        long now = System.currentTimeMillis();
+        long now = Util.getMeasuringTimeMs();
 
-        if ((combo > 0 && (fadeStartTime >= 0L || now - lastHitTime >= RESET_DELAY_MS)) || trackedTarget != null && trackedTarget != target) {
+        boolean shouldReset = combo > 0 && (fadeStartTime >= 0L
+            || now - lastHitTime >= RESET_DELAY_MS
+            || trackedTarget != target
+        );
+
+        if (shouldReset) {
             resetComboInternal();
         }
 
         trackedTarget = target;
 
         combo++;
-        lastHitTime = now;
 
+        comboText = "Combo: " + combo;
+
+        lastHitTime = now;
         fadeStartTime = -1L;
     }
 
@@ -181,13 +192,21 @@ public class BetterHitCounter {
             return 1.0F;
         }
 
-        float progress = (float) (now - fadeStartTime) / (float) FADE_DURATION_MS;
+        float progress = (float) (now - fadeStartTime) / FADE_DURATION_MS;
 
         progress = Math.max(0.0F, Math.min(1.0F, progress));
 
         float inverse = 1.0F - progress;
 
         return inverse * inverse;
+    }
+
+    public static void onAttack(Entity target) {
+        if (instance == null || !instance.isEnabledInternal()) {
+            return;
+        }
+
+        instance.registerHit(target);
     }
 
     public static void onMissedAttack() {
@@ -206,14 +225,6 @@ public class BetterHitCounter {
         instance.resetComboInternal();
     }
 
-    public static void onAttack(Entity target) {
-        if (instance == null || !instance.isEnabledInternal()) {
-            return;
-        }
-
-        instance.registerHit(target);
-    }
-
     private void resetComboInternal() {
         combo = 0;
 
@@ -221,5 +232,7 @@ public class BetterHitCounter {
         fadeStartTime = -1L;
 
         trackedTarget = null;
+
+        comboText = "";
     }
 }

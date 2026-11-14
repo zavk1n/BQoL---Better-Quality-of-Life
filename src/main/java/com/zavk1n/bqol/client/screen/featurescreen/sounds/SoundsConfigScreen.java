@@ -66,25 +66,13 @@ public class SoundsConfigScreen extends MainConfigScreen {
         createColumn(column2, col2X);
         createColumn(column3, col3X);
 
-        int farmY = height - BOTTOM_OFFSET - BUTTON_HEIGHT - SPACING * 2;
+        int farmY = height - BOTTOM_OFFSET - BUTTON_HEIGHT - SPACING * 2 + 1;
         int mobY = height - BOTTOM_OFFSET - BUTTON_HEIGHT - SPACING;
 
-        farmButton = createButton(
-            col2X + columnWidth - BUTTON_WIDTH,
-            farmY,
-            config::isBetterSoundsFarm,
-            config::setBetterSoundsFarm
-        );
-
+        farmButton = createButton(col2X + columnWidth - BUTTON_WIDTH, farmY, config::isBetterSoundsFarm, config::setBetterSoundsFarm);
         addDrawableChild(farmButton);
 
-        mobButton = createButton(
-            col2X + columnWidth - BUTTON_WIDTH,
-            mobY,
-            config::isBetterSoundsMob,
-            config::setBetterSoundsMob
-        );
-
+        mobButton = createButton(col2X + columnWidth - BUTTON_WIDTH, mobY, config::isBetterSoundsMob, config::setBetterSoundsMob);
         addDrawableChild(mobButton);
 
         nextButton = ButtonWidget.builder(Text.literal("Next"),
@@ -103,18 +91,9 @@ public class SoundsConfigScreen extends MainConfigScreen {
 
         addDrawableChild(nextButton);
 
-        addDrawableChild(
-            ButtonWidget.builder(
-                    Text.literal("Save & Back"),
-                    button -> close()
-                )
-                .dimensions(
-                    width / 2 - 50,
-                    height - BOTTOM_OFFSET,
-                    100,
-                    BUTTON_HEIGHT
-                )
-                .build()
+        addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
+            .dimensions(width / 2 - 50, height - BOTTOM_OFFSET, 100, BUTTON_HEIGHT)
+            .build()
         );
 
         updateAllButtons();
@@ -156,12 +135,7 @@ public class SoundsConfigScreen extends MainConfigScreen {
         for (SoundsModeEntry entry : column) {
             int y = 60 + row * SPACING;
 
-            entry.button = createButton(
-                columnX + columnWidth - BUTTON_WIDTH,
-                y,
-                entry.getter,
-                entry.setter
-            );
+            entry.button = createButton(columnX + columnWidth - BUTTON_WIDTH, y, entry.getter, entry.setter);
 
             addDrawableChild(entry.button);
 
@@ -170,14 +144,12 @@ public class SoundsConfigScreen extends MainConfigScreen {
     }
 
     private ButtonWidget createButton(int x, int y, BooleanSupplier getter, Consumer<Boolean> setter) {
-        ButtonWidget btn = ButtonWidget.builder(
-                Text.literal(""),
-                button -> {
-                    boolean newState = !getter.getAsBoolean();
-                    setter.accept(newState);
-                    changed = true;
-                    updateButton(button, newState);
-                })
+        ButtonWidget btn = ButtonWidget.builder(Text.literal(""), button -> {
+            boolean newState = !getter.getAsBoolean();
+            setter.accept(newState);
+            changed = true;
+            updateButton(button, newState);
+        })
             .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
             .build();
 

@@ -22,36 +22,27 @@ public final class TickManager {
             }
         });
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            BetterTnt.tickTracking();
-        });
+        BetterTnt.initialize();
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {BetterTnt.getInstance().tickTracking();});
 
         BetterMine.initialize();
-
         BetterMine autoMine = BetterMine.getInstance();
-
         ClientSendMessageEvents.ALLOW_CHAT.register(autoMine::onChat);
         ClientSendMessageEvents.ALLOW_COMMAND.register(autoMine::onCommand);
         ClientTickEvents.END_CLIENT_TICK.register(autoMine::onTick);
 
         BetterRCT.initialize();
-
         BetterRCT rct = BetterRCT.getInstance();
-
         ClientSendMessageEvents.ALLOW_CHAT.register(rct::onChat);
         ClientSendMessageEvents.ALLOW_COMMAND.register(rct::onCommand);
         ClientTickEvents.END_CLIENT_TICK.register(rct::onTick);
 
         BetterTotems.initialize();
-
         BetterTotems totems = BetterTotems.getInstance();
-
         ClientSendMessageEvents.ALLOW_CHAT.register(totems::onChat);
 
         BetterChat.initialize();
-
         BetterChat chat = BetterChat.getInstance();
-
         ClientTickEvents.END_CLIENT_TICK.register(chat::tick);
 
         BQoL.LOGGER.info("Registered all feature tick handlers");

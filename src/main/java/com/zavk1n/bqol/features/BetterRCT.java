@@ -21,13 +21,9 @@ import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.ScoreboardPlayerScore;
-import net.minecraft.scoreboard.Team;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.scoreboard.*;
 import net.minecraft.text.Text;
 import net.minecraft.screen.ScreenHandler;
 
@@ -78,8 +74,6 @@ public class BetterRCT {
     public int MESSAGE_COLOR = 0xC7C2FF;
 
     private static final String[] COMMANDS = {".rct", ".an"};
-
-    private static final int SIDEBAR_SLOT = 1;
 
     private static final int MAX_REALLYWORLD_ANARCHIES = 88;
     private static final int MAX_FAKETIME_ANARCHIES = 3;
@@ -210,13 +204,15 @@ public class BetterRCT {
     }
 
     public void onTick(MinecraftClient mc) {
+        if (mc == null) {
+            return;
+        }
+
         boolean holyWorld = isHolyWorldRCTEnabledInternal();
         boolean reallyWorld = isReallyWorldRCTEnabledInternal();
         boolean fakeTime = isFakeTimeRCTEnabledInternal();
 
-        if (!holyWorld
-            && !reallyWorld
-            && !fakeTime) {
+        if (!holyWorld && !reallyWorld && !fakeTime) {
             return;
         }
 
@@ -260,6 +256,10 @@ public class BetterRCT {
     }
 
     private boolean handleRctMessage(String message) {
+        if (message == null || message.isBlank()) {
+            return true;
+        }
+
         String trimmed = message.trim();
         String command = findCommand(trimmed);
 
@@ -267,8 +267,7 @@ public class BetterRCT {
             return true;
         }
 
-        String argument = trimmed.substring(command.length())
-            .trim();
+        String argument = trimmed.substring(command.length()).trim();
 
         if (argument.equalsIgnoreCase("stop")) {
             holyWorldController.stop();
@@ -298,7 +297,6 @@ public class BetterRCT {
 
         if (number == null) {
             sendHolyWorldNumberError(argument);
-
             return false;
         }
 
@@ -316,7 +314,6 @@ public class BetterRCT {
 
         if (number == null) {
             sendReallyWorldNumberError(argument);
-
             return false;
         }
 
@@ -334,7 +331,6 @@ public class BetterRCT {
 
         if (number == null) {
             sendFakeTimeNumberError(argument);
-
             return false;
         }
 
@@ -348,10 +344,12 @@ public class BetterRCT {
     }
 
     private static String findCommand(String message) {
-        String lower = message.toLowerCase();
+        String lower = message.toLowerCase(Locale.ROOT);
 
         for (String command : COMMANDS) {
-            if (lower.equals(command) || lower.startsWith(command + " ")) {
+            if (lower.equals(command) || (lower.startsWith(command)
+                && lower.length() > command.length()
+                && Character.isWhitespace(lower.charAt(command.length())))) {
                 return command;
             }
         }
@@ -365,9 +363,7 @@ public class BetterRCT {
         }
 
         try {
-            return HWServers.getInstance()
-                .exists(Integer.parseInt(number));
-
+            return HWServers.getInstance().exists(Integer.parseInt(number));
         } catch (NumberFormatException e) {
             return false;
         }
@@ -379,8 +375,7 @@ public class BetterRCT {
         String requested = argument;
 
         if (requested.isEmpty()) {
-
-            if (currentNumber != null && isValidHolyWorldNumber(currentNumber)) {
+            if (isValidHolyWorldNumber(currentNumber)) {
                 return Integer.toString(Integer.parseInt(currentNumber));
             }
 
@@ -395,22 +390,24 @@ public class BetterRCT {
             return null;
         }
 
-        int number;
-
         try {
-            number = Integer.parseInt(requested);
+            int number = Integer.parseInt(requested);
+
+            if (!servers.exists(number)) {
+                return null;
+            }
+
+            return Integer.toString(number);
         } catch (NumberFormatException e) {
             return null;
         }
-
-        if (!servers.exists(number)) {
-            return null;
-        }
-
-        return Integer.toString(number);
     }
 
     private static boolean isValidReallyWorldNumber(String number) {
+        if (number == null) {
+            return false;
+        }
+
         try {
             int value = Integer.parseInt(number);
 
@@ -422,33 +419,37 @@ public class BetterRCT {
 
     private String requestedReallyWorldNumber(String argument) {
         if (argument.isEmpty()) {
-            if (currentNumber != null && isValidReallyWorldNumber(currentNumber)) {
+            if (isValidReallyWorldNumber(currentNumber)) {
                 return currentNumber;
             }
 
-            return reallyWorldController.lastNumber;
+            String lastNumber = reallyWorldController.lastNumber;
+
+            return isValidReallyWorldNumber(lastNumber) ? lastNumber : null;
         }
 
         if (!argument.matches("-?\\d+")) {
             return null;
         }
 
-        int number;
-
         try {
-            number = Integer.parseInt(argument);
+            int number = Integer.parseInt(argument);
+
+            if (number < 1 || number > MAX_REALLYWORLD_ANARCHIES) {
+                return null;
+            }
+
+            return Integer.toString(number);
         } catch (NumberFormatException e) {
             return null;
         }
-
-        if (number < 1 || number > MAX_REALLYWORLD_ANARCHIES) {
-            return null;
-        }
-
-        return Integer.toString(number);
     }
 
     private static boolean isValidFakeTimeNumber(String number) {
+        if (number == null) {
+            return false;
+        }
+
         try {
             int value = Integer.parseInt(number);
 
@@ -460,30 +461,30 @@ public class BetterRCT {
 
     private String requestedFakeTimeNumber(String argument) {
         if (argument.isEmpty()) {
-            if (currentNumber != null && isValidFakeTimeNumber(currentNumber)) {
+            if (isValidFakeTimeNumber(currentNumber)) {
                 return currentNumber;
             }
 
-            return fakeTimeController.lastNumber;
+            String lastNumber = fakeTimeController.lastNumber;
+
+            return isValidFakeTimeNumber(lastNumber) ? lastNumber : null;
         }
 
         if (!argument.matches("-?\\d+")) {
             return null;
         }
 
-        int number;
-
         try {
-            number = Integer.parseInt(argument);
+            int number = Integer.parseInt(argument);
+
+            if (number < 1 || number > MAX_FAKETIME_ANARCHIES) {
+                return null;
+            }
+
+            return Integer.toString(number);
         } catch (NumberFormatException e) {
             return null;
         }
-
-        if (number < 1 || number > MAX_FAKETIME_ANARCHIES) {
-            return null;
-        }
-
-        return Integer.toString(number);
     }
 
     private static String serverNumber(String text) {
@@ -522,7 +523,8 @@ public class BetterRCT {
 
         if (!servers.isLoaded()) {
             Chat.send(mc, Text.literal("Список серверов HolyWorld ещё не загружен. " + "Используется резервный диапазон 1–36.")
-                .styled(style -> style.withColor(MESSAGE_COLOR)));
+                .styled(style -> style.withColor(MESSAGE_COLOR))
+            );
 
             return;
         }
@@ -533,7 +535,6 @@ public class BetterRCT {
     private void sendReallyWorldNumberError(String argument) {
         if (argument.isEmpty()) {
             Chat.send(mc(), Chat.invalidNumber());
-
             return;
         }
 
@@ -553,7 +554,6 @@ public class BetterRCT {
     private void sendFakeTimeNumberError(String argument) {
         if (argument.isEmpty()) {
             Chat.send(mc(), Chat.invalidNumber());
-
             return;
         }
 
@@ -571,7 +571,10 @@ public class BetterRCT {
     }
 
     public boolean confirmedDuringPvp() {
-        if (!isPvpbarActive(mc())) {
+        MinecraftClient mc = mc();
+
+        if (!isPvpbarActive(mc)) {
+            pvpConfirmDeadline = 0L;
             return true;
         }
 
@@ -591,7 +594,7 @@ public class BetterRCT {
     }
 
     private void warnAboutPvp() {
-        MinecraftClient mc = MinecraftClient.getInstance();
+        MinecraftClient mc = mc();
 
         if (mc.player == null) {
             return;
@@ -609,6 +612,10 @@ public class BetterRCT {
     }
 
     private static boolean isPvpbarActive(MinecraftClient mc) {
+        if (mc == null || mc.inGameHud == null) {
+            return false;
+        }
+
         BossBarHud overlay = mc.inGameHud.getBossBarHud();
 
         for (ClientBossBar event : ((ACCESSORBossHealthOverlay) overlay)
@@ -617,7 +624,7 @@ public class BetterRCT {
 
             String name = event.getName()
                 .getString()
-                .toLowerCase();
+                .toLowerCase(Locale.ROOT);
 
             if (name.contains("pvp") || name.contains("пвп")) {
                 return true;
@@ -630,20 +637,18 @@ public class BetterRCT {
     public static List<String> loreLines(ItemStack stack) {
         List<String> lines = new ArrayList<>();
 
-        NbtCompound display = stack.getSubNbt("display");
-
-        if (display == null) {
+        if (stack == null || stack.isEmpty()) {
             return lines;
         }
 
-        NbtList lore = display.getList("Lore", NbtElement.STRING_TYPE);
+        LoreComponent lore = stack.get(DataComponentTypes.LORE);
 
-        for (int i = 0; i < lore.size(); i++) {
-            Text line = Text.Serializer.fromJson(lore.getString(i));
+        if (lore == null) {
+            return lines;
+        }
 
-            if (line != null) {
-                lines.add(line.getString());
-            }
+        for (Text line : lore.lines()) {
+            lines.add(line.getString());
         }
 
         return lines;
@@ -657,7 +662,7 @@ public class BetterRCT {
         }
 
         Scoreboard scoreboard = mc.world.getScoreboard();
-        ScoreboardObjective sidebar = scoreboard.getObjectiveForSlot(SIDEBAR_SLOT);
+        ScoreboardObjective sidebar = scoreboard.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
 
         if (sidebar == null) {
             return lines;
@@ -665,8 +670,12 @@ public class BetterRCT {
 
         lines.add(sidebar.getDisplayName().getString());
 
-        for (ScoreboardPlayerScore score : scoreboard.getAllPlayerScores(sidebar)) {
-            String line = ownerLine(scoreboard, score.getPlayerName());
+        for (ScoreboardEntry entry : scoreboard.getScoreboardEntries(sidebar)) {
+            if (entry.hidden()) {
+                continue;
+            }
+
+            String line = ownerLine(scoreboard, entry);
 
             if (!line.isBlank()) {
                 lines.add(line);
@@ -676,15 +685,19 @@ public class BetterRCT {
         return lines;
     }
 
-    private static String ownerLine(Scoreboard scoreboard, String owner) {
-        Team team = scoreboard.getPlayerTeam(owner);
+    private static String ownerLine(Scoreboard scoreboard, ScoreboardEntry entry) {
+        Team team = scoreboard.getScoreHolderTeam(entry.owner());
 
-        return Team.decorateName(team, Text.literal(owner)).getString();
+        return Team.decorateName(team, entry.name()).getString();
     }
 
     private void readSidebar(MinecraftClient mc) {
         currentSidebarLine = null;
         currentNumber = null;
+
+        if (mc == null || mc.world == null) {
+            return;
+        }
 
         for (String line : sidebarLines(mc)) {
             String number = serverNumber(line);
@@ -692,21 +705,30 @@ public class BetterRCT {
             if (number != null) {
                 currentSidebarLine = line;
                 currentNumber = number;
-
                 return;
             }
         }
     }
 
     public static HandledScreen<?> openMenu(MinecraftClient mc) {
+        if (mc == null) {
+            return null;
+        }
+
         Screen screen = mc.currentScreen;
 
-        boolean serverMenu = screen instanceof HandledScreen && !(screen instanceof InventoryScreen);
+        if (screen instanceof HandledScreen<?> handled && !(screen instanceof InventoryScreen)) {
+            return handled;
+        }
 
-        return serverMenu ? (HandledScreen<?>) screen : null;
+        return null;
     }
 
     public static int slotCount(ScreenHandler menu) {
+        if (menu == null) {
+            return 0;
+        }
+
         int total = menu.slots.size();
 
         return total > INVENTORY_SLOTS ? total - INVENTORY_SLOTS : total;
@@ -715,6 +737,10 @@ public class BetterRCT {
     public static boolean matches(String candidate, String wanted) {
         String left = normalize(candidate);
         String right = normalize(wanted);
+
+        if (left.isEmpty() || right.isEmpty()) {
+            return false;
+        }
 
         if (left.equals(right) || left.contains(right)) {
             return true;
@@ -736,23 +762,25 @@ public class BetterRCT {
     }
 
     public static String normalize(String text) {
-        if (text == null) {
+        if (text == null || text.isEmpty()) {
             return "";
         }
 
-        String clean = SECTION_CODE
-            .matcher(text)
+        String clean = SECTION_CODE.matcher(text)
             .replaceAll("");
 
-        return SPACES
-            .matcher(clean)
+        return SPACES.matcher(clean)
             .replaceAll(" ")
             .trim()
-            .toLowerCase();
+            .toLowerCase(Locale.ROOT);
     }
 
     public static List<String> tokens(String text) {
         List<String> result = new ArrayList<>();
+
+        if (text == null || text.isEmpty()) {
+            return result;
+        }
 
         for (String part : WORD_SPLIT.split(normalize(text))) {
             if (part.length() >= 2) {
@@ -764,6 +792,10 @@ public class BetterRCT {
     }
 
     public static String combinedInfo(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return "";
+        }
+
         StringBuilder text = new StringBuilder(stack.getName().getString());
 
         for (String line : loreLines(stack)) {
@@ -774,12 +806,14 @@ public class BetterRCT {
     }
 
     public static OptionalInt slotMatching(ScreenHandler menu, Predicate<ItemStack> predicate) {
+        if (menu == null || predicate == null) {
+            return OptionalInt.empty();
+        }
+
         int slots = slotCount(menu);
 
         for (int slot = 0; slot < slots; ++slot) {
-            ItemStack stack = menu.slots
-                .get(slot)
-                .getStack();
+            ItemStack stack = menu.slots.get(slot).getStack();
 
             if (!stack.isEmpty() && predicate.test(stack)) {
                 return OptionalInt.of(slot);
@@ -790,7 +824,7 @@ public class BetterRCT {
     }
 
     public static OptionalInt playerStackSlot(ScreenHandler menu, int count) {
-        return BetterRCT.slotMatching(menu, stack -> stack.getItem() == Items.PLAYER_HEAD && stack.getCount() == count);
+        return slotMatching(menu, stack -> stack.getItem() == Items.PLAYER_HEAD && stack.getCount() == count);
     }
 
     public static String snapshot(HandledScreen<?> screen) {
@@ -809,9 +843,7 @@ public class BetterRCT {
         int slots = slotCount(menu);
 
         for (int slot = 0; slot < slots; ++slot) {
-            ItemStack stack = menu.slots
-                .get(slot)
-                .getStack();
+            ItemStack stack = menu.slots.get(slot).getStack();
 
             if (stack.isEmpty()) {
                 snapshot.append("-");
@@ -819,8 +851,7 @@ public class BetterRCT {
                 snapshot
                     .append(normalize(combinedInfo(stack)))
                     .append("|item=")
-                    .append(net.minecraft.registry.Registries.ITEM
-                            .getId(stack.getItem()))
+                    .append(net.minecraft.registry.Registries.ITEM.getId(stack.getItem()))
                     .append("|count=")
                     .append(stack.getCount());
             }

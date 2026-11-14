@@ -2,10 +2,11 @@ package com.zavk1n.bqol.utils.rct;
 
 import com.zavk1n.bqol.features.BetterRCT;
 import com.zavk1n.bqol.utils.chat.Chat;
-
 import com.zavk1n.bqol.utils.liteapi.restapi.HWServers;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.item.ItemStack;
@@ -17,16 +18,9 @@ import net.minecraft.text.Text;
 import java.util.OptionalInt;
 
 @Environment(EnvType.CLIENT)
-public class HolyWorldController {
+public final class HolyWorldController {
+
     private static HolyWorldController instance;
-
-    public HolyWorldController() {
-        instance = this;
-    }
-
-    public static HolyWorldController getInstance() {
-        return instance;
-    }
 
     private static final String HUB_COMMAND = "hub";
     private static final String MENU_COMMAND = "menu";
@@ -34,9 +28,26 @@ public class HolyWorldController {
     private static final int HUB_TIMEOUT_TICKS = 50;
     private static final int SUCCESS_DELAY_TICKS = 30;
 
+    private static final String HUB_COMPASS_NAME = "Выбор режима (ПКМ)";
+    private static final String LITE_ANARCHY = "лайт";
+    private static final String ANARCHY = "анархия";
+    private static final String VERSION = "1.16";
+
     public int operationTimeoutTicks = 500;
+    public String lastNumber;
 
     private State state = State.IDLE;
+    private Step step = Step.FIND_LITE_ANARCHY;
+
+    private int stateTicks;
+    private int operationTicks;
+    private int finishDelayTicks;
+
+    private int targetServerNumber;
+    private String targetNumber;
+    private LiteMode targetMode;
+    private String snapshotBeforeClick;
+
     private enum State {
         IDLE,
         TRAVELLING_TO_HUB,
@@ -45,63 +56,42 @@ public class HolyWorldController {
         WAITING_FINISH
     }
 
-    private Step step = Step.FIND_LITE_ANARCHY;
     private enum Step {
         FIND_LITE_ANARCHY,
         FIND_CATEGORY,
         FIND_SERVER
     }
 
-    private int stateTicks;
-    private int operationTicks;
-    private int finishDelayTicks;
-
-    private String targetNumber;
-    private LiteMode targetMode;
-    private String snapshotBeforeClick;
-
-    public String lastNumber;
-
     public enum LiteMode {
-
         SOLO("СолоЛайт", 1, 9, 1),
         DUO("ДуоЛайт", 10, 19, 2),
         TRIO("ТриоЛайт", 20, 29, 3),
-        CLAN("КланЛайт", 30, 36, 64);
+        CLAN("КланЛайт", 30, 36, 16);
 
         public final String displayName;
-
         public final int min;
         public final int max;
-
         public final int armorStandCount;
 
-        LiteMode(
-            String displayName,
-            int min,
-            int max,
-            int armorStandCount
-        ) {
+        private final String normalizedName;
+
+        LiteMode(String displayName, int min, int max, int armorStandCount) {
             this.displayName = displayName;
             this.min = min;
             this.max = max;
             this.armorStandCount = armorStandCount;
+            this.normalizedName = normalizeModeName(displayName);
         }
 
         public static LiteMode fromName(String name) {
-            if (name == null) {
+            if (name == null || name.isEmpty()) {
                 return null;
             }
 
-            String normalized = BetterRCT.normalize(name)
-                .replaceAll("\\s+", "");
+            String normalized = normalizeModeName(name);
 
             for (LiteMode mode : values()) {
-                String expected = BetterRCT
-                    .normalize(mode.displayName)
-                    .replaceAll("\\s+", "");
-
-                if (normalized.startsWith(expected + "#")) {
+                if (normalized.startsWith(mode.normalizedName + "#")) {
                     return mode;
                 }
             }
@@ -122,6 +112,18 @@ public class HolyWorldController {
         public static LiteMode forNumber(int number) {
             return HWServers.getInstance().getMode(number);
         }
+
+        private static String normalizeModeName(String name) {
+            return BetterRCT.normalize(name).replaceAll("\\s+", "");
+        }
+    }
+
+    public HolyWorldController() {
+        instance = this;
+    }
+
+    public static HolyWorldController getInstance() {
+        return instance;
     }
 
     public boolean isBusy() {
@@ -137,13 +139,12 @@ public class HolyWorldController {
             return;
         }
 
-        int value;
+        final int value;
 
         try {
             value = Integer.parseInt(number);
         } catch (NumberFormatException e) {
             Chat.send(mc, Chat.invalidNumber());
-
             return;
         }
 
@@ -161,19 +162,18 @@ public class HolyWorldController {
             return;
         }
 
-        targetMode = mode;
+        targetServerNumber = value;
         targetNumber = Integer.toString(value);
+        targetMode = mode;
 
         stateTicks = 0;
         operationTicks = 0;
         finishDelayTicks = 0;
 
         snapshotBeforeClick = null;
-
         step = Step.FIND_LITE_ANARCHY;
 
         switchTo(State.TRAVELLING_TO_HUB);
-
         sendCommand(mc, HUB_COMMAND);
     }
 
@@ -189,27 +189,25 @@ public class HolyWorldController {
 
         if (++operationTicks > operationTimeoutTicks) {
             fail(mc, "Истек таймаут операции.");
-
             return;
         }
 
-        ++stateTicks;
+        stateTicks++;
 
         switch (state) {
             case TRAVELLING_TO_HUB -> waitForHub(mc);
             case WALKING_MENU -> walkMenu(mc);
             case AWAITING_SCREEN_CHANGE -> awaitScreenChange(mc);
             case WAITING_FINISH -> waitForFinish(mc);
-            case IDLE -> {}
+            case IDLE -> {
+            }
         }
     }
 
     private void waitForHub(MinecraftClient mc) {
         if (hasHubCompass(mc)) {
             sendCommand(mc, MENU_COMMAND);
-
             switchTo(State.WALKING_MENU);
-
             return;
         }
 
@@ -223,15 +221,21 @@ public class HolyWorldController {
             return false;
         }
 
-        for (ItemStack stack : mc.player.getInventory().main) {
-            if (!stack.isEmpty() && stack.getItem() == Items.COMPASS && BetterRCT.matches(stack.getName().getString(), "Выбор режима (ПКМ)")) {
+        var inventory = mc.player.getInventory();
+
+        for (int i = 0, size = inventory.size(); i < size; i++) {
+            if (isHubCompass(inventory.getStack(i))) {
                 return true;
             }
         }
 
-        ItemStack offHand = mc.player.getOffHandStack();
+        return isHubCompass(mc.player.getOffHandStack());
+    }
 
-        return !offHand.isEmpty() && offHand.getItem() == Items.COMPASS && BetterRCT.matches(offHand.getName().getString(), "Выбор режима (ПКМ)");
+    private static boolean isHubCompass(ItemStack stack) {
+        return !stack.isEmpty()
+            && stack.isOf(Items.COMPASS)
+            && BetterRCT.matches(stack.getName().getString(), HUB_COMPASS_NAME);
     }
 
     private void walkMenu(MinecraftClient mc) {
@@ -258,7 +262,6 @@ public class HolyWorldController {
         }
 
         step = Step.FIND_CATEGORY;
-
         clickAndAwaitChange(mc, screen, menu, slot.getAsInt());
     }
 
@@ -274,7 +277,6 @@ public class HolyWorldController {
         }
 
         step = Step.FIND_SERVER;
-
         clickAndAwaitChange(mc, screen, menu, slot.getAsInt());
     }
 
@@ -283,15 +285,7 @@ public class HolyWorldController {
             return;
         }
 
-        int number;
-
-        try {
-            number = Integer.parseInt(targetNumber);
-        } catch (NumberFormatException e) {
-            return;
-        }
-
-        OptionalInt slot = BetterRCT.playerStackSlot(menu, number);
+        OptionalInt slot = BetterRCT.playerStackSlot(menu, targetServerNumber);
 
         if (slot.isEmpty() || !clickSlot(mc, menu, slot.getAsInt())) {
             return;
@@ -304,6 +298,7 @@ public class HolyWorldController {
         snapshotBeforeClick = BetterRCT.snapshot(screen);
 
         if (!clickSlot(mc, menu, slot)) {
+            snapshotBeforeClick = null;
             return;
         }
 
@@ -315,9 +310,7 @@ public class HolyWorldController {
 
         if (screen == null) {
             snapshotBeforeClick = null;
-
             switchTo(State.WALKING_MENU);
-
             return;
         }
 
@@ -325,15 +318,15 @@ public class HolyWorldController {
 
         if (snapshotBeforeClick == null || !currentSnapshot.equals(snapshotBeforeClick)) {
             snapshotBeforeClick = null;
-
             switchTo(State.WALKING_MENU);
         }
     }
 
     private void waitForFinish(MinecraftClient mc) {
-        if (!BetterRCT.getInstance().isOnServer(targetNumber)) {
-            finishDelayTicks = 0;
+        BetterRCT betterRCT = BetterRCT.getInstance();
 
+        if (betterRCT == null || !betterRCT.isOnServer(targetNumber)) {
+            finishDelayTicks = 0;
             return;
         }
 
@@ -343,18 +336,17 @@ public class HolyWorldController {
 
         lastNumber = targetNumber;
 
+        HWServers servers = HWServers.getInstance();
+        String displayName = servers.getDisplayName(targetServerNumber);
+
         Text message = Text.literal("Я успешно зашел на сервер - ")
-            .styled(style -> style.withColor(BetterRCT.getInstance().MESSAGE_COLOR))
-            .append(Text.literal(HWServers.getInstance()
-                .getDisplayName(Integer.parseInt(targetNumber)))
+            .styled(style -> style.withColor(betterRCT.MESSAGE_COLOR))
+            .append(Text.literal(displayName)
                 .styled(style -> style
-                .withColor(BetterRCT.getInstance().MESSAGE_COLOR)
-                .withBold(true)
-            )
-        );
+                    .withColor(betterRCT.MESSAGE_COLOR)
+                    .withBold(true)));
 
         closeMenu(mc);
-
         Chat.info(mc, message);
 
         reset();
@@ -373,11 +365,9 @@ public class HolyWorldController {
     }
 
     public static void handleIncomingMessage(String message) {
-        if (instance == null) {
-            return;
+        if (instance != null) {
+            instance.handleIncomingMessageInternal(message);
         }
-
-        instance.handleIncomingMessageInternal(message);
     }
 
     public void stop() {
@@ -389,31 +379,45 @@ public class HolyWorldController {
 
         closeMenu(mc);
 
-        Chat.info(mc, Text.literal("Скрипт RCT был остановлен.").styled(style -> style.withColor(BetterRCT.getInstance().MESSAGE_COLOR).withBold(true)));
+        BetterRCT betterRCT = BetterRCT.getInstance();
+        int color = betterRCT != null
+            ? betterRCT.MESSAGE_COLOR
+            : 0xFFC7C2FF;
+
+        Chat.info(mc, Text.literal("Скрипт RCT был остановлен.")
+            .styled(style -> style
+                .withColor(color)
+                .withBold(true)
+            )
+        );
 
         reset();
-    }
-
-    private static boolean clickSlot(MinecraftClient mc, ScreenHandler menu, int slot) {
-        if (mc.interactionManager == null || mc.player == null) {
-            return false;
-        }
-
-        mc.interactionManager.clickSlot(menu.syncId, slot, 0, SlotActionType.PICKUP, mc.player);
-
-        return true;
     }
 
     public static OptionalInt liteAnarchySlot(ScreenHandler menu) {
         return BetterRCT.slotMatching(menu, stack -> {
             String text = BetterRCT.normalize(BetterRCT.combinedInfo(stack));
 
-            return text.contains("лайт") && text.contains("анархия") && text.contains("1.16");
+            return text.contains(LITE_ANARCHY)
+                && text.contains(ANARCHY)
+                && text.contains(VERSION);
         });
     }
 
     public static OptionalInt armorStandSlot(ScreenHandler menu, int count) {
-        return BetterRCT.slotMatching(menu, stack -> stack.getItem() == Items.ARMOR_STAND && stack.getCount() == count);
+        return BetterRCT.slotMatching(menu, stack -> stack.isOf(Items.ARMOR_STAND) && stack.getCount() == count);
+    }
+
+    private static boolean clickSlot(MinecraftClient mc, ScreenHandler menu, int slot) {
+        if (mc.interactionManager == null
+            || mc.player == null
+            || menu == null) {
+            return false;
+        }
+
+        mc.interactionManager.clickSlot(menu.syncId, slot, 0, SlotActionType.PICKUP, mc.player);
+
+        return true;
     }
 
     private static void closeMenu(MinecraftClient mc) {
@@ -437,13 +441,21 @@ public class HolyWorldController {
     private void fail(MinecraftClient mc, String text) {
         closeMenu(mc);
 
-        Chat.info(mc, Text.literal(text).styled(style -> style.withColor(BetterRCT.getInstance().MESSAGE_COLOR).withBold(true)));
+        BetterRCT betterRCT = BetterRCT.getInstance();
+
+        int color = betterRCT != null ? betterRCT.MESSAGE_COLOR : 0xFFC7C2FF;
+
+        Chat.info(mc, Text.literal(text)
+            .styled(style -> style
+                .withColor(color)
+                .withBold(true)));
 
         reset();
     }
 
     private void reset() {
         targetNumber = null;
+        targetServerNumber = 0;
         targetMode = null;
         snapshotBeforeClick = null;
 

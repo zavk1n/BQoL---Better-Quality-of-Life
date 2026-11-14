@@ -9,18 +9,11 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
-import java.util.function.BooleanSupplier;
-
 public class MovementConfigScreen extends MainConfigScreen {
-    private ButtonWidget defaultModeBtn, pvpModeBtn, stairupBtn, watersprintBtn, scaffoldBtn;
+    private ButtonWidget defaultBtn, stairupBtn, watersprintBtn, scaffoldBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
-
-    private enum SprintMode {
-        DEFAULT,
-        PVP,
-    }
 
     public MovementConfigScreen(Screen parent) {
         super(Text.literal("Better Sprint Settings"), parent);
@@ -40,8 +33,7 @@ public class MovementConfigScreen extends MainConfigScreen {
     private void rebuildUI() {
         clearChildren();
 
-        defaultModeBtn = null;
-        pvpModeBtn = null;
+        defaultBtn = null;
         stairupBtn = null;
         watersprintBtn = null;
         scaffoldBtn = null;
@@ -50,20 +42,19 @@ public class MovementConfigScreen extends MainConfigScreen {
         int y = 60;
 
         if (!LiteApiManager.isFeatureBlocked("better_movement_default")) {
-            defaultModeBtn = createExclusiveButton(rightX, y,
-                "Default Mode",
-                config::isBetterMovementDefaultMode,
-                SprintMode.DEFAULT
-            );
-            y += SPACING;
-        }
+            defaultBtn = ButtonWidget.builder(
+                    Text.literal(config.isBetterMovementDefault() ? "Enabled" : "Disabled"),
+                    button -> {
+                        boolean state = !config.isBetterMovementDefault();
+                        config.setBetterMovementDefault(state);
+                        changed = true;
+                        updateButton(defaultBtn, state);
+                        save();
+                    })
+                .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+                .build();
 
-        if (!LiteApiManager.isFeatureBlocked("better_movement_pvp")) {
-            pvpModeBtn = createExclusiveButton(rightX, y,
-                "PvP Mode",
-                config::isBetterMovementPvPMode,
-                SprintMode.PVP
-            );
+            addDrawableChild(defaultBtn);
             y += SPACING;
         }
 
@@ -125,49 +116,9 @@ public class MovementConfigScreen extends MainConfigScreen {
         updateAllButtons();
     }
 
-    private ButtonWidget createExclusiveButton(int x, int y, String label, BooleanSupplier isActive, SprintMode mode) {
-        ButtonWidget btn = ButtonWidget.builder(
-                Text.literal(isActive.getAsBoolean() ? "Enabled" : "Disabled"),
-                button -> {
-                    if (isActive.getAsBoolean()) {
-                        disableExclusiveMode();
-                    } else {
-                        enableExclusiveMode(mode);
-                    }
-
-                    changed = true;
-                    updateAllButtons();
-                    save();
-                })
-            .dimensions(x, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
-            .build();
-
-        addDrawableChild(btn);
-
-        return btn;
-    }
-
-    private void enableExclusiveMode(SprintMode mode) {
-        disableExclusiveMode();
-
-        switch (mode) {
-            case DEFAULT -> config.setBetterMovementDefaultMode(true);
-            case PVP -> config.setBetterMovementPvPMode(true);
-        }
-    }
-
-    private void disableExclusiveMode() {
-        config.setBetterMovementDefaultMode(false);
-        config.setBetterMovementPvPMode(false);
-    }
-
     private void updateAllButtons() {
-        if (defaultModeBtn != null) {
-            updateButton(defaultModeBtn, config.isBetterMovementDefaultMode());
-        }
-
-        if (pvpModeBtn != null) {
-            updateButton(pvpModeBtn, config.isBetterMovementPvPMode());
+        if (defaultBtn != null) {
+            updateButton(defaultBtn, config.isBetterMovementDefault());
         }
 
         if (stairupBtn != null) {
@@ -199,14 +150,6 @@ public class MovementConfigScreen extends MainConfigScreen {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Default Mode",
                 "Auto-sprint forward."
-            );
-            y += SPACING;
-        }
-
-        if (!LiteApiManager.isFeatureBlocked("better_movement_pvp")) {
-            renderLabel(context, leftX, y, mouseX, mouseY,
-                "PvP Mode",
-                "Auto-sprint in PvP conditions. (Timer 30s)."
             );
             y += SPACING;
         }

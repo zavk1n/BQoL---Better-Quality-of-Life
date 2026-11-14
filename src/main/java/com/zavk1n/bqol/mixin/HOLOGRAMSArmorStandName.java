@@ -11,17 +11,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ArmorStandEntityRenderer.class)
-public class HOLOGRAMSArmorStandName {
+public abstract class HOLOGRAMSArmorStandName {
 
     @Inject(method = "hasLabel", at = @At("HEAD"), cancellable = true)
-    private void bqol$hideHologramLabel(ArmorStandEntity armorStand, CallbackInfoReturnable<Boolean> cir) {
-        if (!BetterHolograms.isEnabled() || !BetterHolograms.isHologram(armorStand)) {
-            return;
-        }
-
-        if (BetterHolograms.isAntiHologramsEnabled()) {
+    private void bqol$hideHologramLabel(ArmorStandEntity armorStand, double squaredDistance, CallbackInfoReturnable<Boolean> cir) {
+        if (BetterHolograms.isAntiHologramsEnabled() && BetterHolograms.isHologram(armorStand)) {
             cir.setReturnValue(false);
-            return;
         }
     }
 }

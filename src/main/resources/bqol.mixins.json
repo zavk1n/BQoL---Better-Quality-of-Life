@@ -1,23 +1,21 @@
-
 {
   "required": true,
   "minVersion": "0.8",
   "package": "com.zavk1n.bqol.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ACCESSORBossHealthOverlay",
     "CommandSuggestions",
     "FOGRenderFogDistance",
     "FOGRenderFogColor",
-    "FOGNoFog",
     "FOGRenderNightVision",
     "FOGNoBlindness",
-    "HEALTHRenderIndicator",
     "HOLOGRAMSArmorStandRenderer",
     "HOLOGRAMSArmorStandName",
     "HOLOGRAMSArmorStandRendererVisibility",
     "HOLOGRAMSArmorStandRenderLayer",
     "HOLOGRAMSArmorStandAlpha",
+    "HOLOGRAMSArmorStandRenderState",
     "NORENDERFireworks",
     "NORENDERPlayers",
     "NORENDERHand",
@@ -25,6 +23,7 @@
     "NORENDERArrows",
     "NORENDERFireOverlay",
     "NORENDERTotemOverlay",
+    "NORENDERTotemOverlayScale",
     "NORENDERPotionParticles",
     "NORENDERTotemParticles",
     "NORENDERExplosion",
@@ -34,7 +33,6 @@
     "NORENDERWeather",
     "NORENDERWeather1",
     "GLOBALAttackEntityMixin",
-    "GLOBALDamageEntityMixin",
     "GLOBALDeathResetMixin",
     "PARTICLESShulkerBlockVanillaParticles",
     "PARTICLESShulkerSpawnBreakingParticles",
@@ -55,6 +53,7 @@
     "TNTInGameHud",
     "TNTEntityRenderer",
     "TNTExplosionAreaRenderer",
+    "TNTEntityRenderState",
     "RRLSMinecraftClient",
     "RRLSLoadingOverlay",
     "PREFIXESGetName",
@@ -68,15 +67,25 @@
     "CHATHud",
     "CHATScreen",
     "CHATAnimation",
-    "CHATHeads",
+    "CHATHeadsHud",
+    "CHATHeadsInteractable",
     "CHATPing",
     "CHATTransliteration",
     "CHATStackMessages",
     "TOTEMCounter",
     "TOTEMCounterHud",
-    "TOTEMCounterName"
+    "TOTEMCounterName",
+    "LIQUIDWaterFogModifier",
+    "LIQUIDLavaFogModifier",
+    "LIQUIDBlockRenderLayers",
+    "LIQUIDTexture",
+    "LIQUIDVanillaFluidRenderer",
+
+    "SODIUMLIQUIDFluidRenderer",
+    "SODIUMFOGRenderFogDistance"
   ],
-  "client": [],
+  "client": [
+  ],
   "injectors": {
     "defaultRequire": 1
   }

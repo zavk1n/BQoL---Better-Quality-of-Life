@@ -59,17 +59,13 @@ public class BetterRRLS {
     }
 
     public void beginReload(boolean initial) {
-        if (!isEnabledInternal()) {
-            resetState();
-            return;
-        }
-
         reloading = true;
         initialLoading = initial;
     }
 
     public void finishReload() {
-        resetState();
+        reloading = false;
+        initialLoading = false;
     }
 
     public boolean isReloading() {
@@ -77,19 +73,10 @@ public class BetterRRLS {
     }
 
     public boolean isInitialLoading() {
-        return isReloading() && initialLoading;
+        return reloading && initialLoading;
     }
 
     public boolean shouldHideOverlay() {
         return isReloading() && !initialLoading;
-    }
-
-    public boolean shouldAllowInteraction() {
-        return shouldHideOverlay();
-    }
-
-    private void resetState() {
-        reloading = false;
-        initialLoading = false;
     }
 }

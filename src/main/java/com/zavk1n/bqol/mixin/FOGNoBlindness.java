@@ -2,36 +2,31 @@ package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterFog;
 
+import net.minecraft.block.enums.CameraSubmersionType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BackgroundRenderer;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.client.render.fog.BlindnessEffectFogModifier;
+import net.minecraft.client.render.fog.StatusEffectFogModifier;
+import net.minecraft.entity.Entity;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(BackgroundRenderer.class)
-public class FOGNoBlindness {
+@Mixin(StatusEffectFogModifier.class)
+public abstract class FOGNoBlindness {
 
-    @Redirect(
-        method = "applyFog",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/entity/LivingEntity;hasStatusEffect(Lnet/minecraft/entity/effect/StatusEffect;)Z"
-        )
-    )
-    private static boolean bqol$ignoreBlindness(LivingEntity entity, StatusEffect effect) {
+    @Inject(method = "shouldApply", at = @At("HEAD"), cancellable = true)
+    private void bqol$ignoreBlindness(CameraSubmersionType submersionType, Entity cameraEntity, CallbackInfoReturnable<Boolean> cir) {
         MinecraftClient client = MinecraftClient.getInstance();
 
-        if (client.player != null
-            && entity == client.player
-            && (effect == StatusEffects.BLINDNESS || effect == StatusEffects.DARKNESS)
-            && BetterFog.isNoBlindnessEnabled()) {
-            return false;
-        }
+        boolean isBlindness = (Object) this instanceof BlindnessEffectFogModifier;
 
-        return entity.hasStatusEffect(effect);
+        if (client.player != null
+            && cameraEntity == client.player
+            && isBlindness
+            && BetterFog.isNoBlindnessEnabled()) {
+            cir.setReturnValue(false);
+        }
     }
 }

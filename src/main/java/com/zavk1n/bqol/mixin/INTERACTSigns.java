@@ -14,29 +14,20 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayNetworkHandler.class)
-public class INTERACTSigns {
+public abstract class INTERACTSigns {
 
     @Inject(method = "onSignEditorOpen", at = @At("HEAD"), cancellable = true)
     private void bqol$skipSignEditor(SignEditorOpenS2CPacket packet, CallbackInfo ci) {
         if (BetterInteract.isAutoSignsEnabled()) {
-            BQoLConfig config = BQoLConfig.getInstance();
-
-            String text = config.getBetterInteractAutoSignsText();
+            String text = BQoLConfig.getInstance().getBetterInteractAutoSignsText();
 
             if (text != null && !text.isBlank()) {
                 String[] lines = text.split("\\R", -1);
 
-                String line1 = lines.length > 0 ? lines[0] : "";
-                String line2 = lines.length > 1 ? lines[1] : "";
-                String line3 = lines.length > 2 ? lines[2] : "";
-                String line4 = lines.length > 3 ? lines[3] : "";
-
                 MinecraftClient client = MinecraftClient.getInstance();
 
                 if (client.getNetworkHandler() != null) {
-                    client.getNetworkHandler().sendPacket(
-                        new UpdateSignC2SPacket(packet.getPos(), packet.isFront(), line1, line2, line3, line4)
-                    );
+                    client.getNetworkHandler().sendPacket(new UpdateSignC2SPacket(packet.getPos(), packet.isFront(), lines.length > 0 ? lines[0] : "", lines.length > 1 ? lines[1] : "", lines.length > 2 ? lines[2] : "", lines.length > 3 ? lines[3] : ""));
                 }
 
                 ci.cancel();
@@ -44,10 +35,8 @@ public class INTERACTSigns {
             }
         }
 
-        if (!BetterInteract.isAntiSignsEnabled()) {
-            return;
+        if (BetterInteract.isAntiSignsEnabled()) {
+            ci.cancel();
         }
-
-        ci.cancel();
     }
 }

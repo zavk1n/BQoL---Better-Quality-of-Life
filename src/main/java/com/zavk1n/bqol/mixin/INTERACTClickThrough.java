@@ -2,14 +2,11 @@ package com.zavk1n.bqol.mixin;
 
 import com.zavk1n.bqol.features.BetterInteract;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ShulkerBoxBlock;
+import net.minecraft.block.*;
+import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.decoration.GlowItemFrameEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -23,103 +20,100 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Set;
+
 @Mixin(GameRenderer.class)
 public abstract class INTERACTClickThrough {
+
+    private static final double RAYCAST_EPSILON = 0.05D;
+    private static final int MAX_RAYCAST_ITERATIONS = 128;
+
+    private static final Set<Block> PASS_THROUGH_BLOCKS = Set.of(
+        Blocks.OAK_SIGN, Blocks.OAK_WALL_SIGN,
+        Blocks.SPRUCE_SIGN, Blocks.SPRUCE_WALL_SIGN,
+        Blocks.BIRCH_SIGN, Blocks.BIRCH_WALL_SIGN,
+        Blocks.JUNGLE_SIGN, Blocks.JUNGLE_WALL_SIGN,
+        Blocks.ACACIA_SIGN, Blocks.ACACIA_WALL_SIGN,
+        Blocks.DARK_OAK_SIGN, Blocks.DARK_OAK_WALL_SIGN,
+        Blocks.CRIMSON_SIGN, Blocks.CRIMSON_WALL_SIGN,
+        Blocks.WARPED_SIGN, Blocks.WARPED_WALL_SIGN,
+        Blocks.MANGROVE_SIGN, Blocks.MANGROVE_WALL_SIGN,
+        Blocks.BAMBOO_SIGN, Blocks.BAMBOO_WALL_SIGN,
+        Blocks.CHERRY_SIGN, Blocks.CHERRY_WALL_SIGN,
+        Blocks.SHORT_GRASS, Blocks.SHORT_DRY_GRASS,
+        Blocks.TALL_GRASS, Blocks.TALL_DRY_GRASS,
+        Blocks.FERN,
+        Blocks.LARGE_FERN
+    );
+
+    private static final Set<Block> CONTAINER_BLOCKS = Set.of(Blocks.CHEST,
+        Blocks.COPPER_CHEST, Blocks.WEATHERED_COPPER_CHEST, Blocks.OXIDIZED_COPPER_CHEST, Blocks.WAXED_COPPER_CHEST, Blocks.WAXED_EXPOSED_COPPER_CHEST,
+        Blocks.WAXED_WEATHERED_COPPER_CHEST, Blocks.WAXED_OXIDIZED_COPPER_CHEST, Blocks.TRAPPED_CHEST, Blocks.ENDER_CHEST, Blocks.BARREL);
 
     @Shadow
     private MinecraftClient client;
 
-    @Inject(method = "updateTargetedEntity", at = @At("TAIL"))
+    @Inject(method = "updateCrosshairTarget", at = @At("TAIL"))
     private void bqol$clickThrough(float tickDelta, CallbackInfo ci) {
         if (!BetterInteract.isClickThroughEnabled()) {
             return;
         }
 
-        if (client.world == null
-            || client.cameraEntity == null
-            || client.interactionManager == null) {
+        if (client.world == null || client.player == null) {
+            return;
+        }
+
+        Entity cameraEntity = client.getCameraEntity();
+
+        if (cameraEntity == null) {
             return;
         }
 
         HitResult currentTarget = client.crosshairTarget;
 
-        if (currentTarget instanceof BlockHitResult blockHit) {
-            BlockState state = client.world.getBlockState(blockHit.getBlockPos());
+        Vec3d firstHit;
 
-            if (!bqol$isPassThroughBlock(state)) {
+        if (currentTarget instanceof BlockHitResult blockHit) {
+            if (!bqol$isPassThroughBlock(
+                client.world.getBlockState(blockHit.getBlockPos()))) {
                 return;
             }
 
-            BlockHitResult nextTarget = bqol$findNextContainer(
-                client.cameraEntity,
-                blockHit.getPos(),
-                tickDelta
-            );
+            firstHit = blockHit.getPos();
 
-            if (nextTarget != null) {
-                client.crosshairTarget = nextTarget;
-            }
-
+        } else if (currentTarget instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof ItemFrameEntity) {
+            firstHit = entityHit.getPos();
+        } else {
             return;
         }
 
-        if (currentTarget instanceof EntityHitResult entityHit) {
-            Entity entity = entityHit.getEntity();
+        BlockHitResult nextTarget = bqol$findNextContainer(client, cameraEntity, firstHit, tickDelta);
 
-            if (!(entity instanceof ItemFrameEntity) && !(entity instanceof GlowItemFrameEntity)) {
-                return;
-            }
-
-            BlockHitResult nextTarget = bqol$findNextContainer(
-                client.cameraEntity,
-                entityHit.getPos(),
-                tickDelta
-            );
-
-            if (nextTarget != null) {
-                client.crosshairTarget = nextTarget;
-            }
+        if (nextTarget != null) {
+            client.crosshairTarget = nextTarget;
         }
     }
 
-    private static BlockHitResult bqol$findNextContainer(Entity cameraEntity, Vec3d firstHit, float tickDelta) {
-        MinecraftClient client = MinecraftClient.getInstance();
-
-        if (client.world == null || client.interactionManager == null) {
+    private static BlockHitResult bqol$findNextContainer(MinecraftClient client, Entity cameraEntity, Vec3d firstHit, float tickDelta) {
+        if (client.world == null || client.player == null) {
             return null;
         }
 
-        double range = client.interactionManager.getReachDistance();
+        double range = client.player.getBlockInteractionRange();
+        double maxDistanceSquared = range * range;
 
         Vec3d cameraPos = cameraEntity.getCameraPosVec(tickDelta);
         Vec3d direction = cameraEntity.getRotationVec(tickDelta).normalize();
 
-        Vec3d end = cameraPos.add(
-            direction.x * range,
-            direction.y * range,
-            direction.z * range
-        );
+        Vec3d end = cameraPos.add(direction.multiply(range));
+        Vec3d start = firstHit.add(direction.multiply(RAYCAST_EPSILON));
 
-        Vec3d start = firstHit.add(
-            direction.x * 0.05D,
-            direction.y * 0.05D,
-            direction.z * 0.05D
-        );
-
-        for (int i = 0; i < 128; i++) {
-            if (start.squaredDistanceTo(cameraPos) >= end.squaredDistanceTo(cameraPos)) {
+        for (int i = 0; i < MAX_RAYCAST_ITERATIONS; i++) {
+            if (start.squaredDistanceTo(cameraPos) >= maxDistanceSquared) {
                 return null;
             }
 
-            BlockHitResult hit = client.world.raycast(
-                new RaycastContext(
-                    start,
-                    end,
-                    RaycastContext.ShapeType.OUTLINE,
-                    RaycastContext.FluidHandling.NONE,
-                    cameraEntity
-                )
-            );
+            BlockHitResult hit = client.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, cameraEntity));
 
             if (hit.getType() != HitResult.Type.BLOCK) {
                 return null;
@@ -131,19 +125,11 @@ public abstract class INTERACTClickThrough {
                 return hit;
             }
 
-            if (bqol$isPassThroughBlock(state)) {
-                Vec3d hitPos = hit.getPos();
-
-                start = hitPos.add(
-                    direction.x * 0.05D,
-                    direction.y * 0.05D,
-                    direction.z * 0.05D
-                );
-
-                continue;
+            if (!bqol$isPassThroughBlock(state)) {
+                return null;
             }
 
-            return null;
+            start = hit.getPos().add(direction.multiply(RAYCAST_EPSILON));
         }
 
         return null;
@@ -152,53 +138,12 @@ public abstract class INTERACTClickThrough {
     private static boolean bqol$isContainer(BlockState state) {
         Block block = state.getBlock();
 
-        if (block == Blocks.CHEST
-                || block == Blocks.TRAPPED_CHEST
-                || block == Blocks.ENDER_CHEST
-                || block == Blocks.BARREL) {
-            return true;
-        }
-
-        return block instanceof ShulkerBoxBlock;
+        return CONTAINER_BLOCKS.contains(block)
+            || block instanceof ShulkerBoxBlock
+            || block instanceof ChestBlock;
     }
 
     private static boolean bqol$isPassThroughBlock(BlockState state) {
-        return state.isOf(Blocks.OAK_SIGN)
-            || state.isOf(Blocks.OAK_WALL_SIGN)
-
-            || state.isOf(Blocks.SPRUCE_SIGN)
-            || state.isOf(Blocks.SPRUCE_WALL_SIGN)
-
-            || state.isOf(Blocks.BIRCH_SIGN)
-            || state.isOf(Blocks.BIRCH_WALL_SIGN)
-
-            || state.isOf(Blocks.JUNGLE_SIGN)
-            || state.isOf(Blocks.JUNGLE_WALL_SIGN)
-
-            || state.isOf(Blocks.ACACIA_SIGN)
-            || state.isOf(Blocks.ACACIA_WALL_SIGN)
-
-            || state.isOf(Blocks.DARK_OAK_SIGN)
-            || state.isOf(Blocks.DARK_OAK_WALL_SIGN)
-
-            || state.isOf(Blocks.CRIMSON_SIGN)
-            || state.isOf(Blocks.CRIMSON_WALL_SIGN)
-
-            || state.isOf(Blocks.WARPED_SIGN)
-            || state.isOf(Blocks.WARPED_WALL_SIGN)
-
-            || state.isOf(Blocks.MANGROVE_SIGN)
-            || state.isOf(Blocks.MANGROVE_WALL_SIGN)
-
-            || state.isOf(Blocks.BAMBOO_SIGN)
-            || state.isOf(Blocks.BAMBOO_WALL_SIGN)
-
-            || state.isOf(Blocks.CHERRY_SIGN)
-            || state.isOf(Blocks.CHERRY_WALL_SIGN)
-
-            || state.isOf(Blocks.GRASS)
-            || state.isOf(Blocks.TALL_GRASS)
-            || state.isOf(Blocks.FERN)
-            || state.isOf(Blocks.LARGE_FERN);
+        return PASS_THROUGH_BLOCKS.contains(state.getBlock());
     }
 }

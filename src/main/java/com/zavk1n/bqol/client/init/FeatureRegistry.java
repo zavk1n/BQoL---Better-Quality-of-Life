@@ -2,7 +2,6 @@ package com.zavk1n.bqol.client.init;
 
 import com.zavk1n.bqol.features.*;
 
-import com.zavk1n.bqol.utils.rct.MessageHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -16,72 +15,58 @@ public enum FeatureRegistry {
     ),
     BETTER_RCT(
         BetterRCT::initialize,
-        () -> {},
         BetterRCT::refreshBlockedStatus
     ),
     BETTER_SOUNDS(
         BetterSounds::initialize,
-        () -> {},
         BetterSounds::refreshBlockedStatus
     ),
     BETTER_INTERACT(
         BetterInteract::initialize,
-        () -> {},
         BetterInteract::refreshBlockedStatus
     ),
     BETTER_HURT_CAM(
         BetterHurtCam::initialize,
-        () -> {},
         BetterHurtCam::refreshBlockedStatus
     ),
     BETTER_THIRD_PERSON(
         BetterThirdPerson::initialize,
-        () -> {},
         BetterThirdPerson::refreshBlockedStatus
     ),
     BETTER_TNT(
         BetterTnt::initialize,
-        () -> {},
         BetterTnt::refreshBlockedStatus
     ),
     BETTER_CHAT(
         BetterChat::initialize,
-        () -> {},
         BetterChat::refreshBlockedStatus
     ),
-    BETTER_TP (
+    BETTER_TP(
         BetterTP::initialize,
-        () -> {},
         BetterTP::refreshBlockedStatus
     ),
-    BETTER_RRLS (
+    BETTER_RRLS(
         BetterRRLS::initialize,
-        () -> {},
         BetterRRLS::refreshBlockedStatus
     ),
-    BETTER_PREFIXES (
+    BETTER_PREFIXES(
         BetterPrefixes::initialize,
-        () -> {},
         BetterPrefixes::refreshBlockedStatus
     ),
     BETTER_HOLOGRAMS(
         BetterHolograms::initialize,
-        () -> {},
         BetterHolograms::refreshBlockedStatus
     ),
     BETTER_TOTEMS(
         BetterTotems::initialize,
-        () -> {},
         BetterTotems::refreshBlockedStatus
     ),
     BETTER_SPHERES(
         BetterSpheres::initialize,
-        () -> {},
         BetterSpheres::refreshBlockedStatus
     ),
     BETTER_SKY(
         BetterSky::initialize,
-        () -> {},
         BetterSky::refreshBlockedStatus
     ),
     BETTER_PARTICLES(
@@ -89,67 +74,107 @@ public enum FeatureRegistry {
         BetterParticles::onTick,
         BetterParticles::refreshBlockedStatus
     ),
+    BETTER_LIQUID(
+        BetterLiquid::initialize,
+        BetterLiquid::refreshBlockedStatus
+    ),
     BETTER_FOG(
         BetterFog::initialize,
-        () -> {},
         BetterFog::refreshBlockedStatus
     ),
     BETTER_HEALTH(
         BetterHealth::initialize,
-        () -> {},
         BetterHealth::refreshBlockedStatus
     ),
     NO_RENDER(
         NoRender::initialize,
-        () -> {},
         NoRender::refreshBlockedStatus
     ),
     BETTER_MINE(
         BetterMine::initialize,
-        () -> {},
         BetterMine::refreshBlockedStatus
     ),
     BETTER_HIT_COUNTER(
         BetterHitCounter::initialize,
-        () -> {},
         BetterHitCounter::refreshBlockedStatus
     );
 
     private static final FeatureRegistry[] VALUES = values();
+    private static final FeatureRegistry[] TICKABLE_FEATURES = createTickableFeatures();
 
     private final Runnable initializer;
     private final Runnable tickHandler;
     private final Runnable blockedStatusRefresher;
 
-    FeatureRegistry(
-        Runnable initializer,
-        Runnable tickHandler,
-        Runnable blockedStatusRefresher
-    ) {
+    private boolean initialized;
+
+    FeatureRegistry(Runnable initializer, Runnable blockedStatusRefresher) {
+        this(initializer, null, blockedStatusRefresher);
+    }
+
+    FeatureRegistry(Runnable initializer, Runnable tickHandler, Runnable blockedStatusRefresher) {
         this.initializer = initializer;
         this.tickHandler = tickHandler;
         this.blockedStatusRefresher = blockedStatusRefresher;
     }
 
-    public void init() {
+    private void init() {
+        if (initialized) {
+            return;
+        }
+
         initializer.run();
+        initialized = true;
     }
 
     public void tick() {
-        tickHandler.run();
+        if (tickHandler != null) {
+            tickHandler.run();
+        }
     }
 
     public void refreshBlockedStatus() {
         blockedStatusRefresher.run();
     }
 
-    public static void initializeAll() {
+    public static synchronized void initializeAll() {
         for (FeatureRegistry feature : VALUES) {
             feature.init();
         }
 
+        refreshAllBlockedStatus();
+    }
+
+    public static void refreshAllBlockedStatus() {
         for (FeatureRegistry feature : VALUES) {
             feature.refreshBlockedStatus();
+        }
+    }
+
+    private static FeatureRegistry[] createTickableFeatures() {
+        int count = 0;
+
+        for (FeatureRegistry feature : VALUES) {
+            if (feature.tickHandler != null) {
+                count++;
+            }
+        }
+
+        FeatureRegistry[] result = new FeatureRegistry[count];
+        int index = 0;
+
+        for (FeatureRegistry feature : VALUES) {
+            if (feature.tickHandler != null) {
+                result[index++] = feature;
+            }
+        }
+
+        return result;
+    }
+
+    public static void tickAll() {
+        for (FeatureRegistry feature : TICKABLE_FEATURES) {
+            feature.tickHandler.run();
         }
     }
 }

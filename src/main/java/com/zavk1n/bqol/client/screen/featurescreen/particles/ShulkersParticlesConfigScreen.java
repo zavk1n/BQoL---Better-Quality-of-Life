@@ -364,9 +364,7 @@ public class ShulkersParticlesConfigScreen extends MainConfigScreen {
             b = x;
         }
 
-        return Math.round((r + m) * 255.0F) << 16
-            | Math.round((g + m) * 255.0F) << 8
-            | Math.round((b + m) * 255.0F);
+        return Math.round((r + m) * 255.0F) << 16 | Math.round((g + m) * 255.0F) << 8 | Math.round((b + m) * 255.0F);
     }
 
     @Override
@@ -374,73 +372,24 @@ public class ShulkersParticlesConfigScreen extends MainConfigScreen {
         super.render(context, mouseX, mouseY, delta);
 
         int leftX = width / 6;
-        int row = 0;
-        int y = 60 + row * SPACING;
 
-        renderLabel(context, leftX, y,
-            "Constant",
-            "Spawns particles around the shulker.", mouseX, mouseY
-        );
-
+        renderLabel(context, leftX, 60, "Constant", "Spawns particles around the shulker.", mouseX, mouseY);
         renderDependenceLabel(context, constantDepLabelX, constantDepLabelY, mouseX, mouseY);
-        row++;
-        y = 60 + row * SPACING;
 
-        renderLabel(context, leftX, y,
-            "Breaking",
-            "Spawns particles during a shulker breaking.", mouseX, mouseY
-        );
-
+        renderLabel(context, leftX, 105, "Breaking", "Spawns particles during a shulker breaking.", mouseX, mouseY);
         renderDependenceLabel(context, breakingDepLabelX, breakingDepLabelY, mouseX, mouseY);
-        row++;
 
-        renderLabel(context, leftX, 60 + row * SPACING,
-            "Vanilla Breaking",
-            "Removes vanilla break particles.", mouseX, mouseY
-        );
-        row++;
+        renderLabel(context, leftX, 150, "Vanilla Breaking", "Removes vanilla break particles.", mouseX, mouseY);
+        renderLabel(context, leftX, 195, "Constant Color", "Custom color when Dependence is Off.", mouseX, mouseY);
+        renderLabel(context, leftX, 240, "Breaking Color", "Custom color when Dependence is Off.", mouseX, mouseY);
 
-        renderLabel(context, leftX, 60 + row * SPACING,
-            "Constant Color",
-            "Custom color when Dependence is Off.", mouseX, mouseY
-        );
-        row++;
-
-        renderLabel(context, leftX, 60 + row * SPACING,
-            "Breaking Color",
-            "Custom color when Dependence is Off.", mouseX, mouseY
-        );
-
-        if (constantHexField != null
-            && constantColorSlider != null
-            && constantHexField.isVisible()) {
-
+        if (constantHexField != null && constantColorSlider != null) {
             renderColorPreview(context, constantHexField.getX() + HEX_WIDTH + 5, constantColorSlider.getY(), constantCurrentColor);
         }
 
-        if (breakingHexField != null
-            && breakingColorSlider != null
-            && breakingHexField.isVisible()) {
-
+        if (breakingHexField != null && breakingColorSlider != null) {
             renderColorPreview(context, breakingHexField.getX() + HEX_WIDTH + 5, breakingColorSlider.getY(), breakingCurrentColor);
         }
-    }
-
-    private void renderDependenceLabel(DrawContext context, int x, int y, int mouseX, int mouseY) {
-        boolean hovered = mouseX >= x
-            && mouseX <= x + textRenderer.getWidth("Dependence")
-            && mouseY >= y - 5
-            && mouseY <= y + 10;
-
-        context.drawText(textRenderer, Text.literal("Dependence"), x, y, hovered ? ACCENT_COLOR : 0xFFFFFF, false);
-        context.drawText(textRenderer, Text.literal("Particles color depends on shulker color"), x, y + 12, 0x888888, false);
-    }
-
-    private void renderColorPreview(DrawContext context, int x, int y, int rgb) {
-        int previewSize = 18;
-
-        context.fill(x - 1, y - 1, x + previewSize + 1, y + previewSize + 1, 0xFF000000);
-        context.fill(x, y, x + previewSize, y + previewSize, 0xFF000000 | (rgb & 0xFFFFFF));
     }
 
     private void renderLabel(DrawContext context, int x, int y, String title, String desc, int mouseX, int mouseY) {
@@ -448,13 +397,35 @@ public class ShulkersParticlesConfigScreen extends MainConfigScreen {
 
         boolean hovered = mouseX >= x
             && mouseX <= x + titleWidth
-            && mouseY >= y
-            && mouseY <= y + 9;
+            && mouseY >= y - 2
+            && mouseY <= y + 10;
 
-        int color = hovered ? ACCENT_COLOR : 0xFFFFFF;
+        int titleColor = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
 
-        context.drawText(textRenderer, Text.literal(title), x, y, color, false);
-        context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0x888888, false);
+        context.drawText(textRenderer, title, x, y, titleColor, false);
+        context.drawText(textRenderer, desc, x, y + 12, 0xFFAAAAAA, false);
+    }
+
+    private void renderDependenceLabel(DrawContext context, int x, int y, int mouseX, int mouseY) {
+        String title = "Dependence";
+        String desc = "Particles color depends on shulker color";
+
+        int titleWidth = textRenderer.getWidth(title);
+
+        boolean hovered = mouseX >= x
+            && mouseX <= x + titleWidth
+            && mouseY >= y - 2
+            && mouseY <= y + 10;
+
+        context.drawText(textRenderer, title, x, y, hovered ? ACCENT_COLOR : 0xFFFFFFFF, false);
+        context.drawText(textRenderer, desc, x, y + 12, 0xFFAAAAAA, false);
+    }
+
+    private void renderColorPreview(DrawContext context, int x, int y, int rgb) {
+        int previewSize = 18;
+
+        context.fill(x - 1, y - 1, x + previewSize + 1, y + previewSize + 1, 0xFF000000);
+        context.fill(x, y, x + previewSize, y + previewSize, 0xFF000000 | (rgb & 0xFFFFFF));
     }
 
     private void save() {

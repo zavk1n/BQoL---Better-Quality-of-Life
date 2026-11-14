@@ -7,10 +7,12 @@ import com.zavk1n.bqol.features.*;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
 import java.nio.charset.StandardCharsets;
@@ -20,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public final class LiteApiManager {
-    private static final Identifier CHANNEL = new Identifier("liteapi", "feature-control");
+    private static final Identifier CHANNEL = Identifier.of("liteapi", "feature-control");
     private static final String CLIENT_ID = "bqol";
     private static final Gson GSON = new GsonBuilder()
         .registerTypeAdapter(CheckFeaturesRequest.class, new FeatureCheckerSerializer())
@@ -37,7 +39,6 @@ public final class LiteApiManager {
             "better_movement",
 
             "better_movement_default",
-            "better_movement_pvp",
             "better_movement_stair_up",
             "better_movement_water_sprint",
             "better_movement_scaffold",
@@ -47,7 +48,7 @@ public final class LiteApiManager {
 
             "better_rct_holyworld",
             "better_rct_reallyworld",
-            "betetr_rct_faketime",
+            "better_rct_faketime",
 
             /// Better Sounds
             "better_sounds",
@@ -129,6 +130,16 @@ public final class LiteApiManager {
             "better_particles_shulkers",
             "better_particles_totems",
 
+            /// Better Liquid
+            "better_liquid",
+
+            "better_liquid_water_color",
+            "better_liquid_lava_color",
+            "better_liquid_water_transparency",
+            "better_liquid_lava_transparency",
+            "better_liquid_water_color_intensity",
+            "better_liquid_lava_color_intensity",
+
             /// Better Fog
             "better_fog",
 
@@ -157,14 +168,36 @@ public final class LiteApiManager {
     private static long lastRequestTime = 0;
     private static final long RATE_LIMIT_MS = 10_000;
 
-    public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(CHANNEL,
-                (MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) -> {
+    private record LiteApiPayload(byte[] data) implements CustomPayload {
+
+        private static final Id<LiteApiPayload> ID =
+            new Id<>(CHANNEL);
+
+        private static final PacketCodec<RegistryByteBuf, LiteApiPayload> CODEC =
+            PacketCodec.of(
+                (payload, buf) -> buf.writeByteArray(payload.data()), buf -> {
                     byte[] bytes = new byte[buf.readableBytes()];
                     buf.readBytes(bytes);
-                    String json = new String(bytes, StandardCharsets.UTF_8);
-                    client.execute(() -> handleResponse(json));
-                });
+                    return new LiteApiPayload(bytes);
+                }
+            );
+
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return ID;
+        }
+    }
+
+    public static void register() {
+        PayloadTypeRegistry.playC2S().register(LiteApiPayload.ID, LiteApiPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(LiteApiPayload.ID, LiteApiPayload.CODEC);
+
+        ClientPlayNetworking.registerGlobalReceiver(LiteApiPayload.ID, (payload, context) -> {
+            String json = new String(payload.data(), StandardCharsets.UTF_8);
+            context.client().execute(() -> handleResponse(json));
+        });
+
+        BQoL.LOGGER.info("LiteApi: feature-control payload registered");
     }
 
     public static CompletableFuture<CheckFeaturesResponse> sendRequest() {
@@ -200,7 +233,11 @@ public final class LiteApiManager {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeBytes(json.getBytes(StandardCharsets.UTF_8));
 
-        ClientPlayNetworking.send(CHANNEL, buf);
+        byte[] bytes = new byte[buf.readableBytes()];
+
+        buf.readBytes(bytes);
+
+        ClientPlayNetworking.send(new LiteApiPayload(bytes));
 
         lastRequestTime = System.currentTimeMillis();
 
@@ -308,8 +345,6 @@ public final class LiteApiManager {
             } else { BQoL.LOGGER.info("LiteApi: not received responce :(");
             }
 
-            future.complete(response);
-
         } catch (JsonParseException e) {
             BQoL.LOGGER.warn("LiteApi: failed to parse response: {}", e.getMessage());
         } catch (Exception e) {
@@ -345,8 +380,7 @@ public final class LiteApiManager {
         /// Better Movement
         if (isFeatureBlocked("better_movement")) config.setBetterMovementEnabled(false);
 
-        if (isFeatureBlocked("better_movement_default")) config.setBetterMovementDefaultMode(false);
-        if (isFeatureBlocked("better_movement_pvp")) config.setBetterMovementPvPMode(false);
+        if (isFeatureBlocked("better_movement_default")) config.setBetterMovementDefault(false);
         if (isFeatureBlocked("better_movement_stair_up")) config.setBetterMovementStairUp(false);
         if (isFeatureBlocked("better_movement_water_sprint")) config.setBetterMovementWaterSprint(false);
         if (isFeatureBlocked("better_movement_scaffold")) config.setBetterMovementScaffold(false);
@@ -473,6 +507,20 @@ public final class LiteApiManager {
         if (isFeatureBlocked("better_particles_totems")) config.setBetterParticlesShulkersEnabled(false);
 
         BetterParticles.refreshBlockedStatus();
+
+        /// Better Liquid
+        if (isFeatureBlocked("better_liquid")) config.setBetterLiquidEnabled(false);
+
+        if (isFeatureBlocked("better_liquid_water_color")) config.setBetterLiquidWaterColorEnabled(false);
+        if (isFeatureBlocked("better_liquid_lava_color")) config.setBetterLiquidLavaColorEnabled(false);
+
+        if (isFeatureBlocked("better_liquid_water_transparency")) config.setBetterLiquidWaterTransparencyEnabled(false);
+        if (isFeatureBlocked("better_liquid_lava_transparency")) config.setBetterLiquidLavaTransparencyEnabled(false);
+
+        if (isFeatureBlocked("better_liquid_water_color_intensity")) config.setBetterLiquidWaterColorIntensityEnabled(false);
+        if (isFeatureBlocked("better_liquid_lava_color_intensity")) config.setBetterLiquidLavaColorIntensityEnabled(false);
+
+        BetterLiquid.refreshBlockedStatus();
 
         /// Better Fog
         if (isFeatureBlocked("better_fog")) {

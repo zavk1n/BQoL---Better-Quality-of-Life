@@ -11,6 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
@@ -26,7 +27,6 @@ import java.util.regex.Pattern;
 
 @Environment(EnvType.CLIENT)
 public class MineHelperController {
-
     public enum Mode {
         DEFAULT("default"),
         NETHER("nether");
@@ -98,20 +98,12 @@ public class MineHelperController {
         double score
     ) {}
 
-    private static final int BIG_X1 = -189;
-    private static final int BIG_Y1 = 63;
-    private static final int BIG_Z1 = -195;
-
-    private static final int BIG_X2 = -117;
-    private static final int BIG_Y2 = 50;
-    private static final int BIG_Z2 = -120;
-
     private static final int PLAYER_X1 = -189;
     private static final int PLAYER_Y1 = 62;
     private static final int PLAYER_Z1 = -195;
 
     private static final int PLAYER_X2 = -117;
-    private static final int PLAYER_Y2 = 51;
+    private static final int PLAYER_Y2 = 50;
     private static final int PLAYER_Z2 = -123;
 
     private static final int DEFAULT_FILL_X1 = -174;
@@ -140,6 +132,38 @@ public class MineHelperController {
 
     private static final double HOLOGRAM_RADIUS = 2.5D;
 
+    private static final Box PLAYER_AREA = new Box(
+        Math.min(PLAYER_X1, PLAYER_X2),
+        Math.min(PLAYER_Y1, PLAYER_Y2),
+        Math.min(PLAYER_Z1, PLAYER_Z2),
+        Math.max(PLAYER_X1, PLAYER_X2) + 1.0D,
+        Math.max(PLAYER_Y1, PLAYER_Y2) + 1.0D,
+        Math.max(PLAYER_Z1, PLAYER_Z2) + 1.0D
+    );
+
+    private static final Box DEFAULT_HOLOGRAM_BOX = new Box(
+        DEFAULT_HOLOGRAM_X - HOLOGRAM_RADIUS,
+        DEFAULT_HOLOGRAM_Y - HOLOGRAM_RADIUS,
+        DEFAULT_HOLOGRAM_Z - HOLOGRAM_RADIUS,
+        DEFAULT_HOLOGRAM_X + HOLOGRAM_RADIUS,
+        DEFAULT_HOLOGRAM_Y + HOLOGRAM_RADIUS,
+        DEFAULT_HOLOGRAM_Z + HOLOGRAM_RADIUS
+    );
+
+    private static final Box NETHER_HOLOGRAM_BOX = new Box(
+        NETHER_HOLOGRAM_X - HOLOGRAM_RADIUS,
+        NETHER_HOLOGRAM_Y - HOLOGRAM_RADIUS,
+        NETHER_HOLOGRAM_Z - HOLOGRAM_RADIUS,
+        NETHER_HOLOGRAM_X + HOLOGRAM_RADIUS,
+        NETHER_HOLOGRAM_Y + HOLOGRAM_RADIUS,
+        NETHER_HOLOGRAM_Z + HOLOGRAM_RADIUS
+    );
+
+    private static final Pattern COLOR_CODE_PATTERN = Pattern.compile("§[0-9a-fk-or]");
+    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
+    private static final String CURRENT_MINE_LABEL = normalize("Текущая шахта:");
+    private static final Comparator<HologramLine> HOLOGRAM_LINE_ORDER = Comparator.comparingDouble(HologramLine::y).reversed();
+
     private static final Pattern TIME_PATTERN = Pattern.compile(
         "(\\d+)\\s*мин\\.?\\s*(\\d+)\\s*сек\\.?",
         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
@@ -157,6 +181,7 @@ public class MineHelperController {
 
     private State state = State.IDLE;
     private Mode analyzeMode = Mode.DEFAULT;
+
     private int stateTicks;
 
     public boolean isBusy() {
@@ -332,9 +357,9 @@ public class MineHelperController {
         if (mc.player != null) {
             mc.inGameHud.setTitleTicks(10, 60, 15);
             mc.inGameHud.setTitle(Text.literal("0.0/10")
-                    .styled(style -> style
-                        .withColor(0xFF3333)
-                        .withBold(true))
+                .styled(style -> style
+                    .withColor(0xFF3333)
+                    .withBold(true))
             );
         }
 
@@ -353,12 +378,9 @@ public class MineHelperController {
         double y = player.getY();
         double z = player.getZ();
 
-        return x >= Math.min(BIG_X1, BIG_X2)
-            && x <= Math.max(BIG_X1, BIG_X2) + 1
-            && y >= Math.min(BIG_Y1, BIG_Y2)
-            && y < Math.max(BIG_Y1, BIG_Y2) + 1
-            && z >= Math.min(BIG_Z1, BIG_Z2)
-            && z < Math.max(BIG_Z1, BIG_Z2) + 1;
+        return x >= -189.0D && x <= -116.0D
+            && y >= 50.0D && y < 64.0D
+            && z >= -195.0D && z < -119.0D;
     }
 
     private int countNetheritePickaxePlayers(MinecraftClient mc) {
@@ -366,20 +388,10 @@ public class MineHelperController {
             return 0;
         }
 
-        Box area = new Box(
-            Math.min(PLAYER_X1, PLAYER_X2),
-            Math.min(PLAYER_Y1, PLAYER_Y2),
-            Math.min(PLAYER_Z1, PLAYER_Z2),
-
-            Math.max(PLAYER_X1, PLAYER_X2) + 1.0D,
-            Math.max(PLAYER_Y1, PLAYER_Y2) + 1.0D,
-            Math.max(PLAYER_Z1, PLAYER_Z2) + 1.0D
-        );
-
         int count = 0;
 
         for (PlayerEntity player : mc.world.getPlayers()) {
-            if (player == mc.player || !area.contains(player.getX(), player.getY(), player.getZ())) {
+            if (player == mc.player || !PLAYER_AREA.contains(player.getX(), player.getY(), player.getZ())) {
                 continue;
             }
 
@@ -392,19 +404,18 @@ public class MineHelperController {
     }
 
     private boolean hasNetheritePickaxe(PlayerEntity player) {
-        for (ItemStack stack : player.getInventory().main) {
-            if (!stack.isEmpty() && stack.getItem() == Items.NETHERITE_PICKAXE) {
+        for (int i = 0; i < PlayerInventory.MAIN_SIZE; i++) {
+            ItemStack stack = player.getInventory().getStack(i);
+
+            if (stack.isOf(Items.NETHERITE_PICKAXE)) {
                 return true;
             }
         }
 
-        for (ItemStack stack : player.getInventory().offHand) {
-            if (!stack.isEmpty() && stack.getItem() == Items.NETHERITE_PICKAXE) {
-                return true;
-            }
-        }
+        ItemStack offHand = player.getInventory()
+            .getStack(PlayerInventory.OFF_HAND_SLOT);
 
-        return false;
+        return offHand.isOf(Items.NETHERITE_PICKAXE);
     }
 
     private double getCompetitionScore(int players) {
@@ -447,7 +458,7 @@ public class MineHelperController {
         int minZ = Math.min(z1, z2);
         int maxZ = Math.max(z1, z2);
 
-        long total = 0L;
+        long total = (long) (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
         long filled = 0L;
 
         BlockPos.Mutable pos = new BlockPos.Mutable();
@@ -458,8 +469,6 @@ public class MineHelperController {
                     pos.set(x, y, z);
 
                     BlockState blockState = mc.world.getBlockState(pos);
-
-                    total++;
 
                     if (!blockState.isAir()) {
                         filled++;
@@ -490,7 +499,7 @@ public class MineHelperController {
             return null;
         }
 
-        lines.sort(Comparator.comparingDouble(HologramLine::y).reversed());
+        lines.sort(HOLOGRAM_LINE_ORDER);
 
         String currentMine = null;
         TimeInfo time = null;
@@ -498,7 +507,7 @@ public class MineHelperController {
         for (int i = 0; i < lines.size(); i++) {
             String normalized = normalize(lines.get(i).text());
 
-            if (normalized.contains(normalize("Текущая шахта:"))) {
+            if (normalized.contains(CURRENT_MINE_LABEL)) {
                 if (i + 1 < lines.size()) {
                     currentMine = lines.get(i + 1).text();
                 }
@@ -531,28 +540,7 @@ public class MineHelperController {
             return List.of();
         }
 
-        double centerX;
-        double centerY;
-        double centerZ;
-
-        if (analyzeMode == Mode.DEFAULT) {
-            centerX = DEFAULT_HOLOGRAM_X;
-            centerY = DEFAULT_HOLOGRAM_Y;
-            centerZ = DEFAULT_HOLOGRAM_Z;
-        } else {
-            centerX = NETHER_HOLOGRAM_X;
-            centerY = NETHER_HOLOGRAM_Y;
-            centerZ = NETHER_HOLOGRAM_Z;
-        }
-
-        Box box = new Box(
-            centerX - HOLOGRAM_RADIUS,
-            centerY - HOLOGRAM_RADIUS,
-            centerZ - HOLOGRAM_RADIUS,
-            centerX + HOLOGRAM_RADIUS,
-            centerY + HOLOGRAM_RADIUS,
-            centerZ + HOLOGRAM_RADIUS
-        );
+        Box box = analyzeMode == Mode.DEFAULT ? DEFAULT_HOLOGRAM_BOX : NETHER_HOLOGRAM_BOX;
 
         List<HologramLine> result = new ArrayList<>();
 
@@ -727,10 +715,11 @@ public class MineHelperController {
             return "";
         }
 
-        return text
-            .replaceAll("§[0-9a-fk-or]", "")
-            .replace('\u00A0', ' ')
-            .replaceAll("\\s+", " ")
+        return WHITESPACE_PATTERN.matcher(
+                COLOR_CODE_PATTERN.matcher(text).replaceAll("")
+                    .replace('\u00A0', ' ')
+            )
+            .replaceAll(" ")
             .trim()
             .toLowerCase(Locale.ROOT);
     }

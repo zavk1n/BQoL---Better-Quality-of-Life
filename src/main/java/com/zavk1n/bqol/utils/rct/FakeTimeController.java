@@ -35,8 +35,17 @@ public class FakeTimeController {
 
     private static final int HUB_TIMEOUT_TICKS = 100;
     private static final int SUCCESS_DELAY_TICKS = 30;
+    private static final int INVENTORY_SIZE = 9;
 
     public int operationTimeoutTicks = 500;
+    public String lastNumber;
+
+    private int stateTicks;
+    private int operationTicks;
+    private int finishDelayTicks;
+
+    private String targetNumber;
+    private String targetServerName;
 
     private State state = State.IDLE;
 
@@ -47,15 +56,6 @@ public class FakeTimeController {
         WAITING_FINISH
     }
 
-    private int stateTicks;
-    private int operationTicks;
-    private int finishDelayTicks;
-
-    private String targetNumber;
-    private String targetServerName;
-
-    public String lastNumber;
-
     public boolean isBusy() {
         return state != State.IDLE;
     }
@@ -63,13 +63,11 @@ public class FakeTimeController {
     public void start(String number) {
         MinecraftClient mc = MinecraftClient.getInstance();
 
-        if (mc.player == null
-            || mc.getNetworkHandler() == null
-            || isBusy()) {
+        if (mc.player == null || mc.getNetworkHandler() == null || isBusy()) {
             return;
         }
 
-        int value;
+        final int value;
 
         try {
             value = Integer.parseInt(number);
@@ -88,7 +86,6 @@ public class FakeTimeController {
         targetNumber = Integer.toString(value);
         targetServerName = serverName;
 
-        stateTicks = 0;
         operationTicks = 0;
         finishDelayTicks = 0;
 
@@ -123,13 +120,14 @@ public class FakeTimeController {
             return;
         }
 
-        ++stateTicks;
+        stateTicks++;
 
         switch (state) {
             case TRAVELLING_TO_HUB -> waitForHub(mc);
             case WAITING_MENU -> waitForMenu(mc);
             case WAITING_FINISH -> waitForFinish(mc);
-            case IDLE -> {}
+            case IDLE -> {
+            }
         }
     }
 
@@ -150,22 +148,23 @@ public class FakeTimeController {
     }
 
     private static OptionalInt findHubHoneycomb(MinecraftClient mc) {
-        if (mc.player == null) {
+        ClientPlayerEntity player = mc.player;
+
+        if (player == null) {
             return OptionalInt.empty();
         }
 
-        for (int i = 0; i < 9; i++) {
-            ItemStack stack = mc.player.getInventory().getStack(i);
+        var inventory = player.getInventory();
+        int size = inventory.size();
 
-            if (isServerHoneycomb(stack)) {
+        for (int i = 0; i < Math.min(INVENTORY_SIZE, size); i++) {
+            if (isServerHoneycomb(inventory.getStack(i))) {
                 return OptionalInt.of(i);
             }
         }
 
-        for (int i = 9; i < mc.player.getInventory().main.size(); i++) {
-            ItemStack stack = mc.player.getInventory().main.get(i);
-
-            if (isServerHoneycomb(stack)) {
+        for (int i = INVENTORY_SIZE; i < size; i++) {
+            if (isServerHoneycomb(inventory.getStack(i))) {
                 return OptionalInt.of(i);
             }
         }
@@ -174,38 +173,30 @@ public class FakeTimeController {
     }
 
     private static boolean isServerHoneycomb(ItemStack stack) {
-        if (stack == null
-            || stack.isEmpty()
-            || !stack.isOf(Items.HONEYCOMB)) {
-            return false;
-        }
-
-        String name = normalize(stack.getName().getString());
-
-        return name.contains(normalize("Сервера"));
+        return !stack.isEmpty()
+            && stack.isOf(Items.HONEYCOMB)
+            && normalize(stack.getName().getString()).contains("сервера");
     }
 
     private static boolean openHoneycomb(MinecraftClient mc, int inventorySlot) {
-        if (mc.player == null || mc.interactionManager == null) {
+        ClientPlayerEntity player = mc.player;
+
+        if (player == null || mc.interactionManager == null) {
             return false;
         }
 
-        ClientPlayerEntity player = mc.player;
-
         int hotbarSlot;
 
-        if (inventorySlot >= 0 && inventorySlot < 9) {
+        if (inventorySlot < INVENTORY_SIZE) {
             hotbarSlot = inventorySlot;
         } else {
-            hotbarSlot = player.getInventory().selectedSlot;
+            hotbarSlot = player.getInventory().getSelectedSlot();
 
             mc.interactionManager.clickSlot(player.playerScreenHandler.syncId, inventorySlot, hotbarSlot, SlotActionType.SWAP, player);
         }
 
-        player.getInventory().selectedSlot = hotbarSlot;
-
+        player.getInventory().setSelectedSlot(hotbarSlot);
         mc.interactionManager.interactItem(player, Hand.MAIN_HAND);
-
         player.swingHand(Hand.MAIN_HAND);
 
         return true;
@@ -219,16 +210,18 @@ public class FakeTimeController {
         }
 
         ScreenHandler menu = screen.getScreenHandler();
-        OptionalInt slot = findServerItem(menu);
+        OptionalInt slot = findServerItem(mc, menu);
 
-        if (slot.isEmpty() || !clickSlot(mc, menu, slot.getAsInt())) {
+        if (slot.isEmpty()) {
             return;
         }
 
-        switchTo(State.WAITING_FINISH);
+        if (clickSlot(mc, menu, slot.getAsInt())) {
+            switchTo(State.WAITING_FINISH);
+        }
     }
 
-    private OptionalInt findServerItem(ScreenHandler menu) {
+    private OptionalInt findServerItem(MinecraftClient mc, ScreenHandler menu) {
         if (menu == null || targetServerName == null) {
             return OptionalInt.empty();
         }
@@ -248,9 +241,7 @@ public class FakeTimeController {
                 return OptionalInt.of(slot.id);
             }
 
-            String tooltip = getTooltipText(stack);
-
-            if (containsServerName(tooltip, expected)) {
+            if (containsServerName(getTooltipText(mc, stack), expected)) {
                 return OptionalInt.of(slot.id);
             }
         }
@@ -258,27 +249,25 @@ public class FakeTimeController {
         return OptionalInt.empty();
     }
 
-    private static String getTooltipText(ItemStack stack) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        if (stack == null || stack.isEmpty() || mc.player == null) {
+    private static String getTooltipText(MinecraftClient mc, ItemStack stack) {
+        if (stack.isEmpty() || mc.player == null) {
             return "";
         }
 
         StringBuilder result = new StringBuilder();
 
-        for (Text line : stack.getTooltip(mc.player, net.minecraft.client.item.TooltipContext.BASIC)) {
-            result.append(' ')
-                .append(normalize(line.getString()));
+        for (Text line : stack.getTooltip(net.minecraft.item.Item.TooltipContext.DEFAULT, mc.player, net.minecraft.item.tooltip.TooltipType.BASIC)) {
+            result.append(normalize(line.getString()));
         }
 
         return result.toString();
     }
 
     private void waitForFinish(MinecraftClient mc) {
-        if (!BetterRCT.getInstance().isOnServer(targetNumber)) {
-            finishDelayTicks = 0;
+        BetterRCT betterRCT = BetterRCT.getInstance();
 
+        if (betterRCT == null || !betterRCT.isOnServer(targetNumber)) {
+            finishDelayTicks = 0;
             return;
         }
 
@@ -289,10 +278,10 @@ public class FakeTimeController {
         lastNumber = targetNumber;
 
         Text message = Text.literal("Я успешно зашел на сервер - ")
-            .styled(style -> style.withColor(BetterRCT.getInstance().MESSAGE_COLOR))
+            .styled(style -> style.withColor(betterRCT.MESSAGE_COLOR))
             .append(Text.literal(targetServerName)
                 .styled(style -> style
-                    .withColor(BetterRCT.getInstance().MESSAGE_COLOR)
+                    .withColor(betterRCT.MESSAGE_COLOR)
                     .withBold(true)));
 
         closeMenu(mc);
@@ -301,7 +290,7 @@ public class FakeTimeController {
     }
 
     private static boolean containsServerName(String text, String expected) {
-        if (text == null || expected == null) {
+        if (text == null || expected == null || expected.isEmpty()) {
             return false;
         }
 
@@ -322,18 +311,15 @@ public class FakeTimeController {
 
     private static String getServerName(int number) {
         return switch (number) {
-
             case 1 -> "СолоЛайт #1";
             case 2 -> "ДуоЛайт #2";
             case 3 -> "КланЛайт #3";
-
             default -> null;
         };
     }
 
-
     private static String normalize(String text) {
-        if (text == null) {
+        if (text == null || text.isEmpty()) {
             return "";
         }
 
@@ -343,17 +329,11 @@ public class FakeTimeController {
     }
 
     private static HandledScreen<?> getOpenMenu(MinecraftClient mc) {
-        if (mc.currentScreen instanceof HandledScreen<?> screen) {
-            return screen;
-        }
-
-        return null;
+        return mc.currentScreen instanceof HandledScreen<?> screen ? screen : null;
     }
 
     private static boolean clickSlot(MinecraftClient mc, ScreenHandler menu, int slot) {
-        if (mc.interactionManager == null
-            || mc.player == null
-            || menu == null) {
+        if (mc.interactionManager == null || mc.player == null || menu == null) {
             return false;
         }
 
@@ -365,7 +345,6 @@ public class FakeTimeController {
     private static void closeMenu(MinecraftClient mc) {
         if (mc.player != null && getOpenMenu(mc) != null) {
             mc.player.closeHandledScreen();
-
             mc.setScreen(null);
         }
     }
@@ -382,21 +361,17 @@ public class FakeTimeController {
     }
 
     public void handleIncomingMessageInternal(String message) {
-        if (message == null || !isBusy()) {
-            return;
-        }
-
-        if (message.contains("Не удалось подключиться к серверу")) {
+        if (message != null
+            && isBusy()
+            && message.contains("Не удалось подключиться к серверу")) {
             stop();
         }
     }
 
     public static void handleIncomingMessage(String message) {
-        if (instance == null) {
-            return;
+        if (instance != null) {
+            instance.handleIncomingMessageInternal(message);
         }
-
-        instance.handleIncomingMessageInternal(message);
     }
 
     public void stop() {
@@ -408,11 +383,13 @@ public class FakeTimeController {
 
         closeMenu(mc);
 
+        BetterRCT betterRCT = BetterRCT.getInstance();
+        int color = betterRCT != null ? betterRCT.MESSAGE_COLOR : 0xFFC7C2FF;
+
         Chat.info(mc, Text.literal("Скрипт RCT был остановлен.")
             .styled(style -> style
-                .withColor(BetterRCT.getInstance().MESSAGE_COLOR)
-                .withBold(true))
-        );
+                .withColor(color)
+                .withBold(true)));
 
         reset();
     }
@@ -420,11 +397,14 @@ public class FakeTimeController {
     public void fail(MinecraftClient mc, String text) {
         closeMenu(mc);
 
+        BetterRCT betterRCT = BetterRCT.getInstance();
+
+        int color = betterRCT != null ? betterRCT.MESSAGE_COLOR : 0xFFC7C2FF;
+
         Chat.info(mc, Text.literal(text)
             .styled(style -> style
-                .withColor(BetterRCT.getInstance().MESSAGE_COLOR)
-                .withBold(true))
-        );
+                .withColor(color)
+                .withBold(true)));
 
         reset();
     }

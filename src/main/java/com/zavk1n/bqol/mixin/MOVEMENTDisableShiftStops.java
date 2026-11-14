@@ -12,16 +12,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
-public class MOVEMENTDisableShiftStops {
+public abstract class MOVEMENTDisableShiftStops {
 
-    @Inject( method = "adjustMovementForSneaking", at = @At("HEAD"), cancellable = true )
-    private void bqol$disableSneakEdgeRestriction( Vec3d movement, MovementType type, CallbackInfoReturnable<Vec3d> cir ) {
+    @Inject(method = "adjustMovementForSneaking", at = @At("HEAD"), cancellable = true)
+    private void bqol$disableSneakEdgeRestriction(Vec3d movement, MovementType type, CallbackInfoReturnable<Vec3d> cir) {
         PlayerEntity player = (PlayerEntity) (Object) this;
 
-        if (!BetterMovement.shouldDisableWaterSprintShiftStops(player)) {
-            return;
+        if (BetterMovement.shouldDisableWaterSprintShiftStops(player)) {
+            cir.setReturnValue(movement);
         }
-
-        cir.setReturnValue(movement);
     }
 }

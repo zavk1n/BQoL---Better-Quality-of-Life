@@ -1,45 +1,66 @@
 package com.zavk1n.bqol.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.zavk1n.bqol.features.BetterFog;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BackgroundRenderer;
+import net.minecraft.block.enums.CameraSubmersionType;
 import net.minecraft.client.render.Camera;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.render.fog.FogRenderer;
+import net.minecraft.client.world.ClientWorld;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-@Mixin(BackgroundRenderer.class)
+@Mixin(FogRenderer.class)
 public abstract class FOGRenderFogDistance {
 
-    @Inject(method = "applyFog", at = @At("TAIL"))
-    private static void bqol$customFogDistance(Camera camera, BackgroundRenderer.FogType fogType, float viewDistance, boolean thickFog, float tickDelta, CallbackInfo ci) {
-        MinecraftClient client = MinecraftClient.getInstance();
-
-        if (client.player == null
-            || client.world == null
-            || fogType == BackgroundRenderer.FogType.FOG_SKY
-            || !BetterFog.isEnabled()
-            || BetterFog.isNoFogEnabled()
-            || !BetterFog.isFogDistanceEnabled()
-            || bqol$hasBlockingEffect(client.player)) {
+    @ModifyArgs(
+        method = "applyFog(Lnet/minecraft/client/render/Camera;ILnet/minecraft/client/render/RenderTickCounter;FLnet/minecraft/client/world/ClientWorld;)Lorg/joml/Vector4f;",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/render/fog/FogRenderer;applyFog(Ljava/nio/ByteBuffer;ILorg/joml/Vector4f;FFFFFF)V"
+        )
+    )
+    private void bqol$modifyFog(Args args, Camera camera, int viewDistance, RenderTickCounter tickCounter, float tickDelta, ClientWorld world) {
+        if (!BetterFog.isEnabled()) {
             return;
         }
 
-        int chunks = Math.max(1, Math.min(32, BetterFog.getFogDistance()));
+        CameraSubmersionType submersion = camera.getSubmersionType();
 
-        float distance = chunks * 16.0F;
+        if (submersion == CameraSubmersionType.WATER
+            || submersion == CameraSubmersionType.LAVA
+            || submersion == CameraSubmersionType.POWDER_SNOW) {
+            return;
+        }
 
-        RenderSystem.setShaderFogStart(distance * 0.75F);
-        RenderSystem.setShaderFogEnd(distance);
-    }
+        if (BetterFog.isNoFogEnabled()) {
+            float noFog = Float.MAX_VALUE;
 
-    private static boolean bqol$hasBlockingEffect(LivingEntity entity) {
-        return (entity.hasStatusEffect(StatusEffects.BLINDNESS) && !BetterFog.isNoBlindnessEnabled()) || entity.hasStatusEffect(StatusEffects.DARKNESS);
+            args.set(3, noFog);
+            args.set(4, noFog);
+            args.set(5, noFog);
+            args.set(6, noFog);
+            args.set(7, noFog);
+            args.set(8, noFog);
+
+            return;
+        }
+
+        if (!BetterFog.isFogDistanceEnabled()) {
+            return;
+        }
+
+        float distance = BetterFog.getFogDistance() * 16.0F;
+
+        float start = distance * 0.75F;
+        float end = distance;
+
+        args.set(3, start);
+        args.set(4, end);
+        args.set(5, start);
+        args.set(6, end);
     }
 }

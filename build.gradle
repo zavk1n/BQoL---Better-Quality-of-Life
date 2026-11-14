@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.5-SNAPSHOT'
+    id 'fabric-loom' version '1.14.10'
     id 'maven-publish'
     id 'org.jetbrains.kotlin.jvm'
 }
@@ -27,7 +27,7 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    modImplementation files("libs/modmenu-17.0.0.jar")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
@@ -51,6 +51,8 @@ tasks.withType(JavaCompile).configureEach {
 
 java {
     withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
@@ -72,5 +74,5 @@ publishing {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }

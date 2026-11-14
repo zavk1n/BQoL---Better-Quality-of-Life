@@ -6,10 +6,10 @@ import com.zavk1n.bqol.client.screen.BQoLConfigScreen;
 
 import net.minecraft.client.gui.screen.Screen;
 
-public class ModMenuIntegration implements ModMenuApi {
+public final class ModMenuIntegration implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<Screen> getModConfigScreenFactory() {
-        return parent -> new BQoLConfigScreen(parent);
+        return BQoLConfigScreen::new;
     }
 }

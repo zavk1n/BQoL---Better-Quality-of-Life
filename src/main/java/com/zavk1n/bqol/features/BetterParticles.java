@@ -18,11 +18,8 @@ import net.minecraft.world.chunk.WorldChunk;
 
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -48,7 +45,9 @@ public class BetterParticles {
     }
 
     private static final Random random = new Random();
-    private final Map<Vector3f, DustParticleEffect> EFFECT_CACHE = new HashMap<>();
+
+    private final Map<Integer, DustParticleEffect> EFFECT_CACHE = new HashMap<>(16);
+
     private static final EnumMap<DyeColor, Vector3f> PARTICLE_COLORS = new EnumMap<>(DyeColor.class);
 
     static {
@@ -104,7 +103,7 @@ public class BetterParticles {
     }
 
     public static void setEnabled(boolean enabled) {
-        getInstance().setEnabledInternal(enabled);
+        instance.setEnabledInternal(enabled);
     }
 
     public static boolean isShulkersEnabled() {
@@ -112,7 +111,7 @@ public class BetterParticles {
     }
 
     public static void setShulkersEnabled(boolean enabled) {
-        getInstance().setShulkersEnabledInternal(enabled);
+        instance.setShulkersEnabledInternal(enabled);
     }
 
     public static boolean shouldCancelShulkersVanillaBreaking() {
@@ -135,7 +134,7 @@ public class BetterParticles {
     }
 
     public static void setTotemsEnabled(boolean enabled) {
-        getInstance().setTotemsEnabledInternal(enabled);
+        instance.setTotemsEnabledInternal(enabled);
     }
 
     public static boolean isTotemsColorEnabled() {
@@ -144,7 +143,7 @@ public class BetterParticles {
     }
 
     public static void setTotemsColorEnabled(boolean enabled) {
-        getInstance().setTotemsColorEnabledInternal(enabled);
+        instance.setTotemsColorEnabledInternal(enabled);
     }
 
     public static boolean isTotemsCountEnabled() {
@@ -153,7 +152,7 @@ public class BetterParticles {
     }
 
     public static void setTotemsCountEnabled(boolean enabled) {
-        getInstance().setTotemsCountEnabledInternal(enabled);
+        instance.setTotemsCountEnabledInternal(enabled);
     }
 
     public static int getTotemsColor() {
@@ -170,6 +169,64 @@ public class BetterParticles {
 
     public static int getTotemsCountMode() {
         return instance != null ? instance.config.getBetterParticlesTotemsCountMode() : 1;
+    }
+
+    private void refreshBlockedStatusInternal() {
+        blocked.main = LiteApiManager.isFeatureBlocked("better_particles");
+        blocked.shulkers = LiteApiManager.isFeatureBlocked("better_particles_shulkers");
+        blocked.totems = LiteApiManager.isFeatureBlocked("better_particles_totems");
+    }
+
+    private boolean isEnabledInternal() {
+        return config.isBetterParticlesEnabled() && !blocked.main;
+    }
+
+    private void setEnabledInternal(boolean enabled) {
+        config.setBetterParticlesEnabled(enabled);
+        refreshBlockedStatusInternal();
+    }
+
+    private boolean isShulkersEnabledInternal() {
+        return isEnabledInternal()
+            && config.isBetterParticlesShulkersEnabled()
+            && !blocked.shulkers;
+    }
+
+    private void setShulkersEnabledInternal(boolean enabled) {
+        config.setBetterParticlesShulkersEnabled(enabled);
+    }
+
+    private void setTotemsEnabledInternal(boolean enabled) {
+        config.setBetterParticlesTotemsEnabled(enabled);
+    }
+
+    private void setTotemsColorEnabledInternal(boolean enabled) {
+        config.setBetterParticlesTotemsColorEnabled(enabled);
+    }
+
+    private void setTotemsCountEnabledInternal(boolean enabled) {
+        config.setBetterParticlesTotemsCountEnabled(enabled);
+    }
+
+    private boolean shouldCancelShulkersVanillaBreakingInternal() {
+        return isShulkersEnabledInternal()
+            && config.isBetterParticlesShulkersVanillaBreakingEnabled();
+    }
+
+    private boolean spawnShulkersConstantParticlesInternal() {
+        return isShulkersEnabledInternal()
+            && config.isBetterParticlesShulkersConstantEnabled();
+    }
+
+    private boolean spawnShulkersBreakingParticlesInternal() {
+        return isShulkersEnabledInternal()
+            && config.isBetterParticlesShulkersBreakingEnabled();
+    }
+
+    private boolean isTotemsEnabledInternal() {
+        return isEnabledInternal()
+            && config.isBetterParticlesTotemsEnabled()
+            && !blocked.totems;
     }
 
     public static float getTotemsParticleMultiplier() {
@@ -208,66 +265,6 @@ public class BetterParticles {
         return (red << 16) | (green << 8) | blue;
     }
 
-    private void refreshBlockedStatusInternal() {
-        blocked.main = LiteApiManager.isFeatureBlocked("better_particles");
-        blocked.shulkers = LiteApiManager.isFeatureBlocked("better_particles_shulkers");
-        blocked.totems = LiteApiManager.isFeatureBlocked("better_particles_totems");
-    }
-
-    private boolean isEnabledInternal() {
-        return config.isBetterParticlesEnabled() && !blocked.main;
-    }
-
-    private void setEnabledInternal(boolean enabled) {
-        config.setBetterParticlesEnabled(enabled);
-        refreshBlockedStatusInternal();
-    }
-
-    private boolean isShulkersEnabledInternal() {
-        return isEnabledInternal()
-            && config.isBetterParticlesShulkersEnabled()
-            && !blocked.shulkers;
-    }
-
-    private void setShulkersEnabledInternal(boolean enabled) {
-        config.setBetterParticlesShulkersEnabled(enabled);
-        refreshBlockedStatusInternal();
-    }
-
-    private boolean shouldCancelShulkersVanillaBreakingInternal() {
-        return isShulkersEnabledInternal()
-            && config.isBetterParticlesShulkersVanillaBreakingEnabled();
-    }
-
-    private boolean spawnShulkersConstantParticlesInternal() {
-        return isShulkersEnabledInternal()
-            && config.isBetterParticlesShulkersConstantEnabled();
-    }
-
-    private boolean spawnShulkersBreakingParticlesInternal() {
-        return isShulkersEnabledInternal()
-            && config.isBetterParticlesShulkersBreakingEnabled();
-    }
-
-    private boolean isTotemsEnabledInternal() {
-        return isEnabledInternal()
-            && config.isBetterParticlesTotemsEnabled()
-            && !blocked.totems;
-    }
-
-    private void setTotemsEnabledInternal(boolean enabled) {
-        config.setBetterParticlesTotemsEnabled(enabled);
-        refreshBlockedStatusInternal();
-    }
-
-    private void setTotemsColorEnabledInternal(boolean enabled) {
-        config.setBetterParticlesTotemsColorEnabled(enabled);
-    }
-
-    private void setTotemsCountEnabledInternal(boolean enabled) {
-        config.setBetterParticlesTotemsCountEnabled(enabled);
-    }
-
     public static void onTick() {
         if (instance == null
             || !isEnabled()
@@ -302,6 +299,11 @@ public class BetterParticles {
         int playerChunkX = client.player.getBlockX() >> 4;
         int playerChunkZ = client.player.getBlockZ() >> 4;
 
+        Vec3d cameraPos = client.gameRenderer.getCamera().getCameraPos();
+
+        Vector3f look = new Vector3f(0.0F, 0.0F, 1.0F)
+            .rotate(client.gameRenderer.getCamera().getRotation());
+
         for (int chunkX = playerChunkX - 1; chunkX <= playerChunkX + 1; chunkX++) {
             for (int chunkZ = playerChunkZ - 1; chunkZ <= playerChunkZ + 1; chunkZ++) {
                 if (!world.isChunkLoaded(chunkX, chunkZ)) {
@@ -309,28 +311,37 @@ public class BetterParticles {
                 }
 
                 WorldChunk chunk = world.getChunk(chunkX, chunkZ);
-                List<BlockPos> shulkers = getShulkers(chunk);
+                var blockEntities = chunk.getBlockEntities().values();
 
-                if (shulkers.isEmpty()) {
+                int shulkerCount = 0;
+
+                for (BlockEntity blockEntity : blockEntities) {
+                    if (blockEntity instanceof ShulkerBoxBlockEntity) {
+                        shulkerCount++;
+                    }
+                }
+
+                if (shulkerCount == 0) {
                     continue;
                 }
 
-                float multiplier = getParticleMultiplier(shulkers.size());
+                float multiplier = getParticleMultiplier(shulkerCount);
 
-                Iterator<BlockPos> iterator = shulkers.iterator();
+                for (BlockEntity blockEntity : blockEntities) {
+                    if (!(blockEntity instanceof ShulkerBoxBlockEntity)) {
+                        continue;
+                    }
 
-                while (iterator.hasNext()) {
-                    BlockPos pos = iterator.next();
+                    BlockPos pos = blockEntity.getPos();
                     BlockState state = world.getBlockState(pos);
 
                     if (!(state.getBlock() instanceof ShulkerBoxBlock)) {
-                        iterator.remove();
                         continue;
                     }
 
                     Vector3f color = resolveShulkersConstantColor(state, defaultColor, useDependence);
 
-                    spawnShulkersConstantParticles(world, pos, color, multiplier);
+                    spawnShulkersConstantParticles(world, pos, color, multiplier, cameraPos, look);
                 }
             }
         }
@@ -355,27 +366,14 @@ public class BetterParticles {
         return dyeColorToVector(box.getColor());
     }
 
-    private void spawnShulkersConstantParticles(ClientWorld world, BlockPos pos, Vector3f color, float multiplier) {
-        MinecraftClient client = mc();
-
-        if (world != client.world) {
-            return;
-        }
-
+    private void spawnShulkersConstantParticles(ClientWorld world, BlockPos pos, Vector3f color, float multiplier, Vec3d cameraPos, Vector3f look) {
         Vec3d center = Vec3d.ofCenter(pos);
-        Vec3d cameraPos = client.gameRenderer.getCamera().getPos();
 
-        if (center.squaredDistanceTo(cameraPos) > 256.0D * 256.0D) {
-            return;
-        }
+        double dx = center.x - cameraPos.x;
+        double dy = center.y - cameraPos.y;
+        double dz = center.z - cameraPos.z;
 
-        Vec3d toShulker = center.subtract(cameraPos).normalize();
-        Vector3f look = new Vector3f(0.0F, 0.0F, 1.0F)
-            .rotate(client.gameRenderer.getCamera().getRotation());
-
-        double dot = toShulker.x * look.x() + toShulker.y * look.y() + toShulker.z * look.z();
-
-        if (dot <= 0.0D) {
+        if (dx * dx + dy * dy + dz * dz > 256.0D * 256.0D) {
             return;
         }
 
@@ -385,14 +383,14 @@ public class BetterParticles {
         int count = Math.max(1, Math.round(baseCount * multiplier));
 
         for (int i = 0; i < count; i++) {
-            world.addParticle(
+            world.addParticleClient(
                 effect,
-                center.x + (random.nextDouble() - 0.5) * 1.2,
-                center.y + (random.nextDouble() - 0.5) * 1.2,
-                center.z + (random.nextDouble() - 0.5) * 1.2,
-                (random.nextDouble() - 0.5) * 0.04,
-                (random.nextDouble() - 0.5) * 0.04,
-                (random.nextDouble() - 0.5) * 0.04
+                center.x + (random.nextDouble() - 0.5D) * 1.2D,
+                center.y + (random.nextDouble() - 0.5D) * 1.2D,
+                center.z + (random.nextDouble() - 0.5D) * 1.2D,
+                (random.nextDouble() - 0.5D) * 0.04D,
+                (random.nextDouble() - 0.5D) * 0.04D,
+                (random.nextDouble() - 0.5D) * 0.04D
             );
         }
     }
@@ -403,7 +401,7 @@ public class BetterParticles {
         int count = 30 + random.nextInt(20);
 
         for (int i = 0; i < count; i++) {
-            world.addParticle(
+            world.addParticleClient(
                 effect,
                 center.x + (random.nextDouble() - 0.5) * 1.5,
                 center.y + (random.nextDouble() - 0.5) * 1.5 + 0.5,
@@ -429,22 +427,14 @@ public class BetterParticles {
         spawnShulkersBreakingParticles(world, Vec3d.ofCenter(pos), resolveShulkersBreakingColor(state));
     }
 
-    private List<BlockPos> getShulkers(WorldChunk chunk) {
-        List<BlockPos> result = new ArrayList<>();
-
-        for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
-            if (blockEntity instanceof ShulkerBoxBlockEntity) {
-                result.add(blockEntity.getPos().toImmutable());
-            }
-        }
-
-        return result;
-    }
-
     private DustParticleEffect getEffect(Vector3f color) {
-        Vector3f key = new Vector3f(color);
+        int red = Math.round(color.x() * 255.0F);
+        int green = Math.round(color.y() * 255.0F);
+        int blue = Math.round(color.z() * 255.0F);
 
-        return EFFECT_CACHE.computeIfAbsent(key, c -> new DustParticleEffect(new Vector3f(c), 1.2F));
+        int rgb = (red << 16) | (green << 8) | blue;
+
+        return EFFECT_CACHE.computeIfAbsent(rgb, key -> new DustParticleEffect(key, 1.2F));
     }
 
     private float getParticleMultiplier(int shulkerCount) {
@@ -477,12 +467,11 @@ public class BetterParticles {
 
     private Vector3f dyeColorToVector(DyeColor color) {
         if (color == null) {
-            return new Vector3f(DEFAULT_DYE_COLOR);
+            return DEFAULT_DYE_COLOR;
         }
 
         Vector3f result = PARTICLE_COLORS.get(color);
-        return result != null
-            ? new Vector3f(result)
-            : new Vector3f(DEFAULT_DYE_COLOR);
+
+        return result != null ? result : DEFAULT_DYE_COLOR;
     }
 }

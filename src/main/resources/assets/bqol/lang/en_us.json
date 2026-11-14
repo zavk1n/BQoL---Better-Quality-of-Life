@@ -2,6 +2,8 @@
   "modmenu.descriptionTranslation.bqol": "Better Quality of Life - Minecraft enhancements",
   "menu": "Open BQoL Menu",
   "category.bqol.main": "BQoL",
+  "key.category.bqol.main": "BQoL",
+  "key.category.bqol.keybinds": "BQoL",
 
   "bqol.config.title": "BQoL Configuration",
   "bqol.config.save": "Save",
@@ -29,9 +31,10 @@
   "14_better_spheres_toggle": "Toggle Better Spheres",
   "15_better_sky_toggle": "Toggle Better Sky",
   "16_better_particles_toggle": "Toggle Better Particles",
-  "17_better_fog_toggle": "Toggle Better Fog",
-  "18_better_health_toggle": "Toggle Better Health",
-  "19_no_render_toggle": "Toggle No Render",
-  "20_better_mine_toggle": "Toggle Better Mine",
-  "21_better_hit_counter_toggle": "Toggle Better Hit Counter"
+  "17_better_particles_toggle": "Toggle Better Liquid",
+  "18_better_fog_toggle": "Toggle Better Fog",
+  "19_better_health_toggle": "Toggle Better Health",
+  "20_no_render_toggle": "Toggle No Render",
+  "21_better_mine_toggle": "Toggle Better Mine",
+  "22_better_hit_counter_toggle": "Toggle Better Hit Counter"
 }

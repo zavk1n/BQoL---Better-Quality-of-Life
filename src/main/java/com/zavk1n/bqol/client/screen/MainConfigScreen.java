@@ -3,6 +3,7 @@ package com.zavk1n.bqol.client.screen;
 import com.zavk1n.bqol.config.BQoLConfig;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -26,7 +27,7 @@ public abstract class MainConfigScreen extends Screen {
     protected static final int CONTENT_TOP = 50;
     protected static final int CONTENT_BOTTOM_PADDING = 55;
 
-    private static final float SCROLL_SPEED = 25F;
+    private static final float SCROLL_SPEED = 33F;
     private static final float SCROLL_SMOOTHING = 0.18F;
 
     protected float scrollOffset = 0F;
@@ -276,41 +277,47 @@ public abstract class MainConfigScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (maxScroll <= 0F) {
-            return super.mouseScrolled(mouseX, mouseY, amount);
+            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         }
 
-        targetScrollOffset -= (float) amount * SCROLL_SPEED;
-        targetScrollOffset =MathHelper.clamp(targetScrollOffset, 0F, maxScroll);
+        targetScrollOffset -= (float) verticalAmount * SCROLL_SPEED;
+        targetScrollOffset = MathHelper.clamp(targetScrollOffset, 0F, maxScroll);
 
         return true;
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+        int button = click.button();
+
         if (button == 0 && maxScroll > 0F) {
             int scrollbarX = getScrollbarX();
             int thumbY = getScrollbarThumbY();
             int thumbHeight = getScrollbarThumbHeight();
 
             if (mouseX >= scrollbarX &&
-                    mouseX <= scrollbarX + 10 &&
-                    mouseY >= thumbY &&
-                    mouseY <= thumbY + thumbHeight) {
+                mouseX <= scrollbarX + 10 &&
+                mouseY >= thumbY &&
+                mouseY <= thumbY + thumbHeight) {
+
                 draggingScrollbar = true;
                 scrollbarGrabOffset = (float) mouseY - thumbY;
-
                 return true;
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (draggingScrollbar && button == 0 && maxScroll > 0F) {
+    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+        double mouseY = click.y();
+
+        if (draggingScrollbar && click.button() == 0 && maxScroll > 0F) {
             int top = getContentTop();
             int bottom = getContentBottom();
 
@@ -318,7 +325,6 @@ public abstract class MainConfigScreen extends Screen {
             int maxThumbY = bottom - thumbHeight;
 
             float newThumbY = (float) mouseY - scrollbarGrabOffset;
-
             newThumbY = MathHelper.clamp(newThumbY, top, maxThumbY);
 
             float progress;
@@ -330,25 +336,23 @@ public abstract class MainConfigScreen extends Screen {
             }
 
             targetScrollOffset = progress * maxScroll;
-
             scrollOffset = targetScrollOffset;
 
             return true;
         }
 
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(click, deltaX, deltaY);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0 && draggingScrollbar) {
+    public boolean mouseReleased(Click click) {
+        if (click.button() == 0 && draggingScrollbar) {
             draggingScrollbar = false;
             scrollbarGrabOffset = 0F;
-
             return true;
         }
 
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     private void syncMovementKeys() {

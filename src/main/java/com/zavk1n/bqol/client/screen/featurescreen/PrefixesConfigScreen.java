@@ -16,19 +16,20 @@ import java.util.function.Consumer;
 
 public class PrefixesConfigScreen extends MainConfigScreen {
 
-    private ButtonWidget nameProtectBtn, donateBtn, titleBtn, starBtn;
+    private ButtonWidget nameProtectBtn, donateBtn, titleBtn, starBtn, lightningBtn;
     private ButtonWidget nameColorBtn, donateColorBtn, titleColorBtn;
     private ButtonWidget nameBoldBtn, donateBoldBtn, titleBoldBtn;
 
-    private ColorSlider nameColorSlider, donateColorSlider, titleColorSlider, starColorSlider;
+    private ColorSlider nameColorSlider, donateColorSlider, titleColorSlider, starColorSlider, lightningColorSlider;
 
     private TextFieldWidget protectedNameField, donateTextField, titleTextField;
-    private TextFieldWidget nameHexField, donateHexField, titleHexField, starHexField;
+    private TextFieldWidget nameHexField, donateHexField, titleHexField, starHexField, lightningHexField;
 
     private int nameCurrentColor;
     private int donateCurrentColor;
     private int titleCurrentColor;
     private int starCurrentColor;
+    private int lightningCurrentColor;
 
     private boolean updatingHexField;
     private boolean updatingColorControls;
@@ -55,6 +56,7 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         donateCurrentColor = config.betterPrefixesDonateColorRgb & 0xFFFFFF;
         titleCurrentColor = config.betterPrefixesTitleColorRgb & 0xFFFFFF;
         starCurrentColor = config.betterPrefixesStarColorRgb & 0xFFFFFF;
+        lightningCurrentColor = config.betterPrefixesLightningColorRgb & 0xFFFFFF;
     }
 
     @Override
@@ -75,6 +77,7 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         donateBtn = null;
         titleBtn = null;
         starBtn = null;
+        lightningBtn = null;
 
         nameColorBtn = null;
         donateColorBtn = null;
@@ -88,6 +91,7 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         donateColorSlider = null;
         titleColorSlider = null;
         starColorSlider = null;
+        lightningColorSlider = null;
 
         protectedNameField = null;
         donateTextField = null;
@@ -97,6 +101,7 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         donateHexField = null;
         titleHexField = null;
         starHexField = null;
+        lightningHexField = null;
 
         int centerX = width / 2;
         int leftX = width / 6;
@@ -114,51 +119,35 @@ public class PrefixesConfigScreen extends MainConfigScreen {
             int y = START_Y + block * BLOCK_HEIGHT;
             int colorY = y + COLOR_ROW_OFFSET;
 
-            nameProtectBtn = createButton(
-                controlX,
-                y,
-                config::isBetterPrefixesNameProtect,
+            nameProtectBtn = createButton(controlX, y, config::isBetterPrefixesNameProtect,
                 value -> {
                     config.setBetterPrefixesNameProtect(value);
                     changed = true;
                 }
             );
 
-            protectedNameField = createTextField(
-                textX,
-                y,
-                TEXT_FIELD_WIDTH,
-                config.betterPrefixesProtectedName,
+            protectedNameField = createTextField(textX, y, TEXT_FIELD_WIDTH, config.betterPrefixesProtectedName,
                 value -> {
                     config.betterPrefixesProtectedName = value;
                     changed = true;
                 }
             );
 
-            nameBoldBtn = createBoldButton(
-                boldX,
-                y,
-                () -> config.betterPrefixesNameBold,
+            nameBoldBtn = createBoldButton(boldX, y, () -> config.betterPrefixesNameBold,
                 value -> {
                     config.betterPrefixesNameBold = value;
                     changed = true;
                 }
             );
 
-            nameColorBtn = createButton(
-                controlX,
-                colorY,
-                () -> config.betterPrefixesNameColor,
+            nameColorBtn = createButton(controlX, colorY, () -> config.betterPrefixesNameColor,
                 value -> {
                     config.betterPrefixesNameColor = value;
                     changed = true;
                 }
             );
 
-            nameColorSlider = createColorSlider(
-                sliderX,
-                colorY,
-                nameCurrentColor,
+            nameColorSlider = createColorSlider(sliderX, colorY, nameCurrentColor,
                 rgb -> {
                     nameCurrentColor = rgb & 0xFFFFFF;
                     config.betterPrefixesNameColorRgb = nameCurrentColor;
@@ -168,13 +157,8 @@ public class PrefixesConfigScreen extends MainConfigScreen {
                 }
             );
 
-            nameHexField = createHexField(
-                hexX,
-                colorY,
-                nameCurrentColor,
-                hex -> applyHexColor(
-                    hex,
-                    nameColorSlider,
+            nameHexField = createHexField(hexX, colorY, nameCurrentColor,
+                hex -> applyHexColor(hex, nameColorSlider,
                     rgb -> {
                         nameCurrentColor = rgb & 0xFFFFFF;
                         config.betterPrefixesNameColorRgb = nameCurrentColor;
@@ -196,51 +180,35 @@ public class PrefixesConfigScreen extends MainConfigScreen {
             int y = START_Y + block * BLOCK_HEIGHT;
             int colorY = y + COLOR_ROW_OFFSET;
 
-            donateBtn = createButton(
-                controlX,
-                y,
-                config::isBetterPrefixesDonate,
+            donateBtn = createButton(controlX, y, config::isBetterPrefixesDonate,
                 value -> {
                     config.setBetterPrefixesDonate(value);
                     changed = true;
                 }
             );
 
-            donateTextField = createTextField(
-                textX,
-                y,
-                TEXT_FIELD_WIDTH,
-                config.betterPrefixesDonateText,
+            donateTextField = createTextField(textX, y, TEXT_FIELD_WIDTH, config.betterPrefixesDonateText,
                 value -> {
                     config.betterPrefixesDonateText = value;
                     changed = true;
                 }
             );
 
-            donateBoldBtn = createBoldButton(
-                boldX,
-                y,
-                () -> config.betterPrefixesDonateBold,
+            donateBoldBtn = createBoldButton(boldX, y, () -> config.betterPrefixesDonateBold,
                 value -> {
                     config.betterPrefixesDonateBold = value;
                     changed = true;
                 }
             );
 
-            donateColorBtn = createButton(
-                controlX,
-                colorY,
-                () -> config.betterPrefixesDonateColor,
+            donateColorBtn = createButton(controlX, colorY, () -> config.betterPrefixesDonateColor,
                 value -> {
                     config.betterPrefixesDonateColor = value;
                     changed = true;
                 }
             );
 
-            donateColorSlider = createColorSlider(
-                sliderX,
-                colorY,
-                donateCurrentColor,
+            donateColorSlider = createColorSlider(sliderX, colorY, donateCurrentColor,
                 rgb -> {
                     donateCurrentColor = rgb & 0xFFFFFF;
                     config.betterPrefixesDonateColorRgb = donateCurrentColor;
@@ -250,13 +218,8 @@ public class PrefixesConfigScreen extends MainConfigScreen {
                 }
             );
 
-            donateHexField = createHexField(
-                hexX,
-                colorY,
-                donateCurrentColor,
-                hex -> applyHexColor(
-                    hex,
-                    donateColorSlider,
+            donateHexField = createHexField(hexX, colorY, donateCurrentColor,
+                hex -> applyHexColor(hex, donateColorSlider,
                     rgb -> {
                         donateCurrentColor = rgb & 0xFFFFFF;
                         config.betterPrefixesDonateColorRgb = donateCurrentColor;
@@ -278,51 +241,35 @@ public class PrefixesConfigScreen extends MainConfigScreen {
             int y = START_Y + block * BLOCK_HEIGHT;
             int colorY = y + COLOR_ROW_OFFSET;
 
-            titleBtn = createButton(
-                controlX,
-                y,
-                config::isBetterPrefixesTitle,
+            titleBtn = createButton(controlX, y, config::isBetterPrefixesTitle,
                 value -> {
                     config.setBetterPrefixesTitle(value);
                     changed = true;
                 }
             );
 
-            titleTextField = createTextField(
-                textX,
-                y,
-                TEXT_FIELD_WIDTH,
-                config.betterPrefixesTitleText,
+            titleTextField = createTextField(textX, y, TEXT_FIELD_WIDTH, config.betterPrefixesTitleText,
                 value -> {
                     config.betterPrefixesTitleText = value;
                     changed = true;
                 }
             );
 
-            titleBoldBtn = createBoldButton(
-                boldX,
-                y,
-                () -> config.betterPrefixesTitleBold,
+            titleBoldBtn = createBoldButton(boldX, y, () -> config.betterPrefixesTitleBold,
                 value -> {
                     config.betterPrefixesTitleBold = value;
                     changed = true;
                 }
             );
 
-            titleColorBtn = createButton(
-                controlX,
-                colorY,
-                () -> config.betterPrefixesTitleColor,
+            titleColorBtn = createButton(controlX, colorY, () -> config.betterPrefixesTitleColor,
                 value -> {
                     config.betterPrefixesTitleColor = value;
                     changed = true;
                 }
             );
 
-            titleColorSlider = createColorSlider(
-                sliderX,
-                colorY,
-                titleCurrentColor,
+            titleColorSlider = createColorSlider(sliderX, colorY, titleCurrentColor,
                 rgb -> {
                     titleCurrentColor = rgb & 0xFFFFFF;
                     config.betterPrefixesTitleColorRgb = titleCurrentColor;
@@ -332,13 +279,8 @@ public class PrefixesConfigScreen extends MainConfigScreen {
                 }
             );
 
-            titleHexField = createHexField(
-                hexX,
-                colorY,
-                titleCurrentColor,
-                hex -> applyHexColor(
-                    hex,
-                    titleColorSlider,
+            titleHexField = createHexField(hexX, colorY, titleCurrentColor,
+                hex -> applyHexColor(hex, titleColorSlider,
                     rgb -> {
                         titleCurrentColor = rgb & 0xFFFFFF;
                         config.betterPrefixesTitleColorRgb = titleCurrentColor;
@@ -359,20 +301,13 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         int starY = START_Y + block * BLOCK_HEIGHT;
         int starColorY = starY + COLOR_ROW_OFFSET;
 
-        starBtn = createButton(
-            controlX,
-            starY,
-            () -> config.betterPrefixesStar,
+        starBtn = createButton(controlX, starY, () -> config.betterPrefixesStar,
             value -> {
                 config.betterPrefixesStar = value;
                 changed = true;
             }
         );
-
-        starColorSlider = createColorSlider(
-            sliderX,
-            starColorY,
-            starCurrentColor,
+        starColorSlider = createColorSlider(sliderX, starColorY, starCurrentColor,
             rgb -> {
                 starCurrentColor = rgb & 0xFFFFFF;
                 config.betterPrefixesStarColorRgb = starCurrentColor;
@@ -382,13 +317,8 @@ public class PrefixesConfigScreen extends MainConfigScreen {
             }
         );
 
-        starHexField = createHexField(
-            hexX,
-            starColorY,
-            starCurrentColor,
-            hex -> applyHexColor(
-                hex,
-                starColorSlider,
+        starHexField = createHexField(hexX, starColorY, starCurrentColor,
+            hex -> applyHexColor(hex, starColorSlider,
                 rgb -> {
                     starCurrentColor = rgb & 0xFFFFFF;
                     config.betterPrefixesStarColorRgb = starCurrentColor;
@@ -400,13 +330,43 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         addDrawableChild(starColorSlider);
         addDrawableChild(starHexField);
 
-        addDrawableChild(
-            ButtonWidget.builder(
-                    Text.literal("Save & Back"),
-                    button -> close()
-                )
-                .dimensions(centerX - 50, height - 32, 100, 25)
-                .build()
+        block++;
+
+        int lightningY = START_Y + block * BLOCK_HEIGHT;
+        int lightningColorY = lightningY + COLOR_ROW_OFFSET;
+
+        lightningBtn = createButton(controlX, lightningY, () -> config.betterPrefixesLightning,
+            value -> {
+                config.betterPrefixesLightning = value;
+                changed = true;
+            }
+        );
+        lightningColorSlider = createColorSlider(sliderX, lightningColorY, lightningCurrentColor,
+            rgb -> {
+                lightningCurrentColor = rgb & 0xFFFFFF;
+                config.betterPrefixesLightningColorRgb = lightningCurrentColor;
+
+                updateHexField(lightningHexField, lightningCurrentColor);
+                changed = true;
+            }
+        );
+
+        lightningHexField = createHexField(hexX, lightningColorY, lightningCurrentColor,
+            hex -> applyHexColor(hex, lightningColorSlider,
+                rgb -> {
+                    lightningCurrentColor = rgb & 0xFFFFFF;
+                    config.betterPrefixesLightningColorRgb = lightningCurrentColor;
+                }
+            )
+        );
+
+        addDrawableChild(lightningBtn);
+        addDrawableChild(lightningColorSlider);
+        addDrawableChild(lightningHexField);
+
+        addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
+            .dimensions(centerX - 50, height - 32, 100, 25)
+            .build()
         );
 
         updateAllButtons();
@@ -473,6 +433,7 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         updateButton(donateBtn, config.isBetterPrefixesDonate());
         updateButton(titleBtn, config.isBetterPrefixesTitle());
         updateButton(starBtn, config.betterPrefixesStar);
+        updateButton(lightningBtn, config.betterPrefixesLightning);
 
         updateButton(nameColorBtn, config.betterPrefixesNameColor);
         updateButton(donateColorBtn, config.betterPrefixesDonateColor);
@@ -759,6 +720,22 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         );
 
         renderColorPreview(context, starHexField, starColorSlider, starCurrentColor);
+
+        block++;
+
+        int lightingY = START_Y + block * BLOCK_HEIGHT;
+
+        renderLabel(context, leftX, lightingY,
+            "Lighting",
+            "Bold lighting before name, donate and title.", mouseX, mouseY
+        );
+
+        renderLabel(context, leftX, lightingY + COLOR_ROW_OFFSET,
+            "Lighting Color",
+            "Customize the lighting color using the slider or HEX.", mouseX, mouseY
+        );
+
+        renderColorPreview(context, lightningHexField, lightningColorSlider, lightningCurrentColor);
     }
 
     private void renderColorPreview(DrawContext context, TextFieldWidget hexField, ColorSlider slider, int rgb) {
@@ -792,6 +769,7 @@ public class PrefixesConfigScreen extends MainConfigScreen {
         config.betterPrefixesDonateColorRgb = donateCurrentColor & 0xFFFFFF;
         config.betterPrefixesTitleColorRgb = titleCurrentColor & 0xFFFFFF;
         config.betterPrefixesStarColorRgb = starCurrentColor & 0xFFFFFF;
+        config.betterPrefixesLightningColorRgb = lightningCurrentColor & 0xFFFFFF;
 
         config.save();
         BetterPrefixes.refreshBlockedStatus();

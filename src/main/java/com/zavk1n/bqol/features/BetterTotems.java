@@ -6,21 +6,21 @@ import com.zavk1n.bqol.utils.chat.Chat;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class  BetterTotems {
+public final class BetterTotems {
     private MinecraftClient mc() {
         if (client == null) client = MinecraftClient.getInstance();
         return client;
@@ -53,6 +53,15 @@ public final class  BetterTotems {
         SEGMENTED,
         RENAME
     }
+
+    private enum ServerType {
+        OTHER,
+        HOLYWORLD,
+        REALLYWORLD
+    }
+
+    private ServerType cachedServerType = ServerType.OTHER;
+    private String cachedServerAddress;
 
     private static final class NameSpec {
         static final NameSpec NONE = new NameSpec(NameSpecType.NONE, null, null, null, List.of());
@@ -192,13 +201,17 @@ public final class  BetterTotems {
         ATTACK_SPEED
     );
 
+    private static final List<String> HWPREFIXES = List.of(
+        "INFINITY",
+        "ETERNITY",
+        "STINGER",
+        "САТИРА",
+        "САТИРЫ"
+    );
+
     private static final Map<String, Pattern> PARAMETER_PATTERNS =
         PARAMETERS.stream().collect(java.util.stream.Collectors.toUnmodifiableMap(
-            p -> p,
-            p -> Pattern.compile(
-                "^" + Pattern.quote(p) + "(\\s+(\\d+|[IVXLCDM]+))?$"
-            )
-        ));
+            p -> p, p -> Pattern.compile("^" + Pattern.quote(p) + "(\\s+(\\d+|[IVXLCDM]+))?$")));
 
     private final List<HWTotemsMatch> hwTotemsMatches;
     private static class HWTotemsMatch {
@@ -334,10 +347,28 @@ public final class  BetterTotems {
 
         registered = true;
 
-        ItemTooltipCallback.EVENT.register((stack, context, lines) -> {
+        ItemTooltipCallback.EVENT.register((stack, context, type, lines) -> {
             if (!isEnabled()
                 || stack == null
-                || lines == null || lines.isEmpty()) {
+                || lines == null
+                || lines.isEmpty()) {
+                return;
+            }
+
+            updateServerType();
+
+            switch (cachedServerType) {
+                case HOLYWORLD -> processTooltipHolyWorld(stack, lines);
+                case REALLYWORLD -> processTooltipReallyWorld(stack, lines);
+                default -> {}
+            }
+        });
+
+        ItemTooltipCallback.EVENT.register((stack, context, type, lines) -> {
+            if (!isEnabled()
+                || stack == null
+                || lines == null
+                || lines.isEmpty()) {
                 return;
             }
 
@@ -433,28 +464,20 @@ public final class  BetterTotems {
         HWTotemsInfo hwTotemsInfo = getHWTotemsInfo(originalName);
         HWTotemsResult hwTotemsResult = searchHWTotems(parameters);
 
-        applyHWTotemsParameters(
-            lines,
-            parameters,
-            hwTotemsInfo,
-            hwTotemsResult,
-            hwTotemsResult.hwTotems()
-        );
+        applyHWTotemsParameters(lines, parameters, hwTotemsInfo, hwTotemsResult, hwTotemsResult.hwTotems());
         applyHWTotemsNames(stack, originalName, hwTotemsInfo, hwTotemsResult);
     }
 
     private void processTooltipReallyWorld(ItemStack stack, List<Text> lines) {
-        if (blocked.main || blocked.reallyworld || lines == null || lines.isEmpty()) {
+        if (blocked.main
+            || blocked.reallyworld
+            || lines == null
+            || lines.isEmpty()) {
             return;
         }
 
-        List<String> tooltip = lines.stream()
-            .filter(Objects::nonNull)
-            .map(Text::getString)
-            .toList();
-
         for (RWTotemsMatch match : rwTotemsMatches) {
-            if (!match.enabled.getAsBoolean() || !containsLine(tooltip, match.name)) {
+            if (!match.enabled.getAsBoolean() || !containsLine(lines, match.name)) {
                 continue;
             }
 
@@ -474,9 +497,14 @@ public final class  BetterTotems {
         return -1;
     }
 
-    private boolean containsLine(List<String> lines, String text) {
-        return lines.stream()
-            .anyMatch(line -> line.contains(text));
+    private boolean containsLine(List<Text> lines, String text) {
+        for (Text line : lines) {
+            if (line != null && line.getString().contains(text)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void setNameColor(ItemStack stack, int color) {
@@ -488,7 +516,7 @@ public final class  BetterTotems {
         MutableText result = Text.literal(name.getString())
             .setStyle(style);
 
-        stack.setCustomName(result);
+        stack.set(DataComponentTypes.CUSTOM_NAME, result);
     }
 
     private void renamePreservingStyle(ItemStack stack, String newName) {
@@ -499,7 +527,7 @@ public final class  BetterTotems {
         MutableText result = Text.literal(newName)
             .setStyle(style);
 
-        stack.setCustomName(result);
+        stack.set(DataComponentTypes.CUSTOM_NAME, result);
     }
 
     private void setAlternatingNameColors(ItemStack stack, int color1, int color2) {
@@ -531,7 +559,7 @@ public final class  BetterTotems {
             letterIndex++;
         }
 
-        stack.setCustomName(result);
+        stack.set(DataComponentTypes.CUSTOM_NAME, result);
     }
 
     private void setSegmentedName(ItemStack stack, List<NameSegment> segments) {
@@ -546,7 +574,7 @@ public final class  BetterTotems {
                 .setStyle( baseStyle.withColor(segment.color())));
         }
 
-        stack.setCustomName(result);
+        stack.set(DataComponentTypes.CUSTOM_NAME, result);
     }
 
     private HWTotemsResult searchHWTotems(Map<String, Integer> parameters) {
@@ -568,14 +596,15 @@ public final class  BetterTotems {
     }
 
     private HWTotemsInfo getHWTotemsInfo(String name) {
-        if (name == null) {
+        if (name == null || name.isEmpty()) {
             return null;
         }
 
-        final List<String> CUSTOM_KEYWORDS = List.of("INFINITY", "ETERNITY", "STINGER", "Сатира", "Сатиры");
+        String upperName = name.toUpperCase(Locale.ROOT);
+        String lowerName = name.toLowerCase(Locale.ROOT);
 
-        for (String keyword : CUSTOM_KEYWORDS) {
-            if (name.toUpperCase(Locale.ROOT).contains(keyword.toUpperCase(Locale.ROOT))) {
+        for (String keyword : HWPREFIXES) {
+            if (upperName.contains(keyword)) {
                 return new HWTotemsInfo(
                     TotemsType.CUSTOM,
                     0xFFFFFF,
@@ -584,7 +613,7 @@ public final class  BetterTotems {
             }
         }
 
-        if (name.toLowerCase(Locale.ROOT).contains("легендарн")) {
+        if (lowerName.contains("легендарн")) {
             return new HWTotemsInfo(
                 TotemsType.LEGENDARY,
                 TotemsPalette.LEGENDARY_NAME,
@@ -592,7 +621,7 @@ public final class  BetterTotems {
             );
         }
 
-        if (name.toLowerCase(Locale.ROOT).contains("эпическ")) {
+        if (lowerName.contains("эпическ")) {
             return new HWTotemsInfo(
                 TotemsType.EPIC,
                 TotemsPalette.EPIC_NAME,
@@ -600,7 +629,7 @@ public final class  BetterTotems {
             );
         }
 
-        if (name.toLowerCase(Locale.ROOT).contains("обычн")) {
+        if (lowerName.contains("обычн")) {
             return new HWTotemsInfo(
                 TotemsType.DEFAULT,
                 TotemsPalette.DEFAULT_NAME,
@@ -811,7 +840,7 @@ public final class  BetterTotems {
             return;
         }
 
-        stack.setCustomName(Text.literal(originalName)
+        stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(originalName)
             .styled(style -> style
                 .withColor(totemsInfo.nameColor())
                 .withItalic(false))
@@ -832,7 +861,14 @@ public final class  BetterTotems {
                 }
 
                 String text = line.getString();
-                return match.hiddenLines.stream().anyMatch(text::contains);
+
+                for (String hidden : match.hiddenLines) {
+                    if (text.contains(hidden)) {
+                        return true;
+                    }
+                }
+
+                return false;
             });
         }
 
@@ -945,39 +981,39 @@ public final class  BetterTotems {
         }
     }
 
-    private boolean isHolyWorld() {
+    private void updateServerType() {
         MinecraftClient client = mc();
-
-        if (client == null) {
-            return false;
-        }
-
         ServerInfo server = client.getCurrentServerEntry();
 
-        if (server == null || server.address == null) {
-            return false;
+        String address = server != null ? server.address : null;
+
+        if (Objects.equals(cachedServerAddress, address)) {
+            return;
         }
 
-        return server.address
-            .toLowerCase(Locale.ROOT)
-            .contains("holyworld");
+        cachedServerAddress = address;
+
+        if (address == null || address.isEmpty()) {
+            cachedServerType = ServerType.OTHER;
+            return;
+        }
+
+        String normalized = address.toLowerCase(Locale.ROOT);
+
+        if (normalized.contains("holyworld")) {
+            cachedServerType = ServerType.HOLYWORLD;
+        } else if (normalized.contains("reallyworld")) {
+            cachedServerType = ServerType.REALLYWORLD;
+        } else {
+            cachedServerType = ServerType.OTHER;
+        }
+    }
+
+    private boolean isHolyWorld() {
+        return cachedServerType == ServerType.HOLYWORLD;
     }
 
     private boolean isReallyWorld() {
-        MinecraftClient client = mc();
-
-        if (client == null) {
-            return false;
-        }
-
-        ServerInfo server = client.getCurrentServerEntry();
-
-        if (server == null || server.address == null) {
-            return false;
-        }
-
-        return server.address
-            .toLowerCase(Locale.ROOT)
-            .contains("reallyworld");
+        return cachedServerType == ServerType.REALLYWORLD;
     }
 }

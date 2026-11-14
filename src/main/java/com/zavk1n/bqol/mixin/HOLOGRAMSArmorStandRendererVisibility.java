@@ -11,18 +11,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
-public class HOLOGRAMSArmorStandRendererVisibility {
+public abstract class HOLOGRAMSArmorStandRendererVisibility {
 
     @Inject(method = "isInvisible", at = @At("HEAD"), cancellable = true)
     private void bqol$makeHologramVisible(CallbackInfoReturnable<Boolean> cir) {
-        Entity entity = (Entity) (Object) this;
-
-        if (!BetterHolograms.isVisibleArmorStandEnabled()
-            || !(entity instanceof ArmorStandEntity armorStand)
-            || !BetterHolograms.isHologram(armorStand)) {
+        if (!((Object) this instanceof ArmorStandEntity armorStand)) {
             return;
         }
 
-        cir.setReturnValue(false);
+        if (BetterHolograms.isVisibleArmorStandEnabled() && BetterHolograms.isHologram(armorStand)) {
+            cir.setReturnValue(false);
+        }
     }
 }
