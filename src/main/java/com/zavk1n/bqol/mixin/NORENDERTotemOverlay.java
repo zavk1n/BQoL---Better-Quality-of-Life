@@ -1,8 +1,7 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-import com.zavk1n.bqol.config.BQoLConfig.RenderMode;
-
+import com.zavk1n.bqol.config.Variables;
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.item.ItemStack;
 
@@ -16,13 +15,13 @@ public class NORENDERTotemOverlay {
 
     @Inject(method = "showFloatingItem", at = @At("HEAD"), cancellable = true)
     private void bqol$showFloatingItem(ItemStack stack, CallbackInfo ci) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (!config.isNoRenderTotemOverlayEnabled()) {
             return;
         }
 
-        if (config.getNoRenderTotemOverlay() == RenderMode.NO_RENDER) {
+        if (config.getNoRenderTotemOverlay() == Variables.RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }

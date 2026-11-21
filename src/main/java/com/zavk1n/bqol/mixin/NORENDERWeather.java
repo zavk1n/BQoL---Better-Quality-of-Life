@@ -1,8 +1,7 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.FrameGraphBuilder;
 
@@ -16,13 +15,13 @@ public class NORENDERWeather {
 
     @Inject(method = "renderWeather", at = @At("HEAD"), cancellable = true)
     private void bqol$renderWeather(FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CallbackInfo ci) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (!config.isNoRenderWeatherEnabled()) {
             return;
         }
 
-        if (config.getNoRenderWeather() == BQoLConfig.RenderMode.NO_RENDER) {
+        if (config.getNoRenderWeather() == MainConfig.RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }

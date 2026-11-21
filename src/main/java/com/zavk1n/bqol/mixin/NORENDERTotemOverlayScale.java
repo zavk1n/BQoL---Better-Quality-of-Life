@@ -1,7 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.gui.hud.InGameOverlayRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 
@@ -20,7 +19,7 @@ public class NORENDERTotemOverlayScale {
         )
     )
     private void bqol$scaleFloatingItem(MatrixStack matrices, float x, float y, float z) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (!config.isNoRenderTotemOverlayEnabled()) {
             matrices.scale(x, y, z);

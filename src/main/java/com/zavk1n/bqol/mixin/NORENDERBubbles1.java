@@ -1,7 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
@@ -16,10 +15,10 @@ public abstract class NORENDERBubbles1 {
 
     @Inject(method = "addParticle(Lnet/minecraft/particle/ParticleEffect;ZZDDDDDD)V", at = @At("HEAD"), cancellable = true)
     private void bqol$removeWaterParticles(ParticleEffect particle, boolean force, boolean canSpawnOnMinimal, double x, double y, double z, double velocityX, double velocityY, double velocityZ, CallbackInfo ci) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (!config.isNoRenderBubblesEnabled()
-            || config.getNoRenderBubbles() != BQoLConfig.RenderMode.NO_RENDER) {
+            || config.getNoRenderBubbles() != MainConfig.RenderMode.NO_RENDER) {
             return;
         }
 

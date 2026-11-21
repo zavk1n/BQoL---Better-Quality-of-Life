@@ -1,19 +1,37 @@
 package com.zavk1n.bqol.utils.chat;
 
-import com.zavk1n.bqol.features.BetterRCT;
+import com.zavk1n.bqol.features.rct.BetterRCT;
 import com.mojang.brigadier.context.StringRange;
 
+import com.zavk1n.bqol.features.mine.funtime.FunTimeProcess;
+import com.zavk1n.bqol.features.mine.holyworld.HolyWorldProcess;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 
 import java.util.List;
+import java.util.Locale;
 
 @Environment(EnvType.CLIENT)
 public final class Chat {
+
     private Chat() {}
+
+    public static MinecraftClient mc() {
+        if (client == null) {
+            client = MinecraftClient.getInstance();
+        }
+
+        return client;
+    }
+
+    public static MinecraftClient client;
+
+    private FunTimeProcess funTimeProcess;
+    private HolyWorldProcess holyWorldProcess;
 
     private static final String PREFIX = "[BQoL] ";
 
@@ -22,11 +40,6 @@ public final class Chat {
         ".rct",
         ".minehelper",
         ".totemcounter"
-    );
-
-    private static final List<String> MINEHELPER_MODES = List.of(
-        "default",
-        "nether"
     );
 
     private static final int PREFIX_COLOR = 0xA099FF;
@@ -79,7 +92,7 @@ public final class Chat {
             if (parts.length == 2) {
                 String argument = parts[1];
 
-                return MINEHELPER_MODES.stream()
+                return minehelperModes().stream()
                     .filter(suggestion -> suggestion.startsWith(argument) && !suggestion.equals(argument))
                     .toList();
             }
@@ -166,5 +179,96 @@ public final class Chat {
             .styled(style -> style
                 .withColor(messageColor())
                 .withBold(true));
+    }
+
+    private boolean handleMineHelperCommand(String[] args) {
+        if (isFunTime()) {
+            if (args.length != 2) {
+                Chat.info(mc(), Text.literal("Использование: .minehelper <default>").styled(style -> style.withColor(messageColor())));
+                return false;
+            }
+
+            FunTimeProcess.Mode mode = FunTimeProcess.Mode.from(args[1]);
+
+            if (mode == null) {
+                Chat.info(mc(), Text.literal("Доступные режимы: default").styled(style -> style.withColor(messageColor())));
+                return false;
+            }
+
+            funTimeProcess.setAnalyzeMode(mode);
+            funTimeProcess.start(mode);
+
+            return false;
+        }
+
+        if (isHolyWorld()) {
+            if (args.length != 2) {
+                Chat.info(mc(), Text.literal("Использование: .minehelper <default/nether>").styled(style -> style.withColor(messageColor())));
+                return false;
+            }
+
+            HolyWorldProcess.Mode mode = HolyWorldProcess.Mode.from(args[1].strip());
+
+            if (mode == null) {
+                Chat.info(mc(), Text.literal("Доступные режимы: default, nether").styled(style -> style.withColor(messageColor())));
+                return false;
+            }
+
+            holyWorldProcess.setAnalyzeMode(mode);
+            holyWorldProcess.start(mode);
+
+            return false;
+        }
+
+        Chat.info(mc(), Text.literal("Mine Helper доступен только на серверах из модулей Better Mine.").styled(style -> style.withColor(messageColor())));
+        return false;
+    }
+
+    public static List<String> minehelperModes() {
+        if (isHolyWorld()) {
+            return List.of("default", "nether");
+        }
+
+        if (isFunTime()) {
+            return List.of("default");
+        }
+
+        return List.of("default");
+    }
+
+    public static boolean isHolyWorld() {
+        MinecraftClient client = mc();
+
+        if (client == null) {
+            return false;
+        }
+
+        ServerInfo server = client.getCurrentServerEntry();
+
+        if (server == null || server.address == null) {
+            return false;
+        }
+
+        return server.address
+            .toLowerCase(Locale.ROOT)
+            .contains("holyworld");
+    }
+
+    public static boolean isFunTime() {
+        MinecraftClient client = mc();
+
+        if (client == null) {
+            return false;
+        }
+
+        ServerInfo server = client.getCurrentServerEntry();
+
+        if (server == null || server.address == null) {
+            return false;
+        }
+
+        return server.address
+            .toLowerCase(Locale.ROOT)
+            .contains("funtime");
     }
 }

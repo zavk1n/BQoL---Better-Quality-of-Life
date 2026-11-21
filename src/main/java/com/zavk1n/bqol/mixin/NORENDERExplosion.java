@@ -1,7 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.particle.ParticleEffect;
@@ -18,10 +17,10 @@ public class NORENDERExplosion {
 
     @Inject(method = "addParticle(Lnet/minecraft/particle/ParticleEffect;DDDDDD)Lnet/minecraft/client/particle/Particle;", at = @At("HEAD"), cancellable = true)
     private void bqol$disableExplosionParticles(ParticleEffect parameters, double x, double y, double z, double velocityX, double velocityY, double velocityZ, CallbackInfoReturnable<Particle> cir) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (!config.isNoRenderExplosionEnabled()
-            || config.getNoRenderExplosion() != BQoLConfig.RenderMode.NO_RENDER
+            || config.getNoRenderExplosion() != MainConfig.RenderMode.NO_RENDER
             || parameters == null) {
             return;
         }
@@ -41,9 +40,9 @@ public class NORENDERExplosion {
 
     @Inject(method = "addParticle(Lnet/minecraft/client/particle/Particle;)V", at = @At("HEAD"), cancellable = true)
     private void bqol$disableExplosionParticle(Particle particle, CallbackInfo ci) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
-        if (!config.isNoRenderExplosionEnabled() || config.getNoRenderExplosion() != BQoLConfig.RenderMode.NO_RENDER) {
+        if (!config.isNoRenderExplosionEnabled() || config.getNoRenderExplosion() != MainConfig.RenderMode.NO_RENDER) {
             return;
         }
 

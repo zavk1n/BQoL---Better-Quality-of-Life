@@ -25,7 +25,8 @@ public class TotemsParticlesConfigScreen extends MainConfigScreen {
     private boolean updatingColor;
     private boolean changed = false;
 
-    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 55, LABEL_WIDTH = 220, SLIDER_WIDTH = 150, HEX_WIDTH = 70, MODE_WIDTH = 100;
+    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 55, LABEL_WIDTH = 220,
+        SLIDER_WIDTH = 150, HEX_WIDTH = 70, MODE_WIDTH = 100;
 
     private static final String[] COUNT_MODES = {
         "Little",
@@ -68,7 +69,6 @@ public class TotemsParticlesConfigScreen extends MainConfigScreen {
         int sliderX = controlX + BUTTON_WIDTH + 15;
 
         int row = 0;
-
         {
             int y = 60 + row * SPACING;
 
@@ -82,10 +82,7 @@ public class TotemsParticlesConfigScreen extends MainConfigScreen {
 
             addDrawableChild(colorBtn);
 
-            colorSlider = createColorSlider(
-                sliderX,
-                y,
-                currentColor,
+            colorSlider = createColorSlider(sliderX, y, currentColor,
                 newColor -> {
                     if (updatingColor) return;
 

@@ -1,6 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
+import com.zavk1n.bqol.config.MainConfig;
 import com.zavk1n.bqol.features.BetterInteract;
 
 import net.minecraft.client.MinecraftClient;
@@ -19,7 +19,7 @@ public abstract class INTERACTSigns {
     @Inject(method = "onSignEditorOpen", at = @At("HEAD"), cancellable = true)
     private void bqol$skipSignEditor(SignEditorOpenS2CPacket packet, CallbackInfo ci) {
         if (BetterInteract.isAutoSignsEnabled()) {
-            String text = BQoLConfig.getInstance().getBetterInteractAutoSignsText();
+            String text = MainConfig.getInstance().getBetterInteractAutoSignsText();
 
             if (text != null && !text.isBlank()) {
                 String[] lines = text.split("\\R", -1);

@@ -1,14 +1,14 @@
 package com.zavk1n.bqol.features;
 
 import com.zavk1n.bqol.BQoL;
-import com.zavk1n.bqol.config.BQoLConfig;
+import com.zavk1n.bqol.config.MainConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 public class BetterSky {
     private BetterSky() {}
 
     private static BetterSky instance;
-    private final BQoLConfig config = BQoLConfig.getInstance();
+    private final MainConfig config = MainConfig.getInstance();
 
     private final BlockedFeatures blocked = new BlockedFeatures();
     private static class BlockedFeatures {
@@ -25,8 +25,10 @@ public class BetterSky {
     }
 
     public static BetterSky getInstance() {
-        if (instance == null)
+        if (instance == null) {
             initialize();
+        }
+
         return instance;
     }
 

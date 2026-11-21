@@ -1,11 +1,10 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.features.BetterTotems;
+import com.zavk1n.bqol.features.totems.BetterTotems;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.entity.player.PlayerInventory;

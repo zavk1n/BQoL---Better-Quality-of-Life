@@ -1,14 +1,14 @@
 package com.zavk1n.bqol.features;
 
 import com.zavk1n.bqol.BQoL;
-import com.zavk1n.bqol.config.BQoLConfig;
+import com.zavk1n.bqol.config.MainConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 public class NoRender {
     private NoRender() {}
 
     private static NoRender instance;
-    private final BQoLConfig config = BQoLConfig.getInstance();
+    private final MainConfig config = MainConfig.getInstance();
 
     private final BlockedFeatures blocked = new BlockedFeatures();
     private static class BlockedFeatures {
@@ -74,7 +74,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getTotemMode() {
+    public MainConfig.RenderMode getTotemMode() {
         return config.getNoRenderTotemOverlay();
     }
 
@@ -82,13 +82,13 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getFireMode() {
+    public MainConfig.RenderMode getFireMode() {
         return config.getNoRenderFireOverlay();
     }
 
     public boolean isTotemParticlesEnabled() { return isEnabledInternal(); }
 
-    public BQoLConfig.RenderMode getTotemParticlesMode() {
+    public MainConfig.RenderMode getTotemParticlesMode() {
         return config.getNoRenderTotemParticles();
     }
 
@@ -96,7 +96,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getPotionParticlesMode() {
+    public MainConfig.RenderMode getPotionParticlesMode() {
         return config.getNoRenderPotionParticles();
     }
 
@@ -104,7 +104,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getExplosionMode() {
+    public MainConfig.RenderMode getExplosionMode() {
         return config.getNoRenderExplosion();
     }
 
@@ -112,7 +112,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getSmokeMode() {
+    public MainConfig.RenderMode getSmokeMode() {
         return config.getNoRenderSmoke();
     }
 
@@ -120,7 +120,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getBubblesMode() {
+    public MainConfig.RenderMode getBubblesMode() {
         return config.getNoRenderBubbles();
     }
 
@@ -128,7 +128,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getWeatherMode() {
+    public MainConfig.RenderMode getWeatherMode() {
         return config.getNoRenderWeather();
     }
 
@@ -136,7 +136,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getArrowsMode() {
+    public MainConfig.RenderMode getArrowsMode() {
         return config.getNoRenderArrows();
     }
 
@@ -144,7 +144,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getFireworksMode() {
+    public MainConfig.RenderMode getFireworksMode() {
         return config.getNoRenderFireworks();
     }
 
@@ -152,7 +152,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getNamesMode() {
+    public MainConfig.RenderMode getNamesMode() {
         return config.getNoRenderNames();
     }
 
@@ -160,7 +160,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getPlayersMode() {
+    public MainConfig.RenderMode getPlayersMode() {
         return config.getNoRenderPlayers();
     }
 
@@ -168,7 +168,7 @@ public class NoRender {
         return isEnabledInternal();
     }
 
-    public BQoLConfig.RenderMode getHandMode() {
+    public MainConfig.RenderMode getHandMode() {
         return config.getNoRenderHand();
     }
 }

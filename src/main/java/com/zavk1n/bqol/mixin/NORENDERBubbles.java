@@ -1,7 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.block.BubbleColumnBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -16,9 +15,9 @@ public class NORENDERBubbles {
 
     @Inject(method = "randomDisplayTick", at = @At("HEAD"), cancellable = true)
     private void bqol$disableBubbleParticles(net.minecraft.block.BlockState state, net.minecraft.world.World world, BlockPos pos, Random random, CallbackInfo ci) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
-        if (!config.isNoRenderBubblesEnabled() || config.getNoRenderBubbles() != BQoLConfig.RenderMode.NO_RENDER) {
+        if (!config.isNoRenderBubblesEnabled() || config.getNoRenderBubbles() != MainConfig.RenderMode.NO_RENDER) {
             return;
         }
 

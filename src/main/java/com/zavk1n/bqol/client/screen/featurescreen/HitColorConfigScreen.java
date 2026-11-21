@@ -1,0 +1,296 @@
+package com.zavk1n.bqol.client.screen.featurescreen;
+
+import com.zavk1n.bqol.client.screen.MainConfigScreen;
+import com.zavk1n.bqol.client.screen.featurescreen.utils.ColorSlider;
+import com.zavk1n.bqol.features.BetterHitColor;
+import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
+
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.text.Text;
+
+import java.util.function.Consumer;
+
+public class HitColorConfigScreen extends MainConfigScreen {
+    private ColorSlider colorSlider;
+    private TextFieldWidget hexField;
+
+    private ButtonWidget colorBtn;
+
+    private boolean updatingHexField;
+    private boolean changed;
+
+    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45, CONTROL_WIDTH = 180;
+
+    public HitColorConfigScreen(Screen parent) {
+        super(Text.literal("Better Hit Color Settings"), parent);
+    }
+
+    @Override
+    protected void init() {
+        if (LiteApiManager.isFeatureBlocked("better_hit_color")) {
+            close();
+            return;
+        }
+
+        super.init();
+        rebuildUI();
+    }
+
+    private void rebuildUI() {
+        clearChildren();
+
+        int centerX = width / 2;
+        int currentY = 60;
+
+        colorSlider = createColorSlider(centerX - 40, currentY,
+            BetterHitColor.getHitColorColor(), value -> {
+                int hue = (int) (value * 360);
+                int rgb = hslToRgb(hue, 100, 50);
+
+                BetterHitColor.setHitColorColor(rgb);
+                changed = true;
+                updateHexField();
+            });
+
+        addDrawableChild(colorSlider);
+
+        hexField = createHexField(centerX + 135,
+            currentY,
+            BetterHitColor.getHitColorColor(),
+            text -> {
+                int rgb = parseHex(text);
+
+                if (rgb == -1) {
+                    return;
+                }
+
+                if (BetterHitColor.getHitColorColor() != rgb) {
+                    BetterHitColor.setHitColorColor(rgb);
+                    changed = true;
+                }
+            });
+
+        addDrawableChild(hexField);
+
+        colorBtn = ButtonWidget.builder(
+                Text.literal(config.isBetterHitColorColorEnabled() ? "Enabled" : "Disabled"),
+                button -> {
+                    boolean state = !config.isBetterHitColorColorEnabled();
+                    config.setBetterHitColorColorEnabled(state);
+                    changed = true;
+                    updateButton(colorBtn, state);
+                    save();
+                })
+            .dimensions(centerX + 235, currentY - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .build();
+
+        addDrawableChild(colorBtn);
+
+        addDrawableChild(ButtonWidget.builder(
+                Text.literal("Save & Back"),
+                b->close())
+            .dimensions(centerX-50,height-40,100,25)
+            .build());
+
+        updateAllButtons();
+    }
+
+    private ColorSlider createColorSlider(int x, int y, int rgb, Consumer<Double> onValueChange) {
+        return new ColorSlider(x, y, 150, 20, Text.literal(""), rgbToHue(rgb) / 360.0, onValueChange);
+    }
+
+    private TextFieldWidget createHexField(int x, int y, int rgb, Consumer<String> onHexChange) {
+        TextFieldWidget field = new TextFieldWidget(textRenderer, x, y, 70, 20, Text.literal("#RRGGBB"));
+
+        field.setText(String.format("#%06X", rgb & 0xFFFFFF));
+
+        field.setChangedListener(text -> {
+            if (updatingHexField) {
+                return;
+            }
+
+            String value = text.startsWith("#") ? text.substring(1) : text;
+
+            if (value.length() != 6) {
+                return;
+            }
+
+            onHexChange.accept(text);
+        });
+
+        field.setFocusUnlocked(true);
+        field.setEditable(true);
+
+        return field;
+    }
+
+    private void updateHexField() {
+        if (hexField == null || hexField.isFocused()) {
+            return;
+        }
+
+        String hex = String.format(
+            "#%06X",
+            BetterHitColor.getHitColorColor() & 0xFFFFFF
+        );
+
+        updatingHexField = true;
+        hexField.setText(hex);
+        updatingHexField = false;
+    }
+
+    private void updateAllButtons() {
+        if (colorBtn != null) {
+            updateButton(colorBtn, config.isBetterHitColorEnabled());
+        }
+    }
+
+    private void updateButton(ButtonWidget button, boolean enabled) {
+        button.setMessage(Text.literal(enabled ? "Enabled" : "Disabled")
+            .styled(s -> s.withColor(enabled ? ACCENT_COLOR : 0xFFFFFF)));
+    }
+
+    private int parseHex(String hex) {
+        if (hex == null) {
+            return -1;
+        }
+
+        hex = hex.trim();
+
+        if (hex.startsWith("#")) {
+            hex = hex.substring(1);
+        }
+
+        if (!hex.matches("[0-9a-fA-F]{6}")) {
+            return -1;
+        }
+
+        try {
+            return Integer.parseInt(hex, 16) & 0xFFFFFF;
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+    }
+
+    private int rgbToHue(int rgb) {
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+
+        int max = Math.max(r, Math.max(g, b));
+        int min = Math.min(r, Math.min(g, b));
+        int delta = max - min;
+
+        if (delta == 0) {
+            return 0;
+        }
+
+        float hue;
+
+        if (max == r) {
+            hue = (g - b) / (float) delta;
+        } else if (max == g) {
+            hue = (b - r) / (float) delta + 2;
+        } else {
+            hue = (r - g) / (float) delta + 4;
+        }
+
+        hue *= 60;
+
+        if (hue < 0) {
+            hue += 360;
+        }
+
+        return Math.round(hue);
+    }
+
+    private int hslToRgb(int h, int s, int l) {
+        float hue = h / 360f;
+        float sat = s / 100f;
+        float light = l / 100f;
+
+        float c = (1 - Math.abs(2 * light - 1)) * sat;
+        float x = c * (1 - Math.abs((hue * 6) % 2 - 1));
+        float m = light - c / 2;
+
+        float r = 0;
+        float g = 0;
+        float b = 0;
+
+        if (hue < 1 / 6f) {
+            r = c;
+            g = x;
+        } else if (hue < 2 / 6f) {
+            r = x;
+            g = c;
+        } else if (hue < 3 / 6f) {
+            g = c;
+            b = x;
+        } else if (hue < 4 / 6f) {
+            g = x;
+            b = c;
+        } else if (hue < 5 / 6f) {
+            r = x;
+            b = c;
+        } else {
+            r = c;
+            b = x;
+        }
+
+        return (Math.round((r + m) * 255) << 16) | (Math.round((g + m) * 255) << 8) | Math.round((b + m) * 255);
+    }
+
+    @Override
+    public void render(DrawContext context,int mouseX,int mouseY,float delta){
+        super.render(context,mouseX,mouseY,delta);
+
+        int leftX = width/4;
+
+        renderLabel(context, leftX, 60, mouseX, mouseY,
+            "Color",
+            "Custom hitboxes color.");
+
+        int previewSize = 18;
+
+        int previewX = hexField.getX() + 75;
+        int previewY = colorSlider.getY();
+
+        context.fill(previewX - 1, previewY - 1, previewX+previewSize+1, previewY+previewSize + 1, 0xFF000000);
+        context.fill(previewX, previewY, previewX + previewSize, previewY + previewSize, 0xFF000000 | BetterHitColor.getHitColorColor());
+    }
+
+    private void renderLabel(DrawContext context, int x, int y, int mouseX, int mouseY, String title, String desc) {
+        int titleWidth = textRenderer.getWidth(title);
+
+        boolean hovered = mouseX >= x &&
+            mouseX <= x + titleWidth &&
+            mouseY >= y &&
+            mouseY <= y + textRenderer.fontHeight;
+
+        int color = hovered ? ACCENT_COLOR : 0xFFFFFFFF;
+
+        context.drawText(textRenderer, Text.literal(title), x, y, color, false);
+        context.drawText(textRenderer, Text.literal(desc), x, y + 12, 0xFF888888, false);
+    }
+
+    private void save() {
+        config.save();
+        BetterHitColor.refreshBlockedStatus();
+
+        changed = false;
+    }
+
+    @Override
+    public void close() {
+        if (changed) {
+            save();
+        }
+
+        if (client != null) {
+            client.setScreen(parent);
+        }
+    }
+}

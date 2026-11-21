@@ -1,8 +1,7 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-import com.zavk1n.bqol.config.BQoLConfig.RenderMode;
-
+import com.zavk1n.bqol.config.Variables;
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.item.HeldItemRenderer;
@@ -20,13 +19,13 @@ public class NORENDERHand {
     @Inject(method = "renderArmHoldingItem", at = @At("HEAD"), cancellable = true)
     private void bqol$renderArmHoldingItem(MatrixStack matrices, OrderedRenderCommandQueue queue, int light, float equipProgress, float swingProgress, Arm arm, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (client.player == null || !config.isNoRenderHandEnabled()) {
             return;
         }
 
-        if (config.getNoRenderHand() == RenderMode.NO_RENDER) {
+        if (config.getNoRenderHand() == Variables.RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }
@@ -34,13 +33,13 @@ public class NORENDERHand {
     @Inject(method = "renderArm", at = @At("HEAD"), cancellable = true)
     private void bqol$renderArm(MatrixStack matrices, OrderedRenderCommandQueue queue, int light, Arm arm, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (client.player == null || !config.isNoRenderHandEnabled()) {
             return;
         }
 
-        if (config.getNoRenderHand() == RenderMode.NO_RENDER) {
+        if (config.getNoRenderHand() == Variables.RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }

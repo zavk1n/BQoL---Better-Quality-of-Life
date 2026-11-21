@@ -22,16 +22,11 @@ public class ShulkersParticlesConfigScreen extends MainConfigScreen {
     private TextFieldWidget constantHexField, breakingHexField;
 
     private int constantCurrentColor, breakingCurrentColor;
-    private int constantDepLabelX, constantDepLabelY, breakingDepLabelX, breakingDepLabelY;
+    private int constantDepLabelX, constantDepLabelY;
+    private int breakingDepLabelX, breakingDepLabelY;
 
-    private static final int BUTTON_WIDTH = 80;
-    private static final int BUTTON_HEIGHT = 25;
-    private static final int SPACING = 45;
-    private static final int LABEL_WIDTH = 220;
-    private static final int SLIDER_WIDTH = 150;
-    private static final int HEX_WIDTH = 70;
-    private static final int DEPENDENCE_BUTTONS_OFFSET = 165;
-    private static final int COLOR_CONTROL_OFFSET = 20;
+    private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45, LABEL_WIDTH = 220, SLIDER_WIDTH = 150,
+        HEX_WIDTH = 70, DEPENDENCE_BUTTONS_OFFSET = 165, COLOR_CONTROL_OFFSET = 20;
 
     private boolean changed = false;
 
@@ -430,7 +425,6 @@ public class ShulkersParticlesConfigScreen extends MainConfigScreen {
 
     private void save() {
         config.save();
-
         BetterParticles.refreshBlockedStatus();
 
         changed = false;

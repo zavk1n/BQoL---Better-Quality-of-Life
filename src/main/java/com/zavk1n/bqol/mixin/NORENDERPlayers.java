@@ -1,8 +1,7 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-import com.zavk1n.bqol.config.BQoLConfig.RenderMode;
-
+import com.zavk1n.bqol.config.Variables;
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.EntityRenderManager;
 import net.minecraft.client.render.entity.state.EntityRenderState;
@@ -27,10 +26,10 @@ public class NORENDERPlayers {
             return;
         }
 
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (!config.isNoRenderPlayersEnabled()
-            || config.getNoRenderPlayers() != RenderMode.NO_RENDER
+            || config.getNoRenderPlayers() != Variables.RenderMode.NO_RENDER
             || !(state instanceof PlayerEntityRenderState playerState)
             || playerState.id == client.player.getId()) {
             return;

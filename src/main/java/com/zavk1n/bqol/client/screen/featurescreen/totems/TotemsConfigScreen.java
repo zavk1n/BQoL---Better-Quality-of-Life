@@ -1,7 +1,7 @@
 package com.zavk1n.bqol.client.screen.featurescreen.totems;
 
 import com.zavk1n.bqol.client.screen.MainConfigScreen;
-import com.zavk1n.bqol.features.BetterTotems;
+import com.zavk1n.bqol.features.totems.BetterTotems;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.minecraft.client.gui.DrawContext;
@@ -54,7 +54,7 @@ public class TotemsConfigScreen extends MainConfigScreen {
                     button -> {
                         if (client != null && !LiteApiManager.isFeatureBlocked("better_totems_holyworld")) {
                             saveIfChanged();
-                            client.setScreen(new HolyWorldTotemsConfigScreen(this));
+                            client.setScreen(new HolyWorldConfigScreen(this));
                         }
                     }
                 )
@@ -73,7 +73,7 @@ public class TotemsConfigScreen extends MainConfigScreen {
                     button -> {
                         if (client != null && !LiteApiManager.isFeatureBlocked("better_totems_reallyworld")) {
                             saveIfChanged();
-                            client.setScreen(new ReallyWorldTotemsConfigScreen(this));
+                            client.setScreen(new ReallyWorldConfigScreen(this));
                         }
                     }
                 )

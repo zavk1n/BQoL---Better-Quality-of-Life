@@ -1,7 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.feature.StuckObjectsFeatureRenderer;
@@ -24,9 +23,9 @@ public class NORENDERArrows {
             return;
         }
 
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
-        if (!config.isNoRenderArrowsEnabled() || config.getNoRenderArrows() != BQoLConfig.RenderMode.NO_RENDER) {
+        if (!config.isNoRenderArrowsEnabled() || config.getNoRenderArrows() != MainConfig.RenderMode.NO_RENDER) {
             return;
         }
 

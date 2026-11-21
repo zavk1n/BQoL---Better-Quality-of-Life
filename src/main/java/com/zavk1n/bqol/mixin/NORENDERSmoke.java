@@ -1,7 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.block.CampfireBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -16,9 +15,9 @@ public class NORENDERSmoke {
 
     @Inject(method = "spawnSmokeParticle", at = @At("HEAD"), cancellable = true)
     private static void bqol$cancelSmoke(World world, BlockPos pos, boolean isSignal, boolean lotsOfSmoke, CallbackInfo ci) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
-        if (config.isNoRenderSmokeEnabled() || config.getNoRenderSmoke() == BQoLConfig.RenderMode.NO_RENDER) {
+        if (config.isNoRenderSmokeEnabled() || config.getNoRenderSmoke() == MainConfig.RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }

@@ -173,7 +173,7 @@ public class MovementConfigScreen extends MainConfigScreen {
         if (!LiteApiManager.isFeatureBlocked("better_movement_scaffold")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "Scaffold",
-                "Auto-walking almost on air!"
+                "Walking almost on air!"
             );
         }
     }

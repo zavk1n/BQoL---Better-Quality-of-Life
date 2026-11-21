@@ -1,7 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.render.WeatherRendering;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Camera;
@@ -21,13 +20,13 @@ public class NORENDERWeather1 {
             return;
         }
 
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (!config.isNoRenderWeatherEnabled()) {
             return;
         }
 
-        if (config.getNoRenderWeather() == BQoLConfig.RenderMode.NO_RENDER) {
+        if (config.getNoRenderWeather() == MainConfig.RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }

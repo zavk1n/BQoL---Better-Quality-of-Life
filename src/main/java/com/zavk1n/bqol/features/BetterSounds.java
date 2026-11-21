@@ -1,7 +1,7 @@
 package com.zavk1n.bqol.features;
 
 import com.zavk1n.bqol.BQoL;
-import com.zavk1n.bqol.config.BQoLConfig;
+import com.zavk1n.bqol.config.MainConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import java.util.EnumSet;
@@ -14,7 +14,7 @@ public class BetterSounds {
     }
 
     private static BetterSounds instance;
-    private final BQoLConfig config = BQoLConfig.getInstance();
+    private final MainConfig config = MainConfig.getInstance();
 
     private Predicate<String> combinedRule = path -> false;
     private final EnumSet<SoundCategory> enabledModes = EnumSet.noneOf(SoundCategory.class);
@@ -51,14 +51,14 @@ public class BetterSounds {
         BLAZE(config -> config.isBetterSoundsBlaze()),
         BEE(config -> config.isBetterSoundsBee());
 
-        private final Predicate<BQoLConfig> enabledGetter;
+        private final Predicate<MainConfig> enabledGetter;
         private Predicate<String> predicate;
 
-        SoundCategory(Predicate<BQoLConfig> enabledGetter) {
+        SoundCategory(Predicate<MainConfig> enabledGetter) {
             this.enabledGetter = enabledGetter;
         }
 
-        public boolean isCategoryEnabled(BQoLConfig config) {
+        public boolean isCategoryEnabled(MainConfig config) {
             return enabledGetter.test(config);
         }
 

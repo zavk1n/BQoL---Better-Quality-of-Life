@@ -1,13 +1,19 @@
 package com.zavk1n.bqol.client.screen;
 
-import com.zavk1n.bqol.client.FeatureKeybindManager;
+import com.zavk1n.bqol.config.MainConfig;
+import com.zavk1n.bqol.features.BetterAntiInvisible;
+import com.zavk1n.bqol.features.rct.BetterRCT;
+import com.zavk1n.bqol.utils.binds.FeatureKeybindManager;
 import com.zavk1n.bqol.client.screen.featurescreen.*;
+import com.zavk1n.bqol.client.screen.featurescreen.mine.MineConfigScreen;
 import com.zavk1n.bqol.client.screen.featurescreen.particles.ParticlesConfigScreen;
 import com.zavk1n.bqol.client.screen.featurescreen.sounds.SoundsConfigScreen;
 import com.zavk1n.bqol.client.screen.featurescreen.speheres.SpheresConfigScreen;
 import com.zavk1n.bqol.client.screen.featurescreen.totems.TotemsConfigScreen;
-import com.zavk1n.bqol.config.BQoLConfig;
 import com.zavk1n.bqol.features.*;
+import com.zavk1n.bqol.features.mine.BetterMine;
+import com.zavk1n.bqol.features.spheres.BetterSpheres;
+import com.zavk1n.bqol.features.totems.BetterTotems;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.minecraft.client.gui.DrawContext;
@@ -16,7 +22,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.text.Text;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
@@ -48,6 +53,9 @@ class FeaturePanel {
 
     KeyBinding keyBinding;
 
+    Text lastKeybindText;
+    int lastKeybindWidth = -1;
+
     FeaturePanel(
         String title,
         String description,
@@ -77,16 +85,14 @@ class FeaturePanel {
 public class BQoLConfigScreen extends MainConfigScreen {
 
     private final Screen parent;
-    private final BQoLConfig config = BQoLConfig.getInstance();
+    private final MainConfig config = MainConfig.getInstance();
 
     private final List<FeaturePanel> featurePanels = new ArrayList<>();
     private final List<FeaturePanel> filteredPanels = new ArrayList<>();
 
     private TextFieldWidget searchField;
 
-    private long openTime;
-
-    private float animationProgress = 0F;
+    private float lastAppliedScrollOffset = Float.NaN;
 
     private static final int PANEL_START_Y = 55;
     private static final int PANEL_SPACING = 45;
@@ -111,7 +117,6 @@ public class BQoLConfigScreen extends MainConfigScreen {
         super(Text.literal("BQoL Configuration"), parent);
 
         this.parent = parent;
-        this.openTime = Util.getMeasuringTimeMs();
     }
 
     @Override
@@ -147,7 +152,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
         rebuildUI();
 
         addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"),
-                button -> {
+                    button -> {
                         config.save();
                         if (client != null) {
                             client.setScreen(parent);
@@ -158,7 +163,6 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 .build()
         );
 
-        updateAllButtons();
     }
 
     private void createSearchField() {
@@ -169,6 +173,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
         searchField = new TextFieldWidget(textRenderer, searchX, searchY, SEARCH_WIDTH, SEARCH_HEIGHT, Text.literal("Search"));
         searchField.setMaxLength(100);
+
         searchField.setPlaceholder(Text.literal("Search...")
             .styled(style -> style.withColor(0xFF888888))
         );
@@ -192,28 +197,6 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
-                "Better RCT",
-                "Auto Reconnect utility.",
-                "better_rct",
-                config.isBetterRCTEnabled(),
-                getTextColumnX(),
-                PANEL_START_Y,
-                true
-            )
-        );
-
-        featurePanels.add(new FeaturePanel(
-                "Better Sounds",
-                "Sounds management.",
-                "better_sounds",
-                config.isBetterSoundsEnabled(),
-                getTextColumnX(),
-                PANEL_START_Y,
-                true
-            )
-        );
-
-        featurePanels.add(new FeaturePanel(
                 "Better Interact",
                 "Various interaction improvements.",
                 "better_interact",
@@ -221,6 +204,17 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 getTextColumnX(),
                 PANEL_START_Y,
                 true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better Gamma",
+                "Improved ambient brightness.",
+                "better_gamma",
+                config.isBetterGammaEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                false
             )
         );
 
@@ -247,6 +241,39 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
+                "Better RRLS",
+                "Remove Reloading Screen.",
+                "better_rrls",
+                config.isBetterRRLSEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                false
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better Holograms",
+                "Tweaks for holograms.",
+                "better_holograms",
+                config.isBetterHologramsEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better Sounds",
+                "Sounds management.",
+                "better_sounds",
+                config.isBetterSoundsEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
                 "Better Tnt",
                 "Smart addons for TNT.",
                 "better_tnt",
@@ -269,21 +296,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
-                "Better TP",
-                "Automatic scripts for /tp.",
-                "better_tp",
-                config.isBetterTPEnabled(),
-                getTextColumnX(),
-                PANEL_START_Y,
-                true
-            )
-        );
-
-        featurePanels.add(new FeaturePanel(
-                "Better RRLS",
-                "Remove Reloading Screen.",
-                "better_rrls",
-                config.isBetterRRLSEnabled(),
+                "Better Zoom",
+                "Default zoom like in shooters.",
+                "better_zoom",
+                config.isBetterZoomEnabled(),
                 getTextColumnX(),
                 PANEL_START_Y,
                 false
@@ -302,10 +318,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
-                "Better Holograms",
-                "Tweaks for holograms.",
-                "better_holograms",
-                config.isBetterHologramsEnabled(),
+                "Better Hit Color",
+                "Customize your color while hit.",
+                "better_hit_color",
+                config.isBetterHitColorEnabled(),
                 getTextColumnX(),
                 PANEL_START_Y,
                 true
@@ -313,21 +329,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
-                "Better Totems",
-                "Addons for totems.",
-                "better_totems",
-                config.isBetterTotemsEnabled(),
-                getTextColumnX(),
-                PANEL_START_Y,
-                true
-            )
-        );
-
-        featurePanels.add(new FeaturePanel(
-                "Better Spheres",
-                "Customization for server spheres.",
-                "better_spheres",
-                config.isBetterSpheresEnabled(),
+                "Better Hitbloxes",
+                "Customize your hitboxes.",
+                "better_hitboxes",
+                config.isBetterHitboxesEnabled(),
                 getTextColumnX(),
                 PANEL_START_Y,
                 true
@@ -401,6 +406,50 @@ public class BQoLConfigScreen extends MainConfigScreen {
         );
 
         featurePanels.add(new FeaturePanel(
+                "Better TP",
+                "Automatic scripts for /tp.",
+                "better_tp",
+                config.isBetterTPEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better Totems",
+                "Addons for totems.",
+                "better_totems",
+                config.isBetterTotemsEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better Spheres",
+                "Customization for server spheres.",
+                "better_spheres",
+                config.isBetterSpheresEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better RCT",
+                "Auto Reconnect utility.",
+                "better_rct",
+                config.isBetterRCTEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
                 "Better Mine",
                 "A smart assistant for auto-mines on servers.",
                 "better_mine",
@@ -408,6 +457,17 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 getTextColumnX(),
                 PANEL_START_Y,
                 true
+            )
+        );
+
+        featurePanels.add(new FeaturePanel(
+                "Better Anti Invisible",
+                "INDIRECTLY reveals the player's invisibility.",
+                "better_anti_invisible",
+                config.isBetterAntiInvisibleEnabled(),
+                getTextColumnX(),
+                PANEL_START_Y,
+                false
             )
         );
 
@@ -548,22 +608,24 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
         switch (panel.configKey) {
             case "better_movement" -> client.setScreen(new MovementConfigScreen(this));
-            case "better_rct" -> client.setScreen(new RCTConfigScreen(this));
-            case "better_sounds" -> client.setScreen(new SoundsConfigScreen(this));
             case "better_interact" -> client.setScreen(new InteractConfigScreen(this));
+            case "better_holograms" -> client.setScreen(new HologramsConfigScreen(this));
+            case "better_sounds" -> client.setScreen(new SoundsConfigScreen(this));
             case "better_tnt" -> client.setScreen(new TNTConfigScreen(this));
             case "better_chat" -> client.setScreen(new ChatConfigScreen(this));
-            case "better_tp" -> client.setScreen(new TPConfigScreen(this));
             case "better_prefixes" -> client.setScreen(new PrefixesConfigScreen(this));
-            case "better_holograms" -> client.setScreen(new HologramsConfigScreen(this));
-            case "better_totems" -> client.setScreen(new TotemsConfigScreen(this));
-            case "better_spheres" -> client.setScreen(new SpheresConfigScreen(this));
+            case "better_hit_color" -> client.setScreen(new HitColorConfigScreen(this));
+            case "better_hitboxes" -> client.setScreen(new HitboxesConfigScreen(this));
             case "better_sky" -> client.setScreen(new SkyConfigScreen(this));
             case "better_particles" -> client.setScreen(new ParticlesConfigScreen(this));
             case "better_liquid" -> client.setScreen(new LiquidConfigScreen(this));
             case "better_fog" -> client.setScreen(new FogConfigScreen(this));
             case "better_health" -> client.setScreen(new HealthConfigScreen(this));
             case "no_render" -> client.setScreen(new NoRenderConfigScreen(this));
+            case "better_tp" -> client.setScreen(new TPConfigScreen(this));
+            case "better_totems" -> client.setScreen(new TotemsConfigScreen(this));
+            case "better_spheres" -> client.setScreen(new SpheresConfigScreen(this));
+            case "better_rct" -> client.setScreen(new RCTConfigScreen(this));
             case "better_mine" -> client.setScreen(new MineConfigScreen(this));
         }
     }
@@ -572,26 +634,29 @@ public class BQoLConfigScreen extends MainConfigScreen {
         String liteId = switch (configKey) {
 
             case "better_movement" -> "better_movement";
-            case "better_rct" -> "better_rct";
-            case "better_sounds" -> "better_sounds";
             case "better_interact" -> "better_interact";
+            case "better_gamma" -> "better_gamma";
             case "better_hurt_cam" -> "better_hurt_cam";
             case "better_third_person" -> "better_third_person";
-            case "better_tnt" -> "better_tnt";
-            case "better_tp" -> "better_tp";
-            case "better_chat" -> "better_chat";
             case "better_rrls" -> "better_rrls";
-            case "better_prefixes" -> "better_prefixes";
             case "better_holograms" -> "better_holograms";
-            case "better_totems" -> "better_totems";
-            case "better_spheres" -> "better_spheres";
+            case "better_sounds" -> "better_sounds";
+            case "better_tnt" -> "better_tnt";
+            case "better_chat" -> "better_chat";
+            case "better_zoom" -> "better_zoom";
+            case "better_prefixes" -> "better_prefixes";
             case "better_sky" -> "better_sky";
             case "better_particles" -> "better_particles";
             case "better_fog" -> "better_fog";
             case "better_liquid" -> "better_liquid";
             case "better_health" -> "better_health";
             case "no_render" -> "no_render";
+            case "better_tp" -> "better_tp";
+            case "better_totems" -> "better_totems";
+            case "better_spheres" -> "better_spheres";
+            case "better_rct" -> "better_rct";
             case "better_mine" -> "better_mine";
+            case "better_anti_invisible" -> "better_anti_invisible";
             case "better_hit_counter" -> "better_hit_counter";
 
             default -> null;
@@ -623,6 +688,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
         }
 
         updateMaxScrollForFilteredPanels();
+        lastAppliedScrollOffset = scrollOffset;
     }
 
     private void updateMaxScrollForFilteredPanels() {
@@ -644,22 +710,16 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterMovement.setEnabled(panel.enabled);
             }
 
-            case "better_rct" -> {
-                panel.enabled = !panel.enabled;
-                config.setBetterRCTEnabled(panel.enabled);
-                BetterRCT.setEnabled(panel.enabled);
-            }
-
-            case "better_sounds" -> {
-                panel.enabled = !panel.enabled;
-                config.setBetterSoundsEnabled(panel.enabled);
-                BetterSounds.setEnabled(panel.enabled);
-            }
-
             case "better_interact" -> {
                 panel.enabled = !panel.enabled;
                 config.setBetterInteractEnabled(panel.enabled);
                 BetterInteract.setEnabled(panel.enabled);
+            }
+
+            case "better_gamma" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterGammaEnabled(panel.enabled);
+                BetterGamma.setEnabled(panel.enabled);
             }
 
             case "better_hurt_cam" -> {
@@ -674,6 +734,24 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterThirdPerson.setEnabled(panel.enabled);
             }
 
+            case "better_rrls" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterRRLSEnabled(panel.enabled);
+                BetterRRLS.setEnabled(panel.enabled);
+            }
+
+            case "better_holograms" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterHologramsEnabled(panel.enabled);
+                BetterHolograms.setEnabled(panel.enabled);
+            }
+
+            case "better_sounds" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterSoundsEnabled(panel.enabled);
+                BetterSounds.setEnabled(panel.enabled);
+            }
+
             case "better_tnt" -> {
                 panel.enabled = !panel.enabled;
                 config.setBetterTntEnabled(panel.enabled);
@@ -686,16 +764,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterChat.setEnabled(panel.enabled);
             }
 
-            case "better_tp" -> {
+            case "better_zoom" -> {
                 panel.enabled = !panel.enabled;
-                config.setBetterTPEnabled(panel.enabled);
-                BetterTP.setEnabled(panel.enabled);
-            }
-
-            case "better_rrls" -> {
-                panel.enabled = !panel.enabled;
-                config.setBetterRRLSEnabled(panel.enabled);
-                BetterRRLS.setEnabled(panel.enabled);
+                config.setBetterZoomEnabled(panel.enabled);
+                BetterZoom.setEnabled(panel.enabled);
             }
 
             case "better_prefixes" -> {
@@ -704,22 +776,16 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterPrefixes.setEnabled(panel.enabled);
             }
 
-            case "better_holograms" -> {
+            case "better_hit_color" -> {
                 panel.enabled = !panel.enabled;
-                config.setBetterHologramsEnabled(panel.enabled);
-                BetterHolograms.setEnabled(panel.enabled);
+                config.setBetterHitColorEnabled(panel.enabled);
+                BetterHitColor.setEnabled(panel.enabled);
             }
 
-            case "better_totems" -> {
+            case "better_hitboxes" -> {
                 panel.enabled = !panel.enabled;
-                config.setBetterTotemsEnabled(panel.enabled);
-                BetterTotems.setEnabled(panel.enabled);
-            }
-
-            case "better_spheres" -> {
-                panel.enabled = !panel.enabled;
-                config.setBetterSpheresEnabled(panel.enabled);
-                BetterSpheres.setEnabled(panel.enabled);
+                config.setBetterHitboxesEnabled(panel.enabled);
+                BetterHitboxes.setEnabled(panel.enabled);
             }
 
             case "better_sky" -> {
@@ -734,16 +800,16 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 BetterParticles.setEnabled(panel.enabled);
             }
 
-            case "better_fog" -> {
-                panel.enabled = !panel.enabled;
-                config.setBetterFogEnabled(panel.enabled);
-                BetterFog.setEnabled(panel.enabled);
-            }
-
             case "better_liquid" -> {
                 panel.enabled = !panel.enabled;
                 config.setBetterLiquidEnabled(panel.enabled);
                 BetterLiquid.setEnabled(panel.enabled);
+            }
+
+            case "better_fog" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterFogEnabled(panel.enabled);
+                BetterFog.setEnabled(panel.enabled);
             }
 
             case "better_health" -> {
@@ -762,10 +828,40 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 NoRender.setEnabled(panel.enabled);
             }
 
+            case "better_tp" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterTPEnabled(panel.enabled);
+                BetterTP.setEnabled(panel.enabled);
+            }
+
+            case "better_totems" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterTotemsEnabled(panel.enabled);
+                BetterTotems.setEnabled(panel.enabled);
+            }
+
+            case "better_spheres" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterSpheresEnabled(panel.enabled);
+                BetterSpheres.setEnabled(panel.enabled);
+            }
+
+            case "better_rct" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterRCTEnabled(panel.enabled);
+                BetterRCT.setEnabled(panel.enabled);
+            }
+
             case "better_mine" -> {
                 panel.enabled = !panel.enabled;
                 config.setBetterMineEnabled(panel.enabled);
                 BetterMine.setEnabled(panel.enabled);
+            }
+
+            case "better_anti_invisible" -> {
+                panel.enabled = !panel.enabled;
+                config.setBetterAntiInvisibleEnabled(panel.enabled);
+                BetterAntiInvisible.setEnabled(panel.enabled);
             }
 
             case "better_hit_counter" -> {
@@ -787,10 +883,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
         panel.toggleButton = ButtonWidget.builder(panel.enabled ? Text.literal("Enabled")
                     .styled(style -> style.withColor(ACCENT_COLOR)) : Text.literal("Disabled"),
-                button -> {
-                    toggleFeature(panel);
-                    updateAllButtons();
-                })
+                button -> toggleFeature(panel))
             .dimensions(buttonsStartX, panel.y - 3, TOGGLE_WIDTH, buttonHeight)
             .build();
 
@@ -815,11 +908,13 @@ public class BQoLConfigScreen extends MainConfigScreen {
             panel.keybindButton = ButtonWidget.builder(getKeybindButtonText(panel),
                     button -> {
                         FeatureKeybindManager.startKeybindListening(panel.configKey);
-                        updateAllButtons();
+                        refreshKeybindButtons();
                     })
                 .dimensions(nextX, panel.y - 3, keybindWidth, buttonHeight)
                 .build();
 
+            panel.lastKeybindText = getKeybindButtonText(panel);
+            panel.lastKeybindWidth = keybindWidth;
             addDrawableChild(panel.keybindButton);
         }
     }
@@ -881,29 +976,33 @@ public class BQoLConfigScreen extends MainConfigScreen {
         }
 
         if (panel.enabled) {
-            panel.toggleButton.setMessage(Text.literal("Enabled")
-                    .styled(style -> style.withColor(ACCENT_COLOR))
-            );
+            panel.toggleButton.setMessage(Text.literal("Enabled").styled(style -> style.withColor(ACCENT_COLOR)));
         } else {
             panel.toggleButton.setMessage(Text.literal("Disabled"));
         }
     }
 
-    private void updateAllButtons() {
+    private void refreshKeybindButtons() {
         for (FeaturePanel panel : featurePanels) {
+            ButtonWidget button = panel.keybindButton;
 
-            if (panel.toggleButton != null) {
-                updateButtonsText(panel);
+            if (button == null) {
+                continue;
             }
 
-            if (panel.keybindButton != null) {
-                panel.keybindButton.setMessage(
-                    getKeybindButtonText(panel)
-                );
+            Text message = getKeybindButtonText(panel);
 
-                panel.keybindButton.setWidth(
-                    getKeybindButtonWidth(panel)
-                );
+            if (!message.equals(panel.lastKeybindText)) {
+                panel.lastKeybindText = message;
+
+                button.setMessage(message);
+
+                int newWidth = MathHelper.clamp(textRenderer.getWidth(message) + 20, 55, 130);
+
+                if (newWidth != panel.lastKeybindWidth) {
+                    panel.lastKeybindWidth = newWidth;
+                    button.setWidth(newWidth);
+                }
             }
         }
     }
@@ -917,28 +1016,20 @@ public class BQoLConfigScreen extends MainConfigScreen {
         button.visible = visible;
         button.active = visible;
 
-        if (!visible) {
-            return;
+        if (visible) {
+            button.render(context, mouseX, mouseY, delta);
         }
-
-        context.enableScissor(0, getContentTop(), width, getContentBottom());
-
-        button.render(context, mouseX, mouseY, delta);
-
-        context.disableScissor();
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        long currentTime = Util.getMeasuringTimeMs();
+        if (Float.compare(lastAppliedScrollOffset, scrollOffset) != 0) {
+            rebuildUI();
+        }
 
-        animationProgress = MathHelper.clamp((currentTime - openTime) / 500F, 0F, 1F);
+        refreshKeybindButtons();
 
-        rebuildUI();
-
-        updateAllButtons();
-
-        for (FeaturePanel panel : featurePanels) {
+        for (FeaturePanel panel : filteredPanels) {
             if (panel.toggleButton != null) {
                 panel.toggleButton.visible = false;
             }
@@ -957,6 +1048,10 @@ public class BQoLConfigScreen extends MainConfigScreen {
         context.enableScissor(0, getContentTop(), width, getContentBottom());
 
         for (FeaturePanel panel : filteredPanels) {
+            if (panel.y + textRenderer.fontHeight < getContentTop() || panel.y > getContentBottom()) {
+                continue;
+            }
+
             boolean hovered = mouseX >= panel.x
                 && mouseX <= panel.x + panel.titleWidth
                 && mouseY >= panel.y
@@ -966,11 +1061,7 @@ public class BQoLConfigScreen extends MainConfigScreen {
 
             context.drawText(textRenderer, panel.titleText, panel.x, panel.y, color, false);
             context.drawText(textRenderer, panel.descriptionText, panel.x, panel.y + 12, 0xFF888888, false);
-        }
 
-        context.disableScissor();
-
-        for (FeaturePanel panel : filteredPanels) {
             if (panel.toggleButton != null) {
                 renderButtonIfVisible(panel.toggleButton, context, mouseX, mouseY, delta);
             }
@@ -983,6 +1074,8 @@ public class BQoLConfigScreen extends MainConfigScreen {
                 renderButtonIfVisible(panel.keybindButton, context, mouseX, mouseY, delta);
             }
         }
+
+        context.disableScissor();
     }
 
     @Override

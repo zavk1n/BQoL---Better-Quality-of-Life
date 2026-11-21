@@ -1,7 +1,7 @@
 package com.zavk1n.bqol.client.screen.featurescreen;
 
 import com.zavk1n.bqol.client.screen.MainConfigScreen;
-import com.zavk1n.bqol.features.BetterRCT;
+import com.zavk1n.bqol.features.rct.BetterRCT;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.minecraft.client.gui.DrawContext;
@@ -10,7 +10,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
 public class RCTConfigScreen extends MainConfigScreen{
-    private ButtonWidget holyWorldRCTBtn, reallyWorldBtn, fakeTimeBtn;
+    private ButtonWidget holyWorldRCTBtn, reallyWorldRCTBtn, fakeTimeRCTBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
@@ -34,8 +34,8 @@ public class RCTConfigScreen extends MainConfigScreen{
         clearChildren();
 
         holyWorldRCTBtn = null;
-        reallyWorldBtn = null;
-        fakeTimeBtn = null;
+        reallyWorldRCTBtn = null;
+        fakeTimeRCTBtn = null;
 
         int rightX = width / 2 + 50;
         int y = 60;
@@ -58,35 +58,35 @@ public class RCTConfigScreen extends MainConfigScreen{
         }
 
         if (!LiteApiManager.isFeatureBlocked("better_rct_reallyworld")) {
-            reallyWorldBtn = ButtonWidget.builder(
+            reallyWorldRCTBtn = ButtonWidget.builder(
                     Text.literal(config.isBetterRCTReallyWorld() ? "Enabled" : "Disabled"),
                     button -> {
                         boolean state = !config.isBetterRCTReallyWorld();
                         config.setBetterRCTReallyWorld(state);
                         changed = true;
-                        updateButton(reallyWorldBtn, state);
+                        updateButton(reallyWorldRCTBtn, state);
                         save();
                     })
                 .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build();
-            addDrawableChild(reallyWorldBtn);
+            addDrawableChild(reallyWorldRCTBtn);
             y += SPACING;
         }
 
         if (!LiteApiManager.isFeatureBlocked("better_rct_faketime")) {
-            fakeTimeBtn = ButtonWidget.builder(
+            fakeTimeRCTBtn = ButtonWidget.builder(
                     Text.literal(config.isBetterRCTFakeTime() ? "Enabled" : "Disabled"),
                     button -> {
                         boolean state = !config.isBetterRCTFakeTime();
                         config.setBetterRCTFakeTime(state);
                         changed = true;
-                        updateButton(fakeTimeBtn, state);
+                        updateButton(fakeTimeRCTBtn, state);
                         save();
                     })
                 .dimensions(rightX, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build();
 
-            addDrawableChild(fakeTimeBtn);
+            addDrawableChild(fakeTimeRCTBtn);
         }
 
         addDrawableChild(ButtonWidget.builder(Text.literal("Save & Back"), button -> close())
@@ -102,12 +102,12 @@ public class RCTConfigScreen extends MainConfigScreen{
             updateButton(holyWorldRCTBtn, config.isBetterRCTHolyWorld());
         }
 
-        if (reallyWorldBtn != null) {
-            updateButton(reallyWorldBtn, config.isBetterRCTReallyWorld());
+        if (reallyWorldRCTBtn != null) {
+            updateButton(reallyWorldRCTBtn, config.isBetterRCTReallyWorld());
         }
 
-        if (fakeTimeBtn != null) {
-            updateButton(fakeTimeBtn, config.isBetterRCTFakeTime());
+        if (fakeTimeRCTBtn != null) {
+            updateButton(fakeTimeRCTBtn, config.isBetterRCTFakeTime());
         }
     }
 
@@ -126,7 +126,7 @@ public class RCTConfigScreen extends MainConfigScreen{
         if (!LiteApiManager.isFeatureBlocked("better_rct_holyworld")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "RCT HolyWorld",
-                "Fast switching between anarchy servers on HolyWorld."
+                "Быстрое межсерверное перемещение на HolyWorld."
             );
             y += SPACING;
         }
@@ -134,7 +134,7 @@ public class RCTConfigScreen extends MainConfigScreen{
         if (!LiteApiManager.isFeatureBlocked("better_rct_reallyworld")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "RCT ReallyWorld",
-                "Fast switching between anarchy servers on ReallyWorld."
+                "Быстрое межсерверное перемещение на ReallyWorld."
             );
             y += SPACING;
         }
@@ -142,7 +142,7 @@ public class RCTConfigScreen extends MainConfigScreen{
         if (!LiteApiManager.isFeatureBlocked("better_rct_faketime")) {
             renderLabel(context, leftX, y, mouseX, mouseY,
                 "RCT FakeTime",
-                "Fast switching between anarchy servers on FakeTime."
+                "Быстрое межсерверное перемещение на FakeTime."
             );
         }
     }

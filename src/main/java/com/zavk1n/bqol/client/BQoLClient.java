@@ -4,9 +4,10 @@ import com.zavk1n.bqol.BQoL;
 import com.zavk1n.bqol.client.init.ConnectionManager;
 import com.zavk1n.bqol.client.init.FeatureRegistry;
 import com.zavk1n.bqol.client.init.TickManager;
-import com.zavk1n.bqol.utils.NotificationManager;
+import com.zavk1n.bqol.utils.binds.FeatureKeybindManager;
+import com.zavk1n.bqol.utils.binds.NotificationManager;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
-import com.zavk1n.bqol.utils.rct.MessageHandler;
+import com.zavk1n.bqol.features.rct.MessageHandler;
 
 import net.fabricmc.api.ClientModInitializer;
 

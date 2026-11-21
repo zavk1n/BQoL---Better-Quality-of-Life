@@ -1,7 +1,7 @@
 package com.zavk1n.bqol.client.screen.featurescreen;
 
 import com.zavk1n.bqol.client.screen.MainConfigScreen;
-import com.zavk1n.bqol.config.BQoLConfig.RenderMode;
+import com.zavk1n.bqol.config.Variables;
 import com.zavk1n.bqol.features.NoRender;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
@@ -235,23 +235,23 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         return button;
     }
 
-    private ButtonWidget createModeButton(int x, int y, Supplier<Boolean> enabledGetter, Consumer<Boolean> enabledSetter, Supplier<RenderMode> getter, Consumer<RenderMode> setter, boolean allowSmall) {
+    private ButtonWidget createModeButton(int x, int y, Supplier<Boolean> enabledGetter, Consumer<Boolean> enabledSetter, Supplier<Variables.RenderMode> getter, Consumer<Variables.RenderMode> setter, boolean allowSmall) {
         ButtonWidget button = ButtonWidget.builder(Text.literal(""),
                 b -> {
-                    RenderMode current = getter.get();
-                    RenderMode next;
+                    Variables.RenderMode current = getter.get();
+                    Variables.RenderMode next;
 
                     if (allowSmall) {
                         next = switch (current) {
-                            case FULL -> RenderMode.SMALL;
-                            case SMALL -> RenderMode.NO_RENDER;
-                            case NO_RENDER -> RenderMode.FULL;
+                            case FULL -> Variables.RenderMode.SMALL;
+                            case SMALL -> Variables.RenderMode.NO_RENDER;
+                            case NO_RENDER -> Variables.RenderMode.FULL;
                         };
                     } else {
                         next = switch (current) {
-                            case FULL -> RenderMode.NO_RENDER;
-                            case NO_RENDER -> RenderMode.FULL;
-                            case SMALL -> RenderMode.FULL;
+                            case FULL -> Variables.RenderMode.NO_RENDER;
+                            case NO_RENDER -> Variables.RenderMode.FULL;
+                            case SMALL -> Variables.RenderMode.FULL;
                         };
                     }
 
@@ -345,7 +345,7 @@ public class NoRenderConfigScreen extends MainConfigScreen {
         );
     }
 
-    private void updateModeButton(ButtonWidget button, RenderMode mode) {
+    private void updateModeButton(ButtonWidget button, Variables.RenderMode mode) {
         if (button == null) {
             return;
         }

@@ -1,7 +1,7 @@
 package com.zavk1n.bqol.client.screen.featurescreen.speheres;
 
 import com.zavk1n.bqol.client.screen.MainConfigScreen;
-import com.zavk1n.bqol.features.BetterSpheres;
+import com.zavk1n.bqol.features.spheres.BetterSpheres;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.minecraft.client.gui.DrawContext;
@@ -13,7 +13,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public class SpheresConfigScreen extends MainConfigScreen {
-    private ButtonWidget holyWorldSpheresBtn, holyWorldSpheresSettingsBtn, reallyWorldSpheresBtn, reallyWorldSpheresSettingsBtn;
+    private ButtonWidget holyWorldSpheresBtn, holyWorldSpheresSettingsBtn,
+        reallyWorldSpheresBtn, reallyWorldSpheresSettingsBtn;
 
     private static final int BUTTON_WIDTH = 80, BUTTON_HEIGHT = 25, SPACING = 45;
     private boolean changed = false;
@@ -49,9 +50,8 @@ public class SpheresConfigScreen extends MainConfigScreen {
             holyWorldSpheresSettingsBtn = ButtonWidget.builder(
                     Text.literal("Settings"),
                     button -> {
-                        if (client != null &&
-                            !LiteApiManager.isFeatureBlocked("better_spheres_holyworld")) {
-                            client.setScreen(new HolyWorldSpheresConfigScreen(this));
+                        if (client != null && !LiteApiManager.isFeatureBlocked("better_spheres_holyworld")) {
+                            client.setScreen(new HolyWorldConfigScreen(this));
                         }
                     })
                 .dimensions(rightX + BUTTON_WIDTH + 10, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -67,9 +67,8 @@ public class SpheresConfigScreen extends MainConfigScreen {
             reallyWorldSpheresSettingsBtn = ButtonWidget.builder(
                     Text.literal("Settings"),
                     button -> {
-                        if (client != null &&
-                            !LiteApiManager.isFeatureBlocked("better_spheres_reallyworld")) {
-                            client.setScreen(new ReallyWorldSpheresConfigScreen(this));
+                        if (client != null && !LiteApiManager.isFeatureBlocked("better_spheres_reallyworld")) {
+                            client.setScreen(new ReallyWorldConfigScreen(this));
                         }
                     })
                 .dimensions(rightX + BUTTON_WIDTH + 10, y - 3, BUTTON_WIDTH, BUTTON_HEIGHT)

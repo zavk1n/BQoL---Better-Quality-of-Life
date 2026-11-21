@@ -2,28 +2,28 @@ package com.zavk1n.bqol.client.init;
 
 import com.zavk1n.bqol.features.*;
 
+import com.zavk1n.bqol.features.BetterAntiInvisible;
+import com.zavk1n.bqol.features.mine.BetterMine;
+import com.zavk1n.bqol.features.rct.BetterRCT;
+import com.zavk1n.bqol.features.spheres.BetterSpheres;
+import com.zavk1n.bqol.features.totems.BetterTotems;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 public enum FeatureRegistry {
-
     BETTER_MOVEMENT(
         BetterMovement::initialize,
         BetterMovement::update,
         BetterMovement::refreshBlockedStatus
     ),
-    BETTER_RCT(
-        BetterRCT::initialize,
-        BetterRCT::refreshBlockedStatus
-    ),
-    BETTER_SOUNDS(
-        BetterSounds::initialize,
-        BetterSounds::refreshBlockedStatus
-    ),
     BETTER_INTERACT(
         BetterInteract::initialize,
         BetterInteract::refreshBlockedStatus
+    ),
+    BETTER_GAMMA(
+        BetterGamma::initialize,
+        BetterGamma::refreshBlockedStatus
     ),
     BETTER_HURT_CAM(
         BetterHurtCam::initialize,
@@ -33,6 +33,18 @@ public enum FeatureRegistry {
         BetterThirdPerson::initialize,
         BetterThirdPerson::refreshBlockedStatus
     ),
+    BETTER_RRLS(
+        BetterRRLS::initialize,
+        BetterRRLS::refreshBlockedStatus
+    ),
+    BETTER_HOLOGRAMS(
+        BetterHolograms::initialize,
+        BetterHolograms::refreshBlockedStatus
+    ),
+    BETTER_SOUNDS(
+        BetterSounds::initialize,
+        BetterSounds::refreshBlockedStatus
+    ),
     BETTER_TNT(
         BetterTnt::initialize,
         BetterTnt::refreshBlockedStatus
@@ -41,29 +53,22 @@ public enum FeatureRegistry {
         BetterChat::initialize,
         BetterChat::refreshBlockedStatus
     ),
-    BETTER_TP(
-        BetterTP::initialize,
-        BetterTP::refreshBlockedStatus
-    ),
-    BETTER_RRLS(
-        BetterRRLS::initialize,
-        BetterRRLS::refreshBlockedStatus
+    BETTER_ZOOM(
+        BetterZoom::initialize,
+        BetterZoom::tick,
+        BetterZoom::refreshBlockedStatus
     ),
     BETTER_PREFIXES(
         BetterPrefixes::initialize,
         BetterPrefixes::refreshBlockedStatus
     ),
-    BETTER_HOLOGRAMS(
-        BetterHolograms::initialize,
-        BetterHolograms::refreshBlockedStatus
+    BETTER_HIT_COLOR(
+        BetterHitColor::initialize,
+        BetterHitColor::refreshBlockedStatus
     ),
-    BETTER_TOTEMS(
-        BetterTotems::initialize,
-        BetterTotems::refreshBlockedStatus
-    ),
-    BETTER_SPHERES(
-        BetterSpheres::initialize,
-        BetterSpheres::refreshBlockedStatus
+    BETTER_HITBOXES(
+        BetterHitboxes::initialize,
+        BetterHitboxes::refreshBlockedStatus
     ),
     BETTER_SKY(
         BetterSky::initialize,
@@ -90,9 +95,29 @@ public enum FeatureRegistry {
         NoRender::initialize,
         NoRender::refreshBlockedStatus
     ),
+    BETTER_TP(
+        BetterTP::initialize,
+        BetterTP::refreshBlockedStatus
+    ),
+    BETTER_TOTEMS(
+        BetterTotems::initialize,
+        BetterTotems::refreshBlockedStatus
+    ),
+    BETTER_SPHERES(
+        BetterSpheres::initialize,
+        BetterSpheres::refreshBlockedStatus
+    ),
+    BETTER_RCT(
+        BetterRCT::initialize,
+        BetterRCT::refreshBlockedStatus
+    ),
     BETTER_MINE(
         BetterMine::initialize,
         BetterMine::refreshBlockedStatus
+    ),
+    BETTER_ANTI_INVISIBLE (
+        BetterAntiInvisible::initialize,
+        BetterAntiInvisible::refreshBlockedStatus
     ),
     BETTER_HIT_COUNTER(
         BetterHitCounter::initialize,

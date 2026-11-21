@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import com.zavk1n.bqol.BQoL;
-import com.zavk1n.bqol.utils.rct.HolyWorldController;
+import com.zavk1n.bqol.features.rct.holyworld.HolyWorldProcess;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,12 +47,12 @@ public final class HWServers {
     public static final class Server {
         public final int number;
         public final String name;
-        public final HolyWorldController.LiteMode mode;
+        public final HolyWorldProcess.LiteMode mode;
 
         private Server(
             int number,
             String name,
-            HolyWorldController.LiteMode mode
+            HolyWorldProcess.LiteMode mode
         ) {
             this.number = number;
             this.name = name;
@@ -171,7 +171,7 @@ public final class HWServers {
                     }
                 }
 
-                HolyWorldController.LiteMode mode = HolyWorldController.LiteMode.fromName(name);
+                HolyWorldProcess.LiteMode mode = HolyWorldProcess.LiteMode.fromName(name);
 
                 if (mode == null) {
                     continue;
@@ -202,18 +202,18 @@ public final class HWServers {
             return servers.containsKey(number);
         }
 
-        return HolyWorldController.LiteMode
+        return HolyWorldProcess.LiteMode
             .fallbackForNumber(number) != null;
     }
 
-    public HolyWorldController.LiteMode getMode(int number) {
+    public HolyWorldProcess.LiteMode getMode(int number) {
         if (loaded) {
             Server server = servers.get(number);
 
             return server == null ? null : server.mode;
         }
 
-        return HolyWorldController.LiteMode
+        return HolyWorldProcess.LiteMode
             .fallbackForNumber(number);
     }
 
@@ -224,7 +224,7 @@ public final class HWServers {
             return server.name;
         }
 
-        HolyWorldController.LiteMode mode = getMode(number);
+        HolyWorldProcess.LiteMode mode = getMode(number);
 
         return mode == null ? null : mode.displayName + " #" + number;
     }
@@ -245,7 +245,7 @@ public final class HWServers {
         return loaded ? servers.size() : 36;
     }
 
-    public OptionalInt getHighestNumber(HolyWorldController.LiteMode mode) {
+    public OptionalInt getHighestNumber(HolyWorldProcess.LiteMode mode) {
         return servers.values()
             .stream()
             .filter(server -> server.mode == mode)

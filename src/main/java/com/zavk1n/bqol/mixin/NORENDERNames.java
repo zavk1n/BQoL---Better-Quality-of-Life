@@ -1,7 +1,6 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
@@ -18,9 +17,9 @@ public abstract class NORENDERNames {
 
     @Inject(method = "renderLabelIfPresent", at = @At("HEAD"), cancellable = true)
     private void bqol$hideNames(PlayerEntityRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, CameraRenderState cameraState, CallbackInfo ci) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
-        if (!config.isNoRenderNamesEnabled() || config.getNoRenderNames() != BQoLConfig.RenderMode.NO_RENDER) {
+        if (!config.isNoRenderNamesEnabled() || config.getNoRenderNames() != MainConfig.RenderMode.NO_RENDER) {
             return;
         }
 

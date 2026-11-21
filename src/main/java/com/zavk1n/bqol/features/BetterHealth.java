@@ -1,7 +1,7 @@
 package com.zavk1n.bqol.features;
 
 import com.zavk1n.bqol.BQoL;
-import com.zavk1n.bqol.config.BQoLConfig;
+import com.zavk1n.bqol.config.MainConfig;
 import com.zavk1n.bqol.utils.liteapi.LiteApiManager;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -36,7 +36,7 @@ public class BetterHealth {
 
     private static BetterHealth instance;
     private MinecraftClient client;
-    private final BQoLConfig config = BQoLConfig.getInstance();
+    private final MainConfig config = MainConfig.getInstance();
 
     private final BlockedFeatures blocked = new BlockedFeatures();
     private static class BlockedFeatures {

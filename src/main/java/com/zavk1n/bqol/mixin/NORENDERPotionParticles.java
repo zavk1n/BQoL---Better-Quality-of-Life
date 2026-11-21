@@ -1,8 +1,7 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-import com.zavk1n.bqol.config.BQoLConfig.RenderMode;
-
+import com.zavk1n.bqol.config.Variables;
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.particle.ParticleEffect;
@@ -26,13 +25,13 @@ public class NORENDERPotionParticles {
             return;
         }
 
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
         if (!config.isNoRenderPotionParticlesEnabled()) {
             return;
         }
 
-        RenderMode mode = config.getNoRenderPotionParticles();
+        Variables.RenderMode mode = config.getNoRenderPotionParticles();
 
         switch (mode) {
             case FULL: return;

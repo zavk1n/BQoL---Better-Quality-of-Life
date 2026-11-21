@@ -1,8 +1,7 @@
 package com.zavk1n.bqol.mixin;
 
-import com.zavk1n.bqol.config.BQoLConfig;
-import com.zavk1n.bqol.config.BQoLConfig.RenderMode;
-
+import com.zavk1n.bqol.config.Variables;
+import com.zavk1n.bqol.config.MainConfig;
 import net.minecraft.client.gui.hud.InGameOverlayRenderer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -14,7 +13,6 @@ import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -24,24 +22,24 @@ public class NORENDERFireOverlay {
 
     @Inject(method = "renderFireOverlay", at = @At("HEAD"), cancellable = true)
     private static void bqol$renderFireOverlay(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Sprite sprite, CallbackInfo ci) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
-        if (config.isNoRenderFireOverlayEnabled() && config.getNoRenderFireOverlay() == RenderMode.NO_RENDER) {
+        if (config.isNoRenderFireOverlayEnabled() && config.getNoRenderFireOverlay() == Variables.RenderMode.NO_RENDER) {
             ci.cancel();
         }
     }
 
     @Overwrite
     private static void renderFireOverlay(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Sprite sprite) {
-        BQoLConfig config = BQoLConfig.getInstance();
+        MainConfig config = MainConfig.getInstance();
 
-        if (config.isNoRenderFireOverlayEnabled() && config.getNoRenderFireOverlay() == RenderMode.NO_RENDER) {
+        if (config.isNoRenderFireOverlayEnabled() && config.getNoRenderFireOverlay() == Variables.RenderMode.NO_RENDER) {
             return;
         }
 
         float scale = 1.0F;
 
-        if (config.isNoRenderFireOverlayEnabled() && config.getNoRenderFireOverlay() == RenderMode.SMALL) {
+        if (config.isNoRenderFireOverlayEnabled() && config.getNoRenderFireOverlay() == Variables.RenderMode.SMALL) {
             scale = 0.33F;
         }
 

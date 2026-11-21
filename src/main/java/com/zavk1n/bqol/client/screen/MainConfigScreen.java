@@ -1,6 +1,6 @@
 package com.zavk1n.bqol.client.screen;
 
-import com.zavk1n.bqol.config.BQoLConfig;
+import com.zavk1n.bqol.config.MainConfig;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Click;
@@ -17,9 +17,8 @@ import org.lwjgl.glfw.GLFW;
 import java.util.Random;
 
 public abstract class MainConfigScreen extends Screen {
-
     protected final Screen parent;
-    protected final BQoLConfig config = BQoLConfig.getInstance();
+    protected final MainConfig config = MainConfig.getInstance();
 
     protected static final int ACCENT_COLOR = 0xFFA3A3FF;
     protected static final int BACKGROUND_COLOR = 0xA6000000;
@@ -27,8 +26,8 @@ public abstract class MainConfigScreen extends Screen {
     protected static final int CONTENT_TOP = 50;
     protected static final int CONTENT_BOTTOM_PADDING = 55;
 
-    private static final float SCROLL_SPEED = 33F;
-    private static final float SCROLL_SMOOTHING = 0.18F;
+    private static final float SCROLL_SPEED = 35F;
+    private static final float SCROLL_SMOOTHING = 0.16F;
 
     protected float scrollOffset = 0F;
     protected float targetScrollOffset = 0F;
@@ -78,6 +77,7 @@ public abstract class MainConfigScreen extends Screen {
 
         if (!fragmentsInitialized) {
             initFragments();
+
             fragmentsInitialized = true;
         }
 
@@ -109,26 +109,19 @@ public abstract class MainConfigScreen extends Screen {
     private Fragment createFragment(boolean randomY) {
         return new Fragment(
             random.nextFloat() * width,
-
             randomY ? random.nextFloat() * height : -10F,
 
             0.18F + random.nextFloat() * 0.10F,
-
             random.nextFloat() * ((float) Math.PI * 2F),
-
             0.02F + random.nextFloat() * 0.015F
         );
     }
 
     private static void drawFragment(DrawContext context, int centerX, int centerY, int radius, int color) {
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
-                if (x * x + y * y > radius * radius) {
-                    continue;
-                }
+        for (int y = -radius; y <= radius; y++) {
+            int halfWidth = (int) Math.floor(Math.sqrt((double) radius * radius - (double) y * y));
 
-                context.fill(centerX + x, centerY + y, centerX + x + 1, centerY + y + 1, color);
-            }
+            context.fill(centerX - halfWidth, centerY + y, centerX + halfWidth + 1, centerY + y + 1, color);
         }
     }
 
@@ -192,12 +185,14 @@ public abstract class MainConfigScreen extends Screen {
     protected void updateScroll() {
         float difference = targetScrollOffset - scrollOffset;
 
-        if (Math.abs(difference) < 0.05F) {
+        if (Math.abs(difference) < 0.01F) {
             scrollOffset = targetScrollOffset;
             return;
         }
 
-        scrollOffset += difference * SCROLL_SMOOTHING;
+        float smoothing = 1.0F - (float) Math.pow(1.0F - SCROLL_SMOOTHING, 1.0F);
+
+        scrollOffset += difference * smoothing;
         scrollOffset = MathHelper.clamp(scrollOffset, 0F, maxScroll);
     }
 
@@ -270,7 +265,15 @@ public abstract class MainConfigScreen extends Screen {
         int scrollbarX = getScrollbarX();
 
         int thumbHeight = getScrollbarThumbHeight();
-        int thumbY = getScrollbarThumbY();
+        int maxThumbY = bottom - thumbHeight;
+
+        int thumbY = top;
+
+        if (maxScroll > 0F && maxThumbY > top) {
+            float progress = scrollOffset / maxScroll;
+
+            thumbY = top + (int) (progress * (maxThumbY - top));
+        }
 
         context.fill(scrollbarX, top, scrollbarX + 10, bottom, 0x99000000);
         context.fill(scrollbarX, thumbY, scrollbarX + 10, thumbY + thumbHeight, 0xFFAAAAAA);
@@ -299,10 +302,10 @@ public abstract class MainConfigScreen extends Screen {
             int thumbY = getScrollbarThumbY();
             int thumbHeight = getScrollbarThumbHeight();
 
-            if (mouseX >= scrollbarX &&
-                mouseX <= scrollbarX + 10 &&
-                mouseY >= thumbY &&
-                mouseY <= thumbY + thumbHeight) {
+            if (mouseX >= scrollbarX
+                && mouseX <= scrollbarX + 10
+                && mouseY >= thumbY
+                && mouseY <= thumbY + thumbHeight) {
 
                 draggingScrollbar = true;
                 scrollbarGrabOffset = (float) mouseY - thumbY;
@@ -325,6 +328,7 @@ public abstract class MainConfigScreen extends Screen {
             int maxThumbY = bottom - thumbHeight;
 
             float newThumbY = (float) mouseY - scrollbarGrabOffset;
+
             newThumbY = MathHelper.clamp(newThumbY, top, maxThumbY);
 
             float progress;
@@ -387,13 +391,13 @@ public abstract class MainConfigScreen extends Screen {
             return;
         }
 
-        client.options.forwardKey.setPressed(false);
-        client.options.backKey.setPressed(false);
-        client.options.leftKey.setPressed(false);
-        client.options.rightKey.setPressed(false);
-        client.options.jumpKey.setPressed(false);
-        client.options.sneakKey.setPressed(false);
-        client.options.sprintKey.setPressed(false);
+        releaseKeyIfPressed(client.options.forwardKey);
+        releaseKeyIfPressed(client.options.backKey);
+        releaseKeyIfPressed(client.options.leftKey);
+        releaseKeyIfPressed(client.options.rightKey);
+        releaseKeyIfPressed(client.options.jumpKey);
+        releaseKeyIfPressed(client.options.sneakKey);
+        releaseKeyIfPressed(client.options.sprintKey);
     }
 
     protected boolean isTextInputFocused() {
@@ -403,14 +407,26 @@ public abstract class MainConfigScreen extends Screen {
     private void syncKey(KeyBinding keyBinding, int key, long windowHandle) {
         boolean pressed = GLFW.glfwGetKey(windowHandle, key) == GLFW.GLFW_PRESS;
 
-        keyBinding.setPressed(pressed);
+        setKeyPressedIfChanged(keyBinding, pressed);
     }
 
     private void syncKey(KeyBinding keyBinding, int key1, int key2, long windowHandle) {
-        boolean pressed = GLFW.glfwGetKey(windowHandle, key1) == GLFW.GLFW_PRESS ||
-                GLFW.glfwGetKey(windowHandle, key2) == GLFW.GLFW_PRESS;
+        boolean pressed = GLFW.glfwGetKey(windowHandle, key1) == GLFW.GLFW_PRESS
+            || GLFW.glfwGetKey(windowHandle, key2) == GLFW.GLFW_PRESS;
 
-        keyBinding.setPressed(pressed);
+        setKeyPressedIfChanged(keyBinding, pressed);
+    }
+
+    private static void setKeyPressedIfChanged(KeyBinding keyBinding, boolean pressed) {
+        if (keyBinding.isPressed() != pressed) {
+            keyBinding.setPressed(pressed);
+        }
+    }
+
+    private static void releaseKeyIfPressed(KeyBinding keyBinding) {
+        if (keyBinding.isPressed()) {
+            keyBinding.setPressed(false);
+        }
     }
 
     @Override
